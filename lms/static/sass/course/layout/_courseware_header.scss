@@ -59,6 +59,10 @@
       }
     }
   }
+
+  @media print {
+    display: none;
+  }
 }
 
 .course-content {

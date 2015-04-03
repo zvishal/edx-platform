@@ -235,6 +235,10 @@ $sequence--border-color: #C8C8C8;
   body.touch-based-device & ol li a:hover p {
     display: none;
   }
+
+  @media print {
+    display: none;
+  }
 }
 
 .sequence-nav-button {
@@ -277,6 +281,10 @@ nav.sequence-bottom {
   height: 1px;
   margin: lh(2) auto;
   text-align: center;
+
+  @media print {
+    display: none;
+  }
 }
 
 #seq_content {

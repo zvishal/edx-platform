@@ -264,6 +264,10 @@ header.global {
         }
       }
     }
+
+    @media print {
+      display: none;
+    }
   }
 
   .nav-global {

@@ -122,6 +122,10 @@ a:focus {
   margin: 0 auto;
   background: $content-wrapper-bg;
   padding-bottom: ($baseline*2);
+
+  @media print {
+    padding-bottom: 0;
+  }
 }
 
 .container {
@@ -267,6 +271,10 @@ mark {
       background: $link-color;
     }
   }
+
+  @media print {
+    display: none;
+  }
 }
 
 .help-buttons {
@@ -352,5 +360,9 @@ mark {
     position: static;
     width: auto;
     height: auto;
+  }
+
+  @media print {
+    display: none;
   }
 }
