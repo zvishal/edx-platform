@@ -23,7 +23,12 @@ from xmodule.tests import DATA_DIR
 from xmodule.x_module import XModuleMixin
 from search.search_engine_base import SearchEngine
 
-from contentstore.courseware_index import CoursewareSearchIndexer, INDEX_NAME, DOCUMENT_TYPE, SearchIndexingError
+from contentstore.courseware_index import (
+    CoursewareSearchIndexer,
+    INDEX_NAME,
+    COURSEWARE_DOCUMENT_TYPE,
+    SearchIndexingError,
+)
 from contentstore.signals import listen_for_course_publish
 
 
@@ -227,19 +232,28 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
     def _test_indexing_course(self, store):
         """ indexing course tests """
         searcher = self.get_search_engine()
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 0)
 
         # Only published modules should be in the index
         added_to_index = self.reindex_course(store)
         self.assertEqual(added_to_index, 3)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 3)
 
         # Publish the vertical as is, and any unpublished children should now be available
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
     def _test_not_indexing_unpublished_content(self, store):
@@ -248,7 +262,10 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
         # Publish the vertical to start with
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         # Now add a new unit to the existing vertical
@@ -260,14 +277,20 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
             modulestore=store,
         )
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         # Now publish it and we should find it
         # Publish the vertical as is, and everything should be available
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 5)
 
     def _test_deleting_item(self, store):
@@ -276,19 +299,28 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
         # Publish the vertical to start with
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         # just a delete should not change anything
         self.delete_item(store, self.html_unit.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         # but after publishing, we should no longer find the html_unit
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 3)
 
     def _test_not_indexable(self, store):
@@ -297,7 +329,10 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
         # Publish the vertical to start with
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         # Add a non-indexable item
@@ -309,13 +344,19 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
             modulestore=store,
         )
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         # even after publishing, we should not find the non-indexable item
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
     def _test_start_date_propagation(self, store):
@@ -327,7 +368,10 @@ class TestCoursewareSearchIndexer(MixedWithOptionsTestCase):
         # Publish the vertical
         self.publish_item(store, self.vertical.location)
         self.reindex_course(store)
-        response = searcher.search(field_dictionary={"course": unicode(self.course.id)})
+        response = searcher.search(
+            doc_type=COURSEWARE_DOCUMENT_TYPE,
+            field_dictionary={"course": unicode(self.course.id)}
+        )
         self.assertEqual(response["total"], 4)
 
         results = response["results"]
@@ -439,12 +483,14 @@ class TestLargeCourseDeletions(MixedWithOptionsTestCase):
         """ Clean all documents from the index that have a specific course provided """
         if self.course_id:
             searcher = self.get_search_engine()
-            response = searcher.search(field_dictionary={"course": self.course_id})
+            response = searcher.search(doc_type=COURSEWARE_DOCUMENT_TYPE, field_dictionary={"course": self.course_id})
             while response["total"] > 0:
                 for item in response["results"]:
-                    searcher.remove(DOCUMENT_TYPE, item["data"]["id"])
-                    searcher.remove(DOCUMENT_TYPE, item["data"]["id"])
-                response = searcher.search(field_dictionary={"course": self.course_id})
+                    searcher.remove(COURSEWARE_DOCUMENT_TYPE, item["data"]["id"])
+                response = searcher.search(
+                    doc_type=COURSEWARE_DOCUMENT_TYPE,
+                    field_dictionary={"course": self.course_id}
+                )
         self.course_id = None
 
     def setUp(self):
@@ -458,7 +504,7 @@ class TestLargeCourseDeletions(MixedWithOptionsTestCase):
     def assert_search_count(self, expected_count):
         """ Check that the search within this course will yield the expected number of results """
         searcher = self.get_search_engine()
-        response = searcher.search(field_dictionary={"course": self.course_id})
+        response = searcher.search(doc_type=COURSEWARE_DOCUMENT_TYPE, field_dictionary={"course": self.course_id})
         self.assertEqual(response["total"], expected_count)
 
     def _do_test_large_course_deletion(self, store, load_factor):
