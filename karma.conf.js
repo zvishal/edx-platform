@@ -17,7 +17,7 @@ module.exports = function(config) {
     files: [
 
 
-          {pattern: 'xmodule_js/common_static/js/vendor/require.js'},
+    {pattern: 'xmodule_js/common_static/js/vendor/require.js'},
     {pattern: 'xmodule_js/common_static/coffee/src/ajax_prefix.js'},
     {pattern: 'xmodule_js/common_static/js/src/utility.js'},
     {pattern: 'xmodule_js/common_static/js/vendor/jquery.min.js'},
@@ -59,12 +59,14 @@ module.exports = function(config) {
     {pattern: 'xmodule_js/common_static/js/vendor/jQuery-File-Upload/js/jquery.fileupload-validate.js'},
     {pattern: 'xmodule_js/common_static/js/vendor/mock-ajax.js'},
     // {pattern: 'js/**/*.js'},
+    {pattern: '!js/spec/**/xblock*.js'},
     {pattern: 'js/spec/**/*.js'},
     ],
 
 
     // list of files to exclude
     exclude: [
+        // {pattern: '**/xblock/**.js'},
     ],
 
 
