@@ -4,7 +4,7 @@
       <p><%= gettext("Course key: ") + courseKey %></p>
       <p><%= gettext("Checkpoint name: ") + checkpointName %></p>
     <div class="instruction">
-      <p><%- gettext( "Use your webcam to take a photo of your face. We will match this photo with the photo on your ID." ) %></p>
+      <p><%- gettext( "Use your webcam to take a photo of your face. We will match this photo with the one from the beginning of the course." ) %></p>
     </div>
 
     <div class="wrapper-task">
@@ -34,7 +34,7 @@
               <dt class="faq-question">
                 <%- _.sprintf( gettext( "Why does %(platformName)s need my photo?" ), { platformName: platformName } ) %>
               </dt>
-              <dd class="faq-answer"><%- gettext( "As part of the verification process, you take a photo of both your face and a government-issued photo ID. Our authorization service confirms your identity by comparing the photo you take with the photo on your ID." ) %></dd>
+              <dd class="faq-answer"><%- gettext( "As part of the verification process, you take a photo of both your face and our authorization service confirms your identity by comparing this photo with the photo you took at the beginning of the course." ) %></dd>
               <dt class="faq-question">
                 <%- _.sprintf( gettext( "What does %(platformName)s do with this photo?" ), { platformName: platformName } ) %>
               </dt>
@@ -46,9 +46,9 @@
     </div>
 
 
-    <div>
-      <button class="action action-primary" id="submit"><%= gettext("Submit") %></button>
-    </div>
+    <div class="nav-wizard">
+      <button class="action action-primary right" id="submit"><%= gettext("Submit and return to your course") %></button>
+    </nav>
 
 
   </div>
