@@ -1,6 +1,6 @@
 ;(function (define) {
 
-define(function() {
+define(['backbone'], function(Backbone) {
     'use strict';
 
     return function (courseId, SearchRouter, SearchForm, SearchCollection, SearchListView) {
