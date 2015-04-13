@@ -20,7 +20,7 @@ define([
         },
 
         events: {
-            'click .search-results-item a': 'logSearchItem',
+            'click': 'logSearchItem',
         },
 
         initialize: function () {
@@ -51,7 +51,7 @@ define([
             event.preventDefault();
             var self = this;
             var target = this.model.id;
-            var link = $(event.target).attr('href');
+            var link = this.model.get('url');
             var collection = this.model.collection;
             var page = collection.page;
             var pageSize = collection.pageSize;

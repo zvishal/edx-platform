@@ -271,9 +271,9 @@ define([
             // Mock the redirect call
             spyOn(this.item, 'redirect').andCallFake( function() {} );
             spyOn(Logger, 'log').andReturn($.Deferred().resolve());
-            var link = this.item.$el.find('a');
-            expect(link.length).toBe(1);
-            link.trigger('click');
+            this.item.$el.find('a').trigger('click');
+            expect(this.item.redirect).toHaveBeenCalled();
+            this.item.$el.trigger('click');
             expect(this.item.redirect).toHaveBeenCalled();
         }
 

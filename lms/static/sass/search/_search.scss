@@ -1,6 +1,4 @@
-.search-bar,
-.course-index .search-bar,
-.dashboard .search-bar {
+.search-bar {
 
   @include box-sizing(border-box);
   position: relative;
@@ -22,7 +20,8 @@
     }
   }
 
-  .search-button, .cancel-button {
+  .search-button, .cancel-button,
+  .search-button:hover, .cancel-button:hover {
     @extend %t-icon6;
     @extend %t-regular;
     @include box-sizing(border-box);
@@ -52,7 +51,6 @@
   display: none;
 
   .search-info {
-    margin-bottom: $baseline;
     border-bottom: 4px solid $border-color-l4;
     padding-bottom: $baseline;
     .search-count {
@@ -62,22 +60,27 @@
   }
 
   .search-result-list {
+    margin: 0;
     padding: 0;
   }
 
   .search-results-item {
     @include padding-right(140px);
     position: relative;
-    margin-bottom: $baseline;
     border-bottom: 1px solid $gray-l4;
-    padding-bottom: $baseline;
+    padding: $baseline ($baseline/2);
     list-style-type: none;
+    cursor: pointer;
+
+    &:hover {
+      background: $gray-l6;
+    }
 
     .result-excerpt {
       margin-bottom: $baseline;
     }
     .result-type {
-      @include right(0);
+      @include right($baseline/2);
       position: absolute;
       bottom: $baseline;
       font-size: 14px;
@@ -93,9 +96,9 @@
       color: $gray-l1;
     }
     .result-link {
-      @include right(0);
+      @include right($baseline/2);
       position: absolute;
-      top: 0;
+      top: $baseline;
       line-height: 1.6em;
       text-transform: uppercase;
     }
@@ -130,12 +133,11 @@
   @include float(right);
   @include margin-left(flex-gutter());
   margin-bottom: $baseline;
-  border: 1px solid $gray-l4;
-  border-radius: ($baseline/4);
+  padding: 0;
   width: flex-grid(3);
-  background: $gray-l6;
   label {
     @extend %t-regular;
+    font-family: $sans-serif;
     color: $gray;
     font-size: 13px;
     font-style: normal;
@@ -143,6 +145,9 @@
   }
   .search-field {
     background: $white;
+    box-shadow: 0 1px 0 0 $white, inset 0 0 3px 0 $shadow-l2;
+    font-family: $sans-serif;
+    font-style: normal;
   }
 }
 
@@ -160,6 +165,7 @@
       font-size: 13px;
     }
     h2 {
+      @extend %t-title5;
       @include float(left);
       @include clear(left);
     }
