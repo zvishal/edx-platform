@@ -141,6 +141,7 @@ class CoursewareSearchIndexer(object):
         AboutInfo("ocw_links", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
         AboutInfo("enrollment_start", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
         AboutInfo("enrollment_end", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
+        AboutInfo("org", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
     ]
 
     @classmethod
