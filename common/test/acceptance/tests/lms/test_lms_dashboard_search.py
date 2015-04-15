@@ -96,6 +96,7 @@ class DashboardSearchTest(WebAppTest):
         """
         Remove index file
         """
+        super(DashboardSearchTest, self).tearDown()
         os.remove(self.TEST_INDEX_FILENAME)
 
     def _auto_auth(self, username, email, staff):
