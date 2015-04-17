@@ -5,6 +5,7 @@ Dashboard search
 from bok_choy.page_object import PageObject
 from . import BASE_URL
 
+
 class DashboardSearchPage(PageObject):
     """
     Dashboard page featuring a search form
