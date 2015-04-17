@@ -2,16 +2,16 @@
 Dashboard search
 """
 
-from .dashboard import DashboardPage
+from bok_choy.page_object import PageObject
+from . import BASE_URL
 
-
-class DashboardSearchPage(DashboardPage):
+class DashboardSearchPage(PageObject):
     """
     Dashboard page featuring a search form
     """
 
-    url_path = "dashboard/"
     search_bar_selector = '#dashboard-search-bar'
+    url = "{base}/dashboard".format(base=BASE_URL)
 
     @property
     def search_results(self):
