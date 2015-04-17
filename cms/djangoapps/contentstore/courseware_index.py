@@ -162,13 +162,13 @@ class CoursewareSearchIndexer(object):
                     section_content = about_dictionary.get(about_information.property_name, None)
                 elif about_information.source_from == AboutInfo.FROM_COURSE_PROPERTY:
                     section_content = getattr(course, about_information.property_name, None)
-            except Exception as err:  # pylint: disable=broad-except
+            except:  # pylint: disable=bare-except
                 section_content = None
                 log.warning(
-                    "Course discovery could not collect property %s for course %s - %r",
+                    "Course discovery could not collect property %s for course %s",
                     about_information.property_name,
                     course_id,
-                    err,
+                    exc_info=True,
                 )
 
             if section_content:
@@ -183,11 +183,11 @@ class CoursewareSearchIndexer(object):
         # Broad exception handler to protect around and report problems with indexing
         try:
             searcher.index(DISCOVERY_DOCUMENT_TYPE, course_info)
-        except Exception as err:  # pylint: disable=broad-except
+        except:  # pylint: disable=bare-except
             log.exception(
-                "Course discovery indexing error encountered, course discovery index may be out of date %s - %r",
+                "Course discovery indexing error encountered, course discovery index may be out of date %s",
                 course_id,
-                err
+                exc_info=True,
             )
             raise
 
