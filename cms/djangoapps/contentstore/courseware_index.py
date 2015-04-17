@@ -12,7 +12,6 @@ from contentstore.utils import course_image_url
 from eventtracking import tracker
 from search.search_engine_base import SearchEngine
 from xmodule.modulestore import ModuleStoreEnum
-from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.annotator_mixin import html_to_text
 
 # Use default index and document names for now
@@ -56,31 +55,14 @@ class AboutInfo(object):
     ANALYSE = 1 << 0  # Add the information to the analysed content of the index
     PROPERTY = 1 << 1  # Add the information as a property of the object being indexed (not analysed)
 
-    # Source location options - this is the function that returns the value of the property, signature should be
-    #   course, attribute_name, modulestore
-    @staticmethod
-    def fetch_from_about(course, attribute_name, modulestore):
-        """ Get about attribute from modulestore """
-        usage_key = course.id.make_usage_key('about', attribute_name)
-        try:
-            value = modulestore.get_item(usage_key).data
-        except ItemNotFoundError:
-            value = None
-        return value
+    # Source location options - either from the course or the about info
+    FROM_ABOUT_INFO = 1
+    FROM_COURSE_PROPERTY = 2
 
-    @staticmethod
-    def fetch_course_property(course, attribute_name, modulestore):  # pylint: disable=unused-argument
-        """ Fetches attribute's value from the course's property list """
-        return getattr(course, attribute_name, None)
-
-    def __init__(self, property_name, index_flags, source_function):
+    def __init__(self, property_name, index_flags, source_from):
         self.property_name = property_name
         self.index_flags = index_flags
-        self.source_function = source_function
-
-    def get_value(self, course, modulestore):
-        """ Get the associated value from the object """
-        return self.source_function(course, self.property_name, modulestore)
+        self.source_from = source_from
 
 
 def strip_html_content_to_text(html_content):
@@ -117,31 +99,31 @@ class CoursewareSearchIndexer(object):
 
     # List of properties to add to the index - each item in the list is an instance of AboutInfo object
     ABOUT_INFORMATION_TO_INCLUDE = [
-        AboutInfo("advertised_start", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
-        AboutInfo("announcement", AboutInfo.PROPERTY, AboutInfo.fetch_from_about),
-        AboutInfo("start", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
-        AboutInfo("end", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
-        AboutInfo("effort", AboutInfo.PROPERTY, AboutInfo.fetch_from_about),
-        AboutInfo("display_name", AboutInfo.ANALYSE, AboutInfo.fetch_course_property),
-        AboutInfo("overview", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("title", AboutInfo.ANALYSE | AboutInfo.PROPERTY, AboutInfo.fetch_from_about),
-        AboutInfo("university", AboutInfo.ANALYSE | AboutInfo.PROPERTY, AboutInfo.fetch_from_about),
-        AboutInfo("number", AboutInfo.ANALYSE | AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
-        AboutInfo("short_description", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("description", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("key_dates", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("video", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("course_staff_short", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("course_staff_extended", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("requirements", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("syllabus", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("textbook", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("faq", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("more_info", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("ocw_links", AboutInfo.ANALYSE, AboutInfo.fetch_from_about),
-        AboutInfo("enrollment_start", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
-        AboutInfo("enrollment_end", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
-        AboutInfo("org", AboutInfo.PROPERTY, AboutInfo.fetch_course_property),
+        AboutInfo("advertised_start", AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("announcement", AboutInfo.PROPERTY, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("start", AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("end", AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("effort", AboutInfo.PROPERTY, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("display_name", AboutInfo.ANALYSE, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("overview", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("title", AboutInfo.ANALYSE | AboutInfo.PROPERTY, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("university", AboutInfo.ANALYSE | AboutInfo.PROPERTY, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("number", AboutInfo.ANALYSE | AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("short_description", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("description", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("key_dates", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("video", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("course_staff_short", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("course_staff_extended", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("requirements", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("syllabus", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("textbook", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("faq", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("more_info", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("ocw_links", AboutInfo.ANALYSE, AboutInfo.FROM_ABOUT_INFO),
+        AboutInfo("enrollment_start", AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("enrollment_end", AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
+        AboutInfo("org", AboutInfo.PROPERTY, AboutInfo.FROM_COURSE_PROPERTY),
     ]
 
     @classmethod
@@ -166,10 +148,20 @@ class CoursewareSearchIndexer(object):
             'image_url': course_image_url(course),
         }
 
+        # load data for all of the 'about' modules for this course into a dictionary
+        about_dictionary = {
+            item.location.name: item.data
+            for item in modulestore.get_items(course.id, qualifiers={"category": "about"})
+        }
+
         for about_information in cls.ABOUT_INFORMATION_TO_INCLUDE:
             # Broad exception handler so that a single bad property does not scupper the collection of others
             try:
-                section_content = about_information.get_value(course, modulestore)
+                section_content = None
+                if about_information.source_from == AboutInfo.FROM_ABOUT_INFO:
+                    section_content = about_dictionary.get(about_information.property_name, None)
+                elif about_information.source_from == AboutInfo.FROM_COURSE_PROPERTY:
+                    section_content = getattr(course, about_information.property_name, None)
             except Exception as err:  # pylint: disable=broad-except
                 section_content = None
                 log.warning(
