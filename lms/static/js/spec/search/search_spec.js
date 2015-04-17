@@ -326,12 +326,6 @@ define([
             $('.search-field').val(term);
             $('form').trigger('submit');
             expect(this.onSearch).toHaveBeenCalledWith(term);
-        }
-
-        function changesToActiveState() {
-            var term = 'search string';
-            $('.search-field').val(term);
-            $('form').trigger('submit');
             expect($('.search-field')).toHaveClass('is-active');
             expect($('.search-button')).toBeHidden();
             expect($('.cancel-button')).toBeVisible();
