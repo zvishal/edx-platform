@@ -408,15 +408,6 @@ define([
             expect(this.resultsView.$el).toBeEmpty();
         }
 
-        function handlesEvents () {
-            this.collection.trigger('search');
-            this.collection.trigger('next');
-            this.collection.trigger('error');
-            expect(this.resultsView.render).toHaveBeenCalled();
-            expect(this.resultsView.renderNext).toHaveBeenCalled();
-            expect(this.resultsView.showErrorMessage).toHaveBeenCalled();
-        }
-
         function showsNoResultsMessage() {
             this.collection.reset();
             this.resultsView.render();
@@ -526,7 +517,6 @@ define([
             it('shows loading message', showsLoadingMessage);
             it('shows error message', showsErrorMessage);
             it('returns to content', returnsToContent);
-            it('handles events', handlesEvents);
             it('shows a message when there are no results', showsNoResultsMessage);
             it('renders search results', rendersSearchResults);
             it('shows a link to load more results', showsMoreResultsLink);
@@ -541,7 +531,6 @@ define([
             it('shows loading message', showsLoadingMessage);
             it('shows error message', showsErrorMessage);
             it('returns to content', returnsToContent);
-            it('handles events', handlesEvents);
             it('shows a message when there are no results', showsNoResultsMessage);
             it('renders search results', rendersSearchResults);
             it('shows a link to load more results', showsMoreResultsLink);
