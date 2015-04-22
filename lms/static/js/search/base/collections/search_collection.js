@@ -88,6 +88,8 @@ define([
             this.totalCount = 0;
             this.latestModelsCount = 0;
             this.accessDeniedCount = 0;
+            // empty the entire collection
+            this.reset();
         },
 
         hasNextPage: function () {
