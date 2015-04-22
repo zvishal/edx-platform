@@ -31,6 +31,18 @@ define(['backbone'], function(Backbone) {
             collection.loadNextPage();
         });
 
+        dispatcher.listenTo(collection, 'search', function () {
+            results.render();
+        });
+
+        dispatcher.listenTo(collection, 'next', function () {
+            results.renderNext();
+        });
+
+        dispatcher.listenTo(collection, 'error', function () {
+            results.showErrorMessage();
+        });
+
     };
 
 });

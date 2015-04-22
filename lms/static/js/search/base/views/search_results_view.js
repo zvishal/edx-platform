@@ -26,9 +26,6 @@ define([
             this.resultsTemplate = _.template($(this.resultsTemplateId).html());
             this.loadingTemplate = _.template($(this.loadingTemplateId).html());
             this.errorTemplate = _.template($(this.errorTemplateId).html());
-            this.collection.on('search', this.render, this);
-            this.collection.on('next', this.renderNext, this);
-            this.collection.on('error', this.showErrorMessage, this);
         },
 
         render: function () {
