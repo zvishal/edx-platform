@@ -179,6 +179,7 @@ define([
 
             it('resets state when performing new search', function () {
                 this.collection.performSearch('search string');
+                expect(this.collection.models.length).toEqual(0);
                 expect(this.collection.page).toEqual(0);
                 expect(this.collection.totalCount).toEqual(0);
                 expect(this.collection.latestModelsCount).toEqual(0);
@@ -186,6 +187,7 @@ define([
 
             it('resets state when canceling a search', function () {
                 this.collection.cancelSearch();
+                expect(this.collection.models.length).toEqual(0);
                 expect(this.collection.page).toEqual(0);
                 expect(this.collection.totalCount).toEqual(0);
                 expect(this.collection.latestModelsCount).toEqual(0);
@@ -501,12 +503,6 @@ define([
                 }
             });
             this.collection = new MockCollection();
-
-            // spy on these methods before they are bound to events
-            spyOn(SearchResultsView.prototype, 'render').andCallThrough();
-            spyOn(SearchResultsView.prototype, 'renderNext').andCallThrough();
-            spyOn(SearchResultsView.prototype, 'showErrorMessage').andCallThrough();
-
             this.resultsView = new SearchResultsView({ collection: this.collection });
         }
 
@@ -564,9 +560,31 @@ define([
         function performsSearch () {
             $('.search-field').val('search string');
             $('.search-button').trigger('click');
+            this.server.respondWith([200, {}, JSON.stringify({
+                total: 1337,
+                access_denied_count: 12,
+                results: [{
+                    data: {
+                        location: ['section', 'subsection', 'unit'],
+                        url: '/some/url/to/content',
+                        content_type: 'text',
+                        excerpt: 'this is a short excerpt',
+                        course_name: ''
+                    }
+                }]
+            })]);
             this.server.respond();
             expect($('.search-info')).toExist();
             expect($('.search-result-list')).toBeVisible();
+            expect(this.$searchResults.find('li').length).toEqual(1);
+        }
+
+        function showsErrorMessage () {
+            $('.search-field').val('search string');
+            $('.search-button').trigger('click');
+            this.server.respondWith([500, {}]);
+            this.server.respond();
+            expect(this.$searchResults).toEqual($('#search_error-tpl'));
         }
 
         function updatesNavigationHistory () {
@@ -583,6 +601,19 @@ define([
             $('.search-button').trigger('click');
             // cancel search
             $('.cancel-button').trigger('click');
+            this.server.respondWith([200, {}, JSON.stringify({
+                total: 1337,
+                access_denied_count: 12,
+                results: [{
+                    data: {
+                        location: ['section', 'subsection', 'unit'],
+                        url: '/some/url/to/content',
+                        content_type: 'text',
+                        excerpt: 'this is a short excerpt',
+                        course_name: ''
+                    }
+                }]
+            })]);
             this.server.respond();
             // there should be no results
             expect(this.$contentElement).toBeVisible();
@@ -598,12 +629,28 @@ define([
         function loadsNextPage () {
             $('.search-field').val('query');
             $('.search-button').trigger('click');
+            this.server.respondWith([200, {}, JSON.stringify({
+                total: 1337,
+                access_denied_count: 12,
+                results: [{
+                    data: {
+                        location: ['section', 'subsection', 'unit'],
+                        url: '/some/url/to/content',
+                        content_type: 'text',
+                        excerpt: 'this is a short excerpt',
+                        course_name: ''
+                    }
+                }]
+            })]);
             this.server.respond();
+            expect(this.$searchResults.find('li').length).toEqual(1);
             expect($('.search-load-next')).toBeVisible();
             $('.search-load-next').trigger('click');
             var body = this.server.requests[1].requestBody;
             expect(body).toContain('search_string=query');
             expect(body).toContain('page_index=1');
+            this.server.respond();
+            expect(this.$searchResults.find('li').length).toEqual(2);
         }
 
         function navigatesToSearch () {
@@ -613,33 +660,13 @@ define([
 
         function loadTemplates () {
             TemplateHelpers.installTemplates([
-                'templates/search/search_item',
-                'templates/search/search_item_seq',
+                'templates/search/course_search_item',
+                'templates/search/dashboard_search_item',
                 'templates/search/search_loading',
                 'templates/search/search_error',
                 'templates/search/course_search_results',
                 'templates/search/dashboard_search_results'
             ]);
-        }
-
-        function startFakeServer () {
-            this.server = Sinon.fakeServer.create();
-            this.server.respondWith([200, {}, JSON.stringify({
-                total: 1337,
-                access_denied_count: 12,
-                results: [{
-                    data: {
-                        location: ['section', 'subsection', 'unit'],
-                        url: '/some/url/to/content',
-                        content_type: 'text',
-                        excerpt: 'this is a short excerpt'
-                    }
-                }]
-            })]);
-        }
-
-        function restoreServer () {
-            this.server.restore();
         }
 
         describe('CourseSearchApp', function () {
@@ -651,8 +678,8 @@ define([
                     '<section id="course-content"></section>'
                 );
                 loadTemplates.call(this);
-                startFakeServer.call(this);
 
+                this.server = Sinon.fakeServer.create();
                 var courseId = 'a/b/c';
                 this.app = new CourseSearchApp(
                     courseId,
@@ -666,7 +693,9 @@ define([
                 this.$searchResults = $('#courseware-search-results');
             });
 
-            afterEach(restoreServer);
+            afterEach(function () {
+                this.server.restore();
+            });
 
             it('shows loading message on search', showsLoadingMessage);
             it('performs search', performsSearch);
@@ -687,8 +716,8 @@ define([
                     '<section id="my-courses"></section>'
                 );
                 loadTemplates.call(this);
-                startFakeServer.call(this);
 
+                this.server = Sinon.fakeServer.create();
                 this.app = new DashSearchApp(
                     SearchRouter,
                     DashSearchForm,
@@ -701,7 +730,9 @@ define([
                 this.$searchResults = $('#dashboard-search-results');
             });
 
-            afterEach(restoreServer);
+            afterEach(function () {
+                this.server.restore();
+            });
 
             it('shows loading message on search', showsLoadingMessage);
             it('performs search', performsSearch);
@@ -713,6 +744,19 @@ define([
             it('returns to course list', function () {
                 $('.search-field').val('search string');
                 $('.search-button').trigger('click');
+                this.server.respondWith([200, {}, JSON.stringify({
+                    total: 1337,
+                    access_denied_count: 12,
+                    results: [{
+                        data: {
+                            location: ['section', 'subsection', 'unit'],
+                            url: '/some/url/to/content',
+                            content_type: 'text',
+                            excerpt: 'this is a short excerpt',
+                            course_name: ''
+                        }
+                    }]
+                })]);
                 this.server.respond();
                 expect($('.search-back-to-courses')).toExist();
                 $('.search-back-to-courses').trigger('click');
