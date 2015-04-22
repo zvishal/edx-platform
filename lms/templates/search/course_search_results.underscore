@@ -8,7 +8,7 @@
     <ol class='search-result-list'></ol>
 
     <% if (hasMoreResults) { %>
-        <a class="search-load-next" href="javascript:void(0);">
+        <a class="search-load-next" href="#">
             <%= interpolate(
                 ngettext("Load next %(num_items)s result", "Load next %(num_items)s results", pageSize),
                 { num_items: pageSize },

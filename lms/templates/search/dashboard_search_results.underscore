@@ -1,5 +1,5 @@
 <header class="search-info">
-    <a class="search-back-to-courses" href="javascript:void(0);"><%= gettext("Back to Dashboard") %></a>
+    <a class="search-back-to-courses" href="#"><%= gettext("Back to Dashboard") %></a>
     <h2><%= gettext("Search Results") %></h2>
     <div class="search-count"><%= totalCountMsg %></div>
 </header>
@@ -9,7 +9,7 @@
     <ol class='search-result-list'></ol>
 
     <% if (hasMoreResults) { %>
-        <a class="search-load-next" href="javascript:void(0);">
+        <a class="search-load-next" href="#">
             <%= interpolate(
                 ngettext("Load next %(num_items)s result", "Load next %(num_items)s results", pageSize),
                 { num_items: pageSize },

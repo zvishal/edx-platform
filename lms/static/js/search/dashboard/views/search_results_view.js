@@ -22,6 +22,7 @@ define([
         backToCourses: function () {
             this.clear();
             this.trigger('reset');
+            return false;
         }
 
     });

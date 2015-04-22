@@ -87,6 +87,7 @@ define([
             event && event.preventDefault();
             this.$el.find(this.spinner).show();
             this.trigger('next');
+            return false;
         }
 
     });
