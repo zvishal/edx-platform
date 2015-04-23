@@ -63,7 +63,8 @@ _ = lambda text: text
 
 QUESTION_HINT_CORRECT_STYLE = 'feedback-hint-correct'
 QUESTION_HINT_INCORRECT_STYLE = 'feedback-hint-incorrect'
-QUESTION_HINT_TEXT_STYLE = 'feedback-hint-text'
+QUESTION_HINT_LABEL_STYLE = 'hint-label'
+QUESTION_HINT_TEXT_STYLE = 'hint-text'
 
 #-----------------------------------------------------------------------------
 # Exceptions
@@ -266,10 +267,11 @@ class LoncapaResponse(object):
             * label: (optional) if None (the default), extracts the label from the node,
               otherwise using this value. The value '' inhibits labeling of the hint.
             * hint_text: (optional) if '' (the default) extracts the hint from the node,
-              otherwise using this value.
+              otherwise using this value. The passed in hint_text should be span-wrapped
+              already.
 
         Returns: the extended hint div string e.g.
-        <div class="feedback_hint_incorrect">Incorrect: the answer is not 42</div>
+        <div class="feedback_hint_incorrect"> ... </div>
         or the empty string if, after processing all the arguments, there is no hint.
         The slightly complicated layering of the node and the optional label and hint
         parameters allow the many different XML hint contexts to all bottleneck through this
@@ -284,6 +286,7 @@ class LoncapaResponse(object):
             hint_text = hint_node.text.strip()
             if not hint_text:
                 return ''
+            hint_text = u'<span class="{0}">{1}</span>'.format(QUESTION_HINT_TEXT_STYLE, hint_text)
 
         # Establish the label:
         # Passed in, or from the node, or the default
@@ -297,7 +300,7 @@ class LoncapaResponse(object):
             else:
                 label = _(u'Incorrect')
         if label:
-            label += ': '
+            label = u'<span class="{0}">{1}: </span>'.format(QUESTION_HINT_LABEL_STYLE, label)
 
         # Establish the style
         if correct:
@@ -852,7 +855,7 @@ class ChoiceResponse(LoncapaResponse):
                         label_count += 1
                     if text:
                         # Unusual: there can be multiple hint divs across the choices, all cat'd together
-                        hint_divs += '<div class="{0}">{1}</div>'.format(QUESTION_HINT_TEXT_STYLE, text)
+                        hint_divs += '<span class="{0}">{1}</span>'.format(QUESTION_HINT_TEXT_STYLE, text)
                     break
         if hint_divs:
             # Complication: if there is only a single label specified, we use it.
@@ -892,7 +895,7 @@ class ChoiceResponse(LoncapaResponse):
                 if selector_set == student_set:
                     # This is the atypical case where the hint text is in an inner div with its own style.
                     hint_text = compound_hint.text.strip()
-                    hint_text = '<div class="{0}">{1}</div>'.format(QUESTION_HINT_TEXT_STYLE, hint_text)
+                    hint_text = '<span class="{0}">{1}</span>'.format(QUESTION_HINT_TEXT_STYLE, hint_text)
                     new_cmap[self.answer_id]['msg'] += self.make_hint_div(
                         compound_hint, new_cmap[self.answer_id]['correctness'] == 'correct',
                         label=None, hint_text=hint_text)

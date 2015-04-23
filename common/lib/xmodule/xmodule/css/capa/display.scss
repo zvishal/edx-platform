@@ -23,21 +23,31 @@ h2 {
 }
 
 div.feedback-hint-correct {
-    color: $color-success;
+  color: $color-success;
 }
 
 div.feedback-hint-incorrect {
-    color: $color-fail;
+  color: $color-fail;
 }
 
 div.feedback-hint-text {
-    color: $color-copy-tip;
+  color: $color-copy-tip;
 }
 
 div.problem-hint {
-    color: $color-copy-tip;
-    margin-bottom: 20px;
+  color: $color-copy-tip;
+  margin-bottom: 20px;
 }
+
+span.hint-label {
+  font-weight: bold;
+  display: inline !important;
+}
+
+span.hint-text {
+  display: inline !important;
+}
+
 
 iframe[seamless]{
   overflow: hidden;
