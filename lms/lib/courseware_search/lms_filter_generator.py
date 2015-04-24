@@ -13,9 +13,9 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
     def field_dictionary(self, **kwargs):
         """ add course if provided otherwise add courses in which the user is enrolled in """
         field_dictionary = super(LmsSearchFilterGenerator, self).field_dictionary(**kwargs)
-        if 'user' not in kwargs or not kwargs['user']:
+        if not kwargs.get('user'):
             field_dictionary['course'] = []
-        elif 'course_id' not in kwargs or not kwargs['course_id']:
+        elif not kwargs.get('course_id'):
             user_enrollments = CourseEnrollment.enrollments_for_user(kwargs['user'])
             field_dictionary['course'] = [unicode(enrollment.course_id) for enrollment in user_enrollments]
 
