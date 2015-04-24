@@ -49,23 +49,23 @@ class TextInputHintsTest(HintTest):
 
     @data(
         {'problem_id': u'1_2_1', u'choice': u'GermanyΩ',
-         'expected_string': u'<div class="feedback-hint-incorrect"><span class="hint-label">Incorrect: </span><div class="hint-text">I do not think so.Ω</div></div>'},
+         'expected_string': u'<div class="feedback-hint-incorrect"><div class="hint-label">Incorrect: </div><div class="hint-text">I do not think so.Ω</div></div>'},
         {'problem_id': u'1_2_1', u'choice': u'franceΩ',
-         'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><div class="hint-text">Viva la France!Ω</div></div>'},
+         'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">Viva la France!Ω</div></div>'},
         {'problem_id': u'1_2_1', u'choice': u'FranceΩ',
-         'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><div class="hint-text">Viva la France!Ω</div></div>'},
+         'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">Viva la France!Ω</div></div>'},
         {'problem_id': u'1_2_1', u'choice': u'Mexico',
          'expected_string': ''},
         {'problem_id': u'1_2_1', u'choice': u'USAΩ',
-         'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><div class="hint-text">Less well known, but yes, there is a Paris, Texas.Ω</div></div>'},
+         'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">Less well known, but yes, there is a Paris, Texas.Ω</div></div>'},
         {'problem_id': u'1_2_1', u'choice': u'usaΩ',
-         'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><div class="hint-text">Less well known, but yes, there is a Paris, Texas.Ω</div></div>'},
+         'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">Less well known, but yes, there is a Paris, Texas.Ω</div></div>'},
         {'problem_id': u'1_2_1', u'choice': u'uSAxΩ',
          'expected_string': u''},
         {'problem_id': u'1_2_1', u'choice': u'NICKLANDΩ',
-         'expected_string': u'<div class="feedback-hint-incorrect"><span class="hint-label">Incorrect: </span><div class="hint-text">The country name does not end in LANDΩ</div></div>'},
+         'expected_string': u'<div class="feedback-hint-incorrect"><div class="hint-label">Incorrect: </div><div class="hint-text">The country name does not end in LANDΩ</div></div>'},
         {'problem_id': u'1_3_1', u'choice': u'Blue',
-         'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><div class="hint-text">The red light is scattered by water molecules leaving only blue light.</div></div>'},
+         'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">The red light is scattered by water molecules leaving only blue light.</div></div>'},
         {'problem_id': u'1_3_1', u'choice': u'blue',
          'expected_string': u''},
         {'problem_id': u'1_3_1', u'choice': u'b',
@@ -86,9 +86,9 @@ class TextInputExtendedHintsCaseInsensitive(HintTest):
     @data(
         {'problem_id': u'1_5_1', 'choice': 'abc', 'expected_string': ''},  # wrong answer yielding no hint
         {'problem_id': u'1_5_1', 'choice': 'A', 'expected_string':
-         u'<div class="feedback-hint-correct"><span class="hint-label">Woo Hoo: </span><div class="hint-text">hint1</div></div>'},
+         u'<div class="feedback-hint-correct"><div class="hint-label">Woo Hoo: </div><div class="hint-text">hint1</div></div>'},
         {'problem_id': u'1_5_1', 'choice': 'a', 'expected_string':
-         u'<div class="feedback-hint-correct"><span class="hint-label">Woo Hoo: </span><div class="hint-text">hint1</div></div>'},
+         u'<div class="feedback-hint-correct"><div class="hint-label">Woo Hoo: </div><div class="hint-text">hint1</div></div>'},
         {'problem_id': u'1_5_1', 'choice': 'B', 'expected_string':
          u'<div class="feedback-hint-correct"><div class="hint-text">hint2</div></div>'},
         {'problem_id': u'1_5_1', 'choice': 'b', 'expected_string':
@@ -117,14 +117,14 @@ class TextInputExtendedHintsCaseSensitive(HintTest):
 
     @data(
         {'problem_id': u'1_6_1', 'choice': 'abc', 'expected_string': ''},
-        {'problem_id': u'1_6_1', 'choice': 'A', 'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><span class="hint-text">hint1</span></div>'},
+        {'problem_id': u'1_6_1', 'choice': 'A', 'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">hint1</div></div>'},
         {'problem_id': u'1_6_1', 'choice': 'a', 'expected_string': u''},
-        {'problem_id': u'1_6_1', 'choice': 'B', 'expected_string': u'<div class="feedback-hint-correct"><span class="hint-label">Correct: </span><span class="hint-text">hint2</span></div>'},
+        {'problem_id': u'1_6_1', 'choice': 'B', 'expected_string': u'<div class="feedback-hint-correct"><div class="hint-label">Correct: </div><div class="hint-text">hint2</div></div>'},
         {'problem_id': u'1_6_1', 'choice': 'b', 'expected_string': u''},
-        {'problem_id': u'1_6_1', 'choice': 'C', 'expected_string': u'<div class="feedback-hint-incorrect"><span class="hint-label">Incorrect: </span><span class="hint-text">hint4</span></div>'},
+        {'problem_id': u'1_6_1', 'choice': 'C', 'expected_string': u'<div class="feedback-hint-incorrect"><div class="hint-label">Incorrect: </div><div class="hint-text">hint4</div></div>'},
         {'problem_id': u'1_6_1', 'choice': 'c', 'expected_string': u''},
         # regexp cases
-        {'problem_id': u'1_6_1', 'choice': 'FGG', 'expected_string': u'<div class="feedback-hint-incorrect"><span class="hint-label">Incorrect: </span><span class="hint-text">hint6</span></div>'},
+        {'problem_id': u'1_6_1', 'choice': 'FGG', 'expected_string': u'<div class="feedback-hint-incorrect"><div class="hint-label">Incorrect: </div><div class="hint-text">hint6</div></div>'},
         {'problem_id': u'1_6_1', 'choice': 'fgG', 'expected_string': u''},
     )
     @unpack
