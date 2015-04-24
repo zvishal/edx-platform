@@ -22,30 +22,36 @@ h2 {
   }
 }
 
-div.feedback-hint-correct {
+.feedback-hint-correct {
+  margin-top: ($baseline/2);
   color: $color-success;
 }
 
-div.feedback-hint-incorrect {
+.feedback-hint-incorrect {
+  margin-top: ($baseline/2);
   color: $color-fail;
 }
 
-div.feedback-hint-text {
+.feedback-hint-text {
   color: $color-copy-tip;
 }
 
-div.problem-hint {
+.problem-hint {
   color: $color-copy-tip;
   margin-bottom: 20px;
 }
 
-span.hint-label {
+.hint-label {
   font-weight: bold;
-  display: inline !important;
+  display: inline-block;
 }
 
-span.hint-text {
-  display: inline !important;
+.hint-text {
+  display: inline-block;
+}
+
+.feedback-hint-multi .hint-text {
+  display: block;
 }
 
 
