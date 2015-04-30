@@ -382,7 +382,7 @@ FEATURES = {
     },
 
     # Course discovery feature
-    'ENABLE_COURSE_DISCOVERY': False,
+    'ENABLE_COURSE_DISCOVERY': True,
 }
 
 # Ignore static asset files on import which match this pattern
@@ -2300,7 +2300,7 @@ PROFILE_IMAGE_MIN_BYTES = 100
 
 # Sets the maximum number of courses listed on the homepage
 # If set to None, all courses will be listed on the homepage
-HOMEPAGE_COURSE_COUNT = 9
+HOMEPAGE_COURSE_MAX = 9
 
 
 if FEATURES.get('ENABLE_COURSE_DISCOVERY'):
@@ -2308,4 +2308,4 @@ if FEATURES.get('ENABLE_COURSE_DISCOVERY'):
     FEATURES['COURSES_ARE_BROWSABLE'] = True
 else:
     # if COURSE DISCOVERY feature is disabled, all courses should be listed on the homepage
-    HOMEPAGE_COURSE_COUNT = None
+    HOMEPAGE_COURSE_MAX = None
