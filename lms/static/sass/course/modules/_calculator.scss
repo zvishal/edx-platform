@@ -2,6 +2,8 @@
 // ====================
 
 div.calc-main {
+  @extend %ui-print-excluded;
+
   bottom: -126px;
   left: 0;
   position: fixed;
@@ -176,9 +178,5 @@ div.calc-main {
         }
       }
     }
-  }
-
-  @media print {
-    display: none;
   }
 }

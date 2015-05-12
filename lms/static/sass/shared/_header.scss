@@ -117,6 +117,8 @@ header.global {
 
   .user {
     @include float(right);
+    @extend %ui-print-excluded;
+
     margin-top: ($baseline/4);
 
     > .primary {
@@ -263,10 +265,6 @@ header.global {
           }
         }
       }
-    }
-
-    @media print {
-      display: none;
     }
   }
 

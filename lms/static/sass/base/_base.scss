@@ -250,6 +250,7 @@ mark {
   @include transform(rotate(-90deg));
   @include transform-origin(0 0);
   @extend %ui-depth2;
+  @extend %ui-print-excluded;
   top: 250px;
   left: 0;
   position: fixed;
@@ -270,10 +271,6 @@ mark {
       color: $white;
       background: $link-color;
     }
-  }
-
-  @media print {
-    display: none;
   }
 }
 
@@ -345,6 +342,8 @@ mark {
 
 // UI - skipnav
 .nav-skip {
+  @extend %ui-print-excluded;
+
   display: block;
   position: absolute;
   left: 0;
@@ -360,9 +359,5 @@ mark {
     position: static;
     width: auto;
     height: auto;
-  }
-
-  @media print {
-    display: none;
   }
 }

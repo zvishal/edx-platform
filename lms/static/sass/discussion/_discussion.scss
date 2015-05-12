@@ -673,6 +673,8 @@ body.discussion {
 // inline discussion module and profile thread styling
 .discussion-module {
   @extend .discussion-body;
+  @extend %ui-print-excluded;
+
   position: relative;
   margin: $baseline 0;
   padding: $baseline;
@@ -1006,10 +1008,6 @@ body.discussion {
       color: $gray-d3;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) inset;
     }
-  }
-
-  @media print {
-    display: none;
   }
 }
 

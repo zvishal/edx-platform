@@ -12,6 +12,8 @@ html.video-fullscreen{
 }
 
 .wrap-instructor-info {
+  @extend %ui-print-excluded;
+
   margin: ($baseline/2) ($baseline/4) 0 0;
   overflow: hidden;
 
@@ -36,10 +38,6 @@ html.video-fullscreen{
       background-color: $link-hover;
       color: $white;
     }
-  }
-
-  @media print {
-    display: none;
   }
 }
 

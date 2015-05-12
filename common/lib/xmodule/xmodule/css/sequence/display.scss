@@ -36,6 +36,7 @@ $sequence--border-color: #C8C8C8;
   // TODO (cpennington): This doesn't work anymore. XModules aren't able to
   // import from external sources.
   @extend .topbar;
+  @extend %ui-print-excluded;
   margin: -4px 0 ($baseline*1.5);
   position: relative;
   border-bottom: none;
@@ -235,10 +236,6 @@ $sequence--border-color: #C8C8C8;
   body.touch-based-device & ol li a:hover p {
     display: none;
   }
-
-  @media print {
-    display: none;
-  }
 }
 
 .sequence-nav-button {
@@ -276,15 +273,13 @@ $sequence--border-color: #C8C8C8;
 }
 
 nav.sequence-bottom {
+  @extend %ui-print-excluded;
+
   position: relative;
   width: 79px;
   height: 1px;
   margin: lh(2) auto;
   text-align: center;
-
-  @media print {
-    display: none;
-  }
 }
 
 #seq_content {

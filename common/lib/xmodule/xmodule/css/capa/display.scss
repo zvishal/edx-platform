@@ -270,10 +270,8 @@ div.problem {
     }
 
     // Hides equation previews in symbolic response problems when printing
-    @media print {
-      [id^='display'].equation {
-        display: none;
-      }
+    [id^='display'].equation {
+      @extend %ui-print-excluded;
     }
 
     span {
@@ -632,13 +630,11 @@ div.problem {
     margin-top: $baseline;
 
     .save, .check, .show, .reset {
+      @extend %ui-print-excluded;
+
       height: ($baseline*2);
       vertical-align: middle;
       font-weight: 600;
-
-      @media print {
-        display: none;
-      }
     }
 
     .save {
@@ -666,7 +662,6 @@ div.problem {
       font-style: italic;
       -webkit-font-smoothing: antialiased;
     }
-
   }
 
   .detailed-solution {
