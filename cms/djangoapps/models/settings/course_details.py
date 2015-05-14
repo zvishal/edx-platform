@@ -17,7 +17,6 @@ from xmodule.modulestore.django import modulestore
 # Note: The 'video' attribute is intentionally excluded as it must be
 # handled separately; its value maps to an alternate key name.
 ABOUT_ATTRIBUTES = [
-    'language',
     'syllabus',
     'short_description',
     'overview',
@@ -82,6 +81,7 @@ class CourseDetails(object):
         course_details.pre_requisite_courses = descriptor.pre_requisite_courses
         course_details.course_image_name = descriptor.course_image
         course_details.course_image_asset_path = course_image_url(descriptor)
+        course_details.language = descriptor.language
         # Default course license is "All Rights Reserved"
         course_details.license = getattr(descriptor, "license", "all-rights-reserved")
 
@@ -180,6 +180,10 @@ class CourseDetails(object):
 
         if 'license' in jsondict:
             descriptor.license = jsondict['license']
+            dirty = True
+
+        if 'language' in jsondict and jsondict['language'] != descriptor.language:
+            descriptor.language = jsondict['language']
             dirty = True
 
         if dirty:
