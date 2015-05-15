@@ -30,7 +30,8 @@ define([
                 pre_requisite_courses : [],
                 entrance_exam_enabled : '',
                 entrance_exam_minimum_score_pct: '50',
-                license: null
+                license: null,
+                language: ''
             },
             mockSettingsPage = readFixtures('mock/mock-settings-page.underscore');
 
