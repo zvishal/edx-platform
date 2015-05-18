@@ -7,12 +7,19 @@ REPO_DIR = os.getcwd()
 
 
 class TestPaverBokChoyCmd(unittest.TestCase):
-
+    """
+    Paver constructs a shell command to be used for actual test execution (i.e., after
+    servers are running). This class tests how that command is composed, based on
+    settings passed into paver.
+    """
     def setUp(self):
         super(TestPaverBokChoyCmd, self).setUp()
         self.request = BokChoyTestSuite('')
 
     def _expected_command(self, expected_text_append, expected_default_store=None):
+        """
+        Based on parameters sent into paver, return the expected shell command
+        """
         if expected_text_append:
             expected_text_append = "/" + expected_text_append
         shard = os.environ.get('SHARD')
