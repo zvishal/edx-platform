@@ -10,6 +10,8 @@ from pymongo import MongoClient
 # video_download_allowed = False  # Change this var to look for video downloads set to true or false
 client = MongoClient()
 db = client['edxapp']
+filename_split_mongo = "split_mongo.tsv"
+filename_default_mongo = "draft_mongo.tsv"
 
 
 def clean_file(filename):
@@ -30,9 +32,22 @@ def get_set_metadata_field(field, mongo_doc):
         return "None"
 
 
-def get_draft_mongo_data(video_download_allowed=False):
+def write_to_file(output_file, org, course_name, video_id, video_display_name, video_download_allowed, html5_sources):
+        output_file.write("{org}\t{course_name}\t{video_id}\t{video_display_name}\t{video_download_allowed}\t{html5_sources}\n".format(
+            org=org,
+            course_name=course_name,
+            video_id=video_id,
+            video_display_name=video_display_name,
+            video_download_allowed=video_download_allowed,
+            html5_sources=html5_sources
+        )
+        )
+
+
+def get_draft_mongo_data(video_download_allowed=False, html5_sources_missing_only=None):
     """
-    Via mongo queries, produce a list of videos that are flagged with download as False
+    Against the 'draft' (aka 'old') mongo store, produce a list of videos that are flagged with download as
+    False, or, when specified, all videos where html5 sources are missing
     """
     # Old modulestore
     # Will produce a tsv with org, course name, and video GUID
@@ -43,20 +58,28 @@ def get_draft_mongo_data(video_download_allowed=False):
         ):
             display_name = get_set_metadata_field(u'display_name', i)
             html5_sources = get_set_metadata_field(u'html5_sources', i)
+            if html5_sources_missing_only and html5_sources:
+                # If we only want to know about videos with missing html5 sources, then don't write anything if
+                # there are html5 sources
+                pass
+            else:
+                write_to_file(
+                    output_file=output_file,
+                    org=(i[u'_id'][u'org']).encode("utf-8"),
+                    course_name=(i[u'_id'][u'course']).encode("utf-8"),
+                    video_id=(i[u'_id']['name']).encode("utf-8"),
+                    video_display_name=display_name.encode("utf-8"),
+                    video_download_allowed=video_download_allowed,
+                    html5_sources=html5_sources
+                )
 
-            output_file.write("{org}\t{course_name}\t{video_id}\t{video_display_name}\t{video_download_allowed}\t{html5_sources}\n".format(
-                org=(i[u'_id'][u'org']).encode("utf-8"),
-                course_name=(i[u'_id'][u'course']).encode("utf-8"),
-                video_id=(i[u'_id']['name']).encode("utf-8"),
-                video_display_name=display_name.encode("utf-8"),
-                video_download_allowed=video_download_allowed,
-                html5_sources=html5_sources
-            )
-            )
 
+def get_split_mongo_data(video_download_allowed=False, html5_sources_missing_only=None):
+    """
+    Against the 'split' (aka 'new') mongo store, produce a list of videos that are flagged with download as
+    False, or, when specified, all videos where html5 sources are missing
 
-def get_split_mongo_data(video_download_allowed=False):
-
+    """
     published_courses = []
     for i in db['modulestore.active_versions'].find(
             {"versions.published-branch": {"$exists": True}},
@@ -81,31 +104,32 @@ def get_split_mongo_data(video_download_allowed=False):
                 # videos, we filter again for download_video == False
                 if b[u'block_type'] == u'video' and b[u'fields'][u'download_video'] == video_download_allowed:
                     html5_sources = b[u'fields'][u'html5_sources']
-                    with open(filename_split_mongo, 'a') as output_file:
-                        output_file.write(
-                            "{org}\t{course_name}\t{video_id}\t{video_display_name}\t{video_download_allowed}\t{html5_sources}\n".format(
-                                org=(published_course[u'org']).encode("utf-8"),
-                                course_name=(published_course[u'course']).encode("utf-8"),
-                                video_id=(b[u'block_id']).encode("utf-8"),
-                                video_display_name=(b[u'fields'][u'display_name']).encode("utf-8"),
-                                video_download_allowed=b[u'fields'][u'download_video'],
-                                html5_sources=html5_sources
-                            )
-                        )
+                    if html5_sources_missing_only and html5_sources:
+                        # If we only want to know about videos with missing html5 sources, then don't write anything if
+                        # there are html5 sources
+                        pass
+                    else:
+                        with open(filename_split_mongo, 'a') as output_file:
+                            write_to_file(
+                                output_file=output_file,
+                                    org=(published_course[u'org']).encode("utf-8"),
+                                    course_name=(published_course[u'course']).encode("utf-8"),
+                                    video_id=(b[u'block_id']).encode("utf-8"),
+                                    video_display_name=(b[u'fields'][u'display_name']).encode("utf-8"),
+                                    video_download_allowed=b[u'fields'][u'download_video'],
+                                    html5_sources=html5_sources
+                                )
 
 # MAIN
 
-filename_split_mongo = "split_mongo.tsv"
+# remove any old output files
 clean_file(filename_split_mongo)
-
-filename_default_mongo = "draft_mongo.tsv"
 clean_file(filename_default_mongo)
-
 
 # Find videos where download is not allowed
 get_draft_mongo_data(video_download_allowed=False)
 get_split_mongo_data(video_download_allowed=False)
 
-# Find videos where download is allowed
-get_draft_mongo_data(video_download_allowed=True)
-get_split_mongo_data(video_download_allowed=True)
+# Find videos where download is allowed, but there is nothing to download
+get_draft_mongo_data(video_download_allowed=True, html5_sources_missing_only=True)
+get_split_mongo_data(video_download_allowed=True, html5_sources_missing_only=True)
