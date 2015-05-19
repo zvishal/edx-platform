@@ -1,6 +1,7 @@
 """ Contains the APIs for course credit requirements
 """
-from models import CreditRequirement
+from models import CreditRequirement, CreditCourse
+from exceptions import InvalidCreditRequirements
 
 
 def set_credit_requirements(course_key, requirements):
@@ -42,7 +43,11 @@ def set_credit_requirements(course_key, requirements):
         None
     """
 
-    for requirement in requirements:
-        CreditRequirement.add_course_requirement(course_key, requirement)
-
-
+    try:
+        credit_course = CreditCourse.get_credit_course(course_key=course_key)
+        for requirement in requirements:
+            CreditRequirement.add_course_requirement(credit_course, requirement)
+    except CreditCourse.DoesNotExist:
+        raise InvalidCreditRequirements
+    except:  # pylint: disable=bare-except
+        raise InvalidCreditRequirements

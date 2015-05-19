@@ -5,11 +5,13 @@ Models for Credit Eligibility for courses.
 Credit courses allow students to receive university credit for
 successful completion of a course on EdX
 """
+from django.db.utils import IntegrityError
 
 import logging
 
 from django.db import models
 from model_utils.models import TimeStampedModel
+from openedx.core.djangoapps.credit.exceptions import InvalidCreditRequirements
 from xmodule_django.models import CourseKeyField
 from jsonfield.fields import JSONField
 
@@ -89,15 +91,24 @@ class CreditRequirement(TimeStampedModel):
         credit_course(CreditCourse): The identifier for credit course course
         requirements(dict): Dict of requirements to be added
 
+    Raises:
+        InvalidCreditRequirements if any issue on requirement
+
     Returns:
         None
     """
-        cls.objects.create(
-            course=credit_course,
-            namespace=requirement["namespace"],
-            name=requirement["name"],
-            configuration=requirement["configuration"]
-        )
+        try:
+            cls.objects.create(
+                course=credit_course,
+                namespace=requirement["namespace"],
+                name=requirement["name"],
+                configuration=requirement["configuration"]
+            )
+        except IntegrityError:
+            # skip the duplicate entry
+            pass
+        except Exception:  # pylint: disable=bare-except
+            raise InvalidCreditRequirements
 
 
 class CreditRequirementStatus(TimeStampedModel):
