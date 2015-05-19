@@ -22,6 +22,35 @@ class CreditCourse(models.Model):
     course_key = CourseKeyField(max_length=255, db_index=True, unique=True)
     enabled = models.BooleanField(default=False)
 
+    @classmethod
+    def is_credit_course(cls, course_key):
+        """ Check that given course is credit or not
+
+        Args:
+            cls(CreditCourse): The class name
+            course_key(CourseKey): The course identifier
+
+        Returns:
+            Bool True if the course is marked credit else False
+        """
+        return cls.objects.filter(course_key=course_key, enabled=True).exists()
+
+    @classmethod
+    def get_credit_course(cls, course_key):
+        """ Get the credit course if exists
+
+        Args:
+            cls(CreditCourse): The class name
+            course_key(CourseKey): The course identifier
+
+        Raises:
+            CreditCourse.DoesNotExist if the given course does not exist
+
+        Returns:
+            CreditCourse objects if exist else raises the CreditCourse.DoesNotExist
+        """
+        return cls.objects.get(course_key=course_key, enabled=True)
+
 
 class CreditProvider(TimeStampedModel):
     """This model represents an institution that can grant credit for a course.
@@ -51,6 +80,24 @@ class CreditRequirement(TimeStampedModel):
     class Meta(object):
         """Model metadata"""
         unique_together = ('namespace', 'name', 'course')
+
+    @classmethod
+    def add_course_requirement(cls, credit_course, requirement):
+        """ Add requirements to given course
+
+    Args:
+        credit_course(CreditCourse): The identifier for credit course course
+        requirements(dict): Dict of requirements to be added
+
+    Returns:
+        None
+    """
+        cls.objects.create(
+            course=credit_course,
+            namespace=requirement["namespace"],
+            name=requirement["name"],
+            configuration=requirement["configuration"]
+        )
 
 
 class CreditRequirementStatus(TimeStampedModel):

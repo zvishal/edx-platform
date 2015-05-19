@@ -17,21 +17,21 @@ def update_course_requirements(course_id):
     try:
         course_key = CourseKey.from_string(course_id)
         course = modulestore().get_course(course_key)
-        is_credit_course = CreditCourse.is_credit_course(course_key=course_key)
-        if is_credit_course:
-            CreditRequirement.add_course_requirement(
-                course_key=course_key,
-                requirement={
-                    "namespace": "grade",
-                    "name": "grade",
-                    "configuration": {
-                        "min_grade": get_min_grade_for_credit(course)
-                    }
+        credit_course = CreditCourse.get_credit_course(course_key=course_key)
+
+        CreditRequirement.add_course_requirement(
+            credit_course=credit_course,
+            requirement={
+                "namespace": "grade",
+                "name": "grade",
+                "configuration": {
+                    "min_grade": get_min_grade_for_credit(course)
                 }
-            )
+            }
+        )
     except InvalidKeyError as exc:
         LOGGER.error('Error on adding the requirements for course %s - %s', course_id, unicode(exc))
-    except CreditCourse.DoesNotExist as exc:
+    except CreditRequirement.DoesNotExist as exc:
         LOGGER.info('The course %s - %s is not a credit course', course_id, unicode(exc))
     else:
         LOGGER.debug('Requirements added for course %s', course_id)
