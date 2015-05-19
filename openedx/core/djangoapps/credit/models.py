@@ -22,10 +22,6 @@ class CreditCourse(models.Model):
     course_key = CourseKeyField(max_length=255, db_index=True, unique=True)
     enabled = models.BooleanField(default=False)
 
-    @classmethod
-    def is_credit_course(cls, course_key):
-        return cls.objects.exist(course_key=course_key, enabled=True)
-
 
 class CreditProvider(TimeStampedModel):
     """This model represents an institution that can grant credit for a course.
@@ -52,26 +48,8 @@ class CreditRequirement(TimeStampedModel):
     configuration = JSONField()
     active = models.BooleanField(default=True)
 
-    @classmethod
-    def add_course_requirement(cls, course_key, requirement):
-        """ Add requirements to given course
-
-    Args:
-        course_key(CourseKey): The identifier for course
-        requirements(list): List of requirements to be added
-
-    Returns:
-        None
-    """
-        cls.objects.create(
-            course_key=course_key,
-            namespace=requirement["namespace"],
-            name=requirement["name"],
-            configuration=requirement["configuration"]
-        )
-
     class Meta(object):
-        """composite index"""
+        """Model metadata"""
         unique_together = ('namespace', 'name', 'course')
 
 
@@ -97,5 +75,5 @@ class CreditEligibility(TimeStampedModel):
     provider = models.ForeignKey(CreditProvider, related_name="eligibilities")
 
     class Meta(object):
-        """composite index"""
+        """Model metadata"""
         unique_together = ('username', 'course')

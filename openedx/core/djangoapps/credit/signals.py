@@ -9,6 +9,7 @@ def listen_for_course_publish_requirements(sender, course_key, **kwargs):  # pyl
     """
     Receives signal and kicks off celery task to update the course requirements
     """
+    from tasks import update_course_requirements
+    print "aaaa"
     # import here, because signal is registered at startup, but items in tasks are not yet able to be loaded
-    from .tasks import update_course_requirements
     update_course_requirements.delay(unicode(course_key))

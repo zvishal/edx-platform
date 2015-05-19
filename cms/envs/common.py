@@ -723,6 +723,10 @@ INSTALLED_APPS = (
     'edx_jsme',    # Molecular Structure
 
     'openedx.core.djangoapps.content.course_structures',
+
+
+    # for credit eligibility models
+    'openedx.core.djangoapps.credit',
 )
 
 
