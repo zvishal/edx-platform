@@ -358,7 +358,7 @@ def _section_cohort_management(course, access):
 def _is_small_course(course_key):
     """ Compares against MAX_ENROLLMENT_INSTR_BUTTONS to determine if course enrollment is considered small. """
     is_small_course = False
-    enrollment_count = CourseEnrollment.num_enrolled_in(course_key)
+    enrollment_count = CourseEnrollment.objects.num_enrolled_in(course_key)
     max_enrollment_for_buttons = settings.FEATURES.get("MAX_ENROLLMENT_INSTR_BUTTONS")
     if max_enrollment_for_buttons is not None:
         is_small_course = enrollment_count <= max_enrollment_for_buttons
