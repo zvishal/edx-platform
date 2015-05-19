@@ -204,6 +204,15 @@ class CourseTestCase(ModuleStoreTestCase):
         self.store.convert_to_draft(draft_html.location, self.user.id)
         self.store.convert_to_draft(draft_video.location, self.user.id)
 
+        # create an orphaned conditional module
+        orphan_conditional_problem = self.store.create_item(
+            self.user.id, course_id, 'conditional', 'conditional_problem', fields={
+                "data": "<conditional>Test</conditional>"
+            }
+        )
+        self.store.publish(orphan_conditional_problem.location, self.user.id)
+        self.assertIsNone(self.store.get_parent_location(orphan_conditional_problem.location))
+
         # lock an asset
         content_store.set_attr(self.LOCKED_ASSET_KEY, 'locked', True)
 
