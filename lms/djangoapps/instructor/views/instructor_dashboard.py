@@ -293,7 +293,7 @@ def _section_course_info(course, access):
     }
 
     if settings.FEATURES.get('DISPLAY_ANALYTICS_ENROLLMENTS'):
-        section_data['enrollment_count'] = CourseEnrollment.enrollment_counts(course_key)
+        section_data['enrollment_count'] = CourseEnrollment.objects.enrollment_counts(course_key)
 
     if settings.ANALYTICS_DASHBOARD_URL:
         dashboard_link = _get_dashboard_link(course_key)

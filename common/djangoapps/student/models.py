@@ -1050,7 +1050,7 @@ class CourseEnrollment(models.Model):
                 )
                 raise EnrollmentClosedError
 
-            if CourseEnrollment.is_course_full(course):
+            if CourseEnrollment.objects.is_course_full(course):
                 log.warning(
                     u"User %s failed to enroll in full course %s",
                     user.username,
