@@ -110,6 +110,19 @@ class CreditRequirement(TimeStampedModel):
         except Exception:  # pylint: disable=bare-except
             raise InvalidCreditRequirements
 
+    @classmethod
+    def get_course_requirements(cls, course_key, namespace=None):
+        """ Get requirements to given course
+
+    Args:
+        credit_course(CreditCourse): The identifier for credit course course
+        requirements(dict): Dict of requirements to be added
+    """
+        requirements = CreditRequirement.objects.filter(course__course_key=course_key, active=True)
+        if namespace:
+            requirements = requirements.filter(namespace=namespace)
+        return requirements
+
 
 class CreditRequirementStatus(TimeStampedModel):
     """This model represents the status of each requirement."""

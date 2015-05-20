@@ -91,9 +91,7 @@ def get_credit_requirements(course_key, namespacce=None):
         Dict of requirements in the given namespace
     """
 
-    requirements = CreditRequirement.objects.filter(course__course_key=course_key, active=True)
-    if namespacce:
-        requirements = requirements.filter(namespacce=namespacce)
+    requirements = CreditRequirement.get_course_requirements(course_key, namespacce)
     return {
         "requirements": [
             {
