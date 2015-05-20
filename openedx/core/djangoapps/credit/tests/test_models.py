@@ -33,7 +33,6 @@ class ModelTestCases(ModuleStoreTestCase):
     def test_add_course_requirement_invalid_course(self):
         with self.assertRaises(InvalidCreditRequirements):
             requirement = {
-                "namespace": "grade",
                 "name": "grade",
                 "configuration": {
                     "min_grade": 0.8
@@ -47,7 +46,6 @@ class ModelTestCases(ModuleStoreTestCase):
         with self.assertRaises(InvalidCreditRequirements):
             requirement = {
                 "namespace": "grade",
-                "name": "grade",
                 "configuration": "invalid configuration"
             }
             CreditRequirement.add_course_requirement(credit_course, requirement)
