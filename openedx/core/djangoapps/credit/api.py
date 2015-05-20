@@ -47,8 +47,6 @@ def set_credit_requirements(course_key, requirements):
         credit_course = CreditCourse.get_credit_course(course_key=course_key)
         for requirement in requirements:
             CreditRequirement.add_course_requirement(credit_course, requirement)
-    except CreditCourse.DoesNotExist:
-        raise InvalidCreditRequirements
     except:  # pylint: disable=bare-except
         raise InvalidCreditRequirements
 
