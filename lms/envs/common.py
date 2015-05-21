@@ -2361,4 +2361,4 @@ PREVIEW_DOMAIN = 'preview'
 
 # Sets the maximum number of courses listed on the homepage
 # If set to None, all courses will be listed on the homepage
-HOMEPAGE_COURSE_MAX = 4
+HOMEPAGE_COURSE_MAX = '4'
