@@ -729,6 +729,9 @@ INSTALLED_APPS = (
     'edx_jsme',    # Molecular Structure
 
     'openedx.core.djangoapps.content.course_structures',
+
+    # Credit courses
+    'openedx.core.djangoapps.credit',
 )
 
 
@@ -870,6 +873,10 @@ MAX_ASSET_UPLOAD_FILE_SIZE_URL = ""
 
 ### Default value for entrance exam minimum score
 ENTRANCE_EXAM_MIN_SCORE_PCT = 50
+
+### Default language for a new course
+DEFAULT_COURSE_LANGUAGE = "en"
+
 
 ################ ADVANCED_COMPONENT_TYPES ###############
 

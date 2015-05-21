@@ -1768,6 +1768,9 @@ INSTALLED_APPS = (
     'cors_csrf',
 
     'commerce',
+
+    # Credit courses
+    'openedx.core.djangoapps.credit',
 )
 
 ######################### CSRF #########################################
