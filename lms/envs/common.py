@@ -43,6 +43,8 @@ from xmodule.modulestore.modulestore_settings import update_module_store_setting
 from xmodule.mixin import LicenseMixin
 from lms.djangoapps.lms_xblock.mixin import LmsBlockMixin
 
+MA_296__ENABLE_PROFILING = False
+
 ################################### FEATURES ###################################
 # The display name of the platform to be used in templates/emails/etc.
 PLATFORM_NAME = "Your Platform Name Here"
@@ -1129,6 +1131,10 @@ MIDDLEWARE_CLASSES = (
     # This must be last
     'microsite_configuration.middleware.MicrositeSessionCookieDomainMiddleware',
 )
+
+if MA_296__ENABLE_PROFILING:
+    MIDDLEWARE_CLASSES.append('pyinstrument.middleware.ProfilerMiddleware')
+    PYINSTRUMENT_USE_SIGNAL = False
 
 # Clickjacking protection can be enabled by setting this to 'DENY'
 X_FRAME_OPTIONS = 'ALLOW'
