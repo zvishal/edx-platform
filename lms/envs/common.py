@@ -1133,7 +1133,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 if MA_296__ENABLE_PROFILING:
-    MIDDLEWARE_CLASSES.append('pyinstrument.middleware.ProfilerMiddleware')
+    MIDDLEWARE_CLASSES += ('pyinstrument.middleware.ProfilerMiddleware',)
     PYINSTRUMENT_USE_SIGNAL = False
 
 # Clickjacking protection can be enabled by setting this to 'DENY'
