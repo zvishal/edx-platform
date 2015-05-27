@@ -12,6 +12,13 @@
       <%static:include path="discovery/${template_name}.underscore" />
   </script>
   % endfor
+  <script type="text/javascript">;(function (define) {{
+      define('course_discovery_meanings', function() {{
+          'use strict';
+          return ${course_discovery_meanings};
+        }});
+      }})(define || RequireJS.define);
+  </script>
 </%block>
 
 <%block name="js_extra">
