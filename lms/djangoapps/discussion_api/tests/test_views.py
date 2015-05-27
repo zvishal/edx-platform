@@ -103,7 +103,7 @@ class ThreadViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         self.assert_response_correct(
             response,
             400,
-            {"field_errors": {"course_id": "This field is required."}}
+            {"field_errors": {"course_id": {"developer_message": "This field is required."}}}
         )
 
     def test_404(self):
@@ -158,6 +158,9 @@ class ThreadViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
             "vote_count": 4,
             "comment_count": 5,
             "unread_comment_count": 3,
+            "comment_list_url": "http://testserver/api/discussion/v1/comments/?thread_id=test_thread",
+            "endorsed_comment_list_url": None,
+            "non_endorsed_comment_list_url": None,
         }]
         self.register_get_threads_response(source_threads, page=1, num_pages=2)
         response = self.client.get(self.url, {"course_id": unicode(self.course.id)})
@@ -202,6 +205,93 @@ class ThreadViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
 
 
 @httpretty.activate
+class ThreadViewSetCreateTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
+    """Tests for ThreadViewSet create"""
+    def setUp(self):
+        super(ThreadViewSetCreateTest, self).setUp()
+        self.url = reverse("thread-list")
+
+    def test_basic(self):
+        self.register_get_user_response(self.user)
+        self.register_post_thread_response({
+            "id": "test_thread",
+            "username": self.user.username,
+            "created_at": "2015-05-19T00:00:00Z",
+            "updated_at": "2015-05-19T00:00:00Z",
+        })
+        request_data = {
+            "course_id": unicode(self.course.id),
+            "topic_id": "test_topic",
+            "type": "discussion",
+            "title": "Test Title",
+            "raw_body": "Test body",
+        }
+        expected_response_data = {
+            "id": "test_thread",
+            "course_id": unicode(self.course.id),
+            "topic_id": "test_topic",
+            "group_id": None,
+            "group_name": None,
+            "author": self.user.username,
+            "author_label": None,
+            "created_at": "2015-05-19T00:00:00Z",
+            "updated_at": "2015-05-19T00:00:00Z",
+            "type": "discussion",
+            "title": "Test Title",
+            "raw_body": "Test body",
+            "pinned": False,
+            "closed": False,
+            "following": False,
+            "abuse_flagged": False,
+            "voted": False,
+            "vote_count": 0,
+            "comment_count": 0,
+            "unread_comment_count": 0,
+            "comment_list_url": "http://testserver/api/discussion/v1/comments/?thread_id=test_thread",
+            "endorsed_comment_list_url": None,
+            "non_endorsed_comment_list_url": None,
+        }
+        response = self.client.post(
+            self.url,
+            json.dumps(request_data),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data, expected_response_data)
+        self.assertEqual(
+            httpretty.last_request().parsed_body,
+            {
+                "course_id": [unicode(self.course.id)],
+                "commentable_id": ["test_topic"],
+                "thread_type": ["discussion"],
+                "title": ["Test Title"],
+                "body": ["Test body"],
+                "user_id": [str(self.user.id)],
+            }
+        )
+
+    def test_error(self):
+        request_data = {
+            "topic_id": "dummy",
+            "type": "discussion",
+            "title": "dummy",
+            "raw_body": "dummy",
+        }
+        response = self.client.post(
+            self.url,
+            json.dumps(request_data),
+            content_type="application/json"
+        )
+        expected_response_data = {
+            "field_errors": {"course_id": {"developer_message": "This field is required."}}
+        }
+        self.assertEqual(response.status_code, 400)
+        response_data = json.loads(response.content)
+        self.assertEqual(response_data, expected_response_data)
+
+
+@httpretty.activate
 class CommentViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
     """Tests for CommentViewSet list"""
     def setUp(self):
@@ -215,7 +305,7 @@ class CommentViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
         self.assert_response_correct(
             response,
             400,
-            {"field_errors": {"thread_id": "This field is required."}}
+            {"field_errors": {"thread_id": {"developer_message": "This field is required."}}}
         )
 
     def test_404(self):
@@ -240,6 +330,7 @@ class CommentViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
             "created_at": "2015-05-11T00:00:00Z",
             "updated_at": "2015-05-11T11:11:11Z",
             "body": "Test body",
+            "endorsed": False,
             "abuse_flaggers": [],
             "votes": {"up_count": 4},
             "children": [],
@@ -253,6 +344,10 @@ class CommentViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
             "created_at": "2015-05-11T00:00:00Z",
             "updated_at": "2015-05-11T11:11:11Z",
             "raw_body": "Test body",
+            "endorsed": False,
+            "endorsed_by": None,
+            "endorsed_by_label": None,
+            "endorsed_at": None,
             "abuse_flagged": False,
             "voted": True,
             "vote_count": 4,

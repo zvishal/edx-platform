@@ -1295,6 +1295,7 @@ PIPELINE_CSS = {
     'style-main-rtl': {
         'source_filenames': [
             'sass/lms-main-rtl.css',
+            'css/edx-cc.css',
         ],
         'output_filename': 'css/lms-main-rtl.css',
     },
@@ -1670,7 +1671,7 @@ INSTALLED_APPS = (
     'provider.oauth2',
     'oauth2_provider',
 
-    'oauth_exchange',
+    'auth_exchange',
 
     # For the wiki
     'wiki',  # The new django-wiki from benjaoming
@@ -1962,6 +1963,12 @@ GRADES_DOWNLOAD = {
     'STORAGE_TYPE': 'localfs',
     'BUCKET': 'edx-grades',
     'ROOT_PATH': '/tmp/edx-s3/grades',
+}
+
+FINANCIAL_REPORTS = {
+    'STORAGE_TYPE': 'localfs',
+    'BUCKET': 'edx-financial-reports',
+    'ROOT_PATH': '/tmp/edx-s3/financial_reports',
 }
 
 

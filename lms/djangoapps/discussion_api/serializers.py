@@ -1,6 +1,12 @@
 """
 Discussion API serializers
 """
+from urllib import urlencode
+from urlparse import urlunparse
+
+from django.contrib.auth.models import User as DjangoUser
+from django.core.urlresolvers import reverse
+
 from rest_framework import serializers
 
 from django_comment_common.models import (
@@ -9,14 +15,15 @@ from django_comment_common.models import (
     FORUM_ROLE_MODERATOR,
     Role,
 )
-from lms.lib.comment_client.user import User
+from lms.lib.comment_client.thread import Thread
+from lms.lib.comment_client.user import User as CommentClientUser
 from openedx.core.djangoapps.course_groups.cohorts import get_cohort_names
 
 
-def get_context(course, requester):
+def get_context(course, request, thread=None):
     """
     Returns a context appropriate for use with ThreadSerializer or
-    CommentSerializer.
+    (if thread is provided) CommentSerializer.
     """
     # TODO: cache staff_user_ids and ta_user_ids if we need to improve perf
     staff_user_ids = {
@@ -32,13 +39,16 @@ def get_context(course, requester):
         for role in Role.objects.filter(name=FORUM_ROLE_COMMUNITY_TA, course_id=course.id)
         for user in role.users.all()
     }
+    requester = request.user
     return {
         # For now, the only groups are cohorts
+        "request": request,
         "group_ids_to_names": get_cohort_names(course),
         "is_requester_privileged": requester.id in staff_user_ids or requester.id in ta_user_ids,
         "staff_user_ids": staff_user_ids,
         "ta_user_ids": ta_user_ids,
-        "cc_requester": User.from_django_user(requester).retrieve(),
+        "cc_requester": CommentClientUser.from_django_user(requester).retrieve(),
+        "thread": thread,
     }
 
 
@@ -59,6 +69,13 @@ class _ContentSerializer(serializers.Serializer):
         # id is an invalid class attribute name, so we must declare a different
         # name above and modify it here
         self.fields["id"] = self.fields.pop("id_")
+
+    def _is_user_privileged(self, user_id):
+        """
+        Returns a boolean indicating whether the given user_id identifies a
+        privileged user.
+        """
+        return user_id in self.context["staff_user_ids"] or user_id in self.context["ta_user_ids"]
 
     def _is_anonymous(self, obj):
         """
@@ -118,15 +135,21 @@ class ThreadSerializer(_ContentSerializer):
     """
     course_id = serializers.CharField()
     topic_id = serializers.CharField(source="commentable_id")
-    group_id = serializers.IntegerField()
+    group_id = serializers.IntegerField(read_only=True)
     group_name = serializers.SerializerMethodField("get_group_name")
-    type_ = serializers.ChoiceField(source="thread_type", choices=("discussion", "question"))
+    type_ = serializers.ChoiceField(
+        source="thread_type",
+        choices=[(val, val) for val in ["discussion", "question"]]
+    )
     title = serializers.CharField()
-    pinned = serializers.BooleanField()
-    closed = serializers.BooleanField()
+    pinned = serializers.BooleanField(read_only=True)
+    closed = serializers.BooleanField(read_only=True)
     following = serializers.SerializerMethodField("get_following")
-    comment_count = serializers.IntegerField(source="comments_count")
-    unread_comment_count = serializers.IntegerField(source="unread_comments_count")
+    comment_count = serializers.IntegerField(source="comments_count", read_only=True)
+    unread_comment_count = serializers.IntegerField(source="unread_comments_count", read_only=True)
+    comment_list_url = serializers.SerializerMethodField("get_comment_list_url")
+    endorsed_comment_list_url = serializers.SerializerMethodField("get_endorsed_comment_list_url")
+    non_endorsed_comment_list_url = serializers.SerializerMethodField("get_non_endorsed_comment_list_url")
 
     def __init__(self, *args, **kwargs):
         super(ThreadSerializer, self).__init__(*args, **kwargs)
@@ -145,6 +168,37 @@ class ThreadSerializer(_ContentSerializer):
         """
         return obj["id"] in self.context["cc_requester"]["subscribed_thread_ids"]
 
+    def get_comment_list_url(self, obj, endorsed=None):
+        """
+        Returns the URL to retrieve the thread's comments, optionally including
+        the endorsed query parameter.
+        """
+        if (
+                (obj["thread_type"] == "question" and endorsed is None) or
+                (obj["thread_type"] == "discussion" and endorsed is not None)
+        ):
+            return None
+        path = reverse("comment-list")
+        query_dict = {"thread_id": obj["id"]}
+        if endorsed is not None:
+            query_dict["endorsed"] = endorsed
+        return self.context["request"].build_absolute_uri(
+            urlunparse(("", "", path, "", urlencode(query_dict), ""))
+        )
+
+    def get_endorsed_comment_list_url(self, obj):
+        """Returns the URL to retrieve the thread's endorsed comments."""
+        return self.get_comment_list_url(obj, endorsed=True)
+
+    def get_non_endorsed_comment_list_url(self, obj):
+        """Returns the URL to retrieve the thread's non-endorsed comments."""
+        return self.get_comment_list_url(obj, endorsed=False)
+
+    def restore_object(self, attrs, instance=None):
+        if instance:
+            raise ValueError("ThreadSerializer cannot be used for updates.")
+        return Thread(user_id=self.context["cc_requester"]["id"], **attrs)
+
 
 class CommentSerializer(_ContentSerializer):
     """
@@ -156,11 +210,48 @@ class CommentSerializer(_ContentSerializer):
     """
     thread_id = serializers.CharField()
     parent_id = serializers.SerializerMethodField("get_parent_id")
+    endorsed = serializers.BooleanField()
+    endorsed_by = serializers.SerializerMethodField("get_endorsed_by")
+    endorsed_by_label = serializers.SerializerMethodField("get_endorsed_by_label")
+    endorsed_at = serializers.SerializerMethodField("get_endorsed_at")
     children = serializers.SerializerMethodField("get_children")
 
     def get_parent_id(self, _obj):
         """Returns the comment's parent's id (taken from the context)."""
         return self.context.get("parent_id")
+
+    def get_endorsed_by(self, obj):
+        """
+        Returns the username of the endorsing user, if the information is
+        available and would not identify the author of an anonymous thread.
+        """
+        endorsement = obj.get("endorsement")
+        if endorsement:
+            endorser_id = int(endorsement["user_id"])
+            # Avoid revealing the identity of an anonymous non-staff question
+            # author who has endorsed a comment in the thread
+            if not (
+                    self._is_anonymous(self.context["thread"]) and
+                    not self._is_user_privileged(endorser_id)
+            ):
+                return DjangoUser.objects.get(id=endorser_id).username
+        return None
+
+    def get_endorsed_by_label(self, obj):
+        """
+        Returns the role label (i.e. "staff" or "community_ta") for the
+        endorsing user
+        """
+        endorsement = obj.get("endorsement")
+        if endorsement:
+            return self._get_user_label(int(endorsement["user_id"]))
+        else:
+            return None
+
+    def get_endorsed_at(self, obj):
+        """Returns the timestamp for the endorsement, if available."""
+        endorsement = obj.get("endorsement")
+        return endorsement["time"] if endorsement else None
 
     def get_children(self, obj):
         """Returns the list of the comment's children, serialized."""

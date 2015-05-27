@@ -16,7 +16,7 @@ from django.test.client import RequestFactory
 from opaque_keys.edx.locator import CourseLocator
 
 from courseware.tests.factories import BetaTesterFactory, StaffFactory
-from discussion_api.api import get_comment_list, get_course_topics, get_thread_list
+from discussion_api.api import create_thread, get_comment_list, get_course_topics, get_thread_list
 from discussion_api.tests.utils import (
     CommentsServiceMockMixin,
     make_minimal_cs_comment,
@@ -32,6 +32,7 @@ from django_comment_common.models import (
 from openedx.core.djangoapps.course_groups.models import CourseUserGroupPartitionGroup
 from openedx.core.djangoapps.course_groups.tests.helpers import CohortFactory
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
+from util.testing import UrlResetMixin
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -356,8 +357,9 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
 
 
 @ddt.ddt
-class GetThreadListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
+class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTestCase):
     """Test for get_thread_list"""
+    @mock.patch.dict("django.conf.settings.FEATURES", {"ENABLE_DISCUSSION_SERVICE": True})
     def setUp(self):
         super(GetThreadListTest, self).setUp()
         httpretty.reset()
@@ -485,6 +487,9 @@ class GetThreadListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
                 "vote_count": 4,
                 "comment_count": 5,
                 "unread_comment_count": 3,
+                "comment_list_url": "http://testserver/api/discussion/v1/comments/?thread_id=test_thread_id_0",
+                "endorsed_comment_list_url": None,
+                "non_endorsed_comment_list_url": None,
             },
             {
                 "id": "test_thread_id_1",
@@ -507,6 +512,13 @@ class GetThreadListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
                 "vote_count": 9,
                 "comment_count": 18,
                 "unread_comment_count": 0,
+                "comment_list_url": None,
+                "endorsed_comment_list_url": (
+                    "http://testserver/api/discussion/v1/comments/?thread_id=test_thread_id_1&endorsed=True"
+                ),
+                "non_endorsed_comment_list_url": (
+                    "http://testserver/api/discussion/v1/comments/?thread_id=test_thread_id_1&endorsed=False"
+                ),
             },
         ]
         self.assertEqual(
@@ -745,6 +757,7 @@ class GetCommentListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
                 "created_at": "2015-05-11T00:00:00Z",
                 "updated_at": "2015-05-11T11:11:11Z",
                 "body": "Test body",
+                "endorsed": False,
                 "abuse_flaggers": [],
                 "votes": {"up_count": 4},
                 "children": [],
@@ -759,6 +772,7 @@ class GetCommentListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
                 "created_at": "2015-05-11T22:22:22Z",
                 "updated_at": "2015-05-11T33:33:33Z",
                 "body": "More content",
+                "endorsed": False,
                 "abuse_flaggers": [str(self.user.id)],
                 "votes": {"up_count": 7},
                 "children": [],
@@ -774,6 +788,10 @@ class GetCommentListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
                 "created_at": "2015-05-11T00:00:00Z",
                 "updated_at": "2015-05-11T11:11:11Z",
                 "raw_body": "Test body",
+                "endorsed": False,
+                "endorsed_by": None,
+                "endorsed_by_label": None,
+                "endorsed_at": None,
                 "abuse_flagged": False,
                 "voted": False,
                 "vote_count": 4,
@@ -788,6 +806,10 @@ class GetCommentListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
                 "created_at": "2015-05-11T22:22:22Z",
                 "updated_at": "2015-05-11T33:33:33Z",
                 "raw_body": "More content",
+                "endorsed": False,
+                "endorsed_by": None,
+                "endorsed_by_label": None,
+                "endorsed_at": None,
                 "abuse_flagged": True,
                 "voted": False,
                 "vote_count": 7,
@@ -812,6 +834,22 @@ class GetCommentListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
 
         non_endorsed_actual = self.get_comment_list(thread, endorsed=False)
         self.assertEqual(non_endorsed_actual["results"][0]["id"], "non_endorsed_comment")
+
+    def test_endorsed_by_anonymity(self):
+        """
+        Ensure thread anonymity is properly considered in serializing
+        endorsed_by.
+        """
+        thread = self.make_minimal_cs_thread({
+            "anonymous": True,
+            "children": [
+                make_minimal_cs_comment({
+                    "endorsement": {"user_id": str(self.author.id), "time": "2015-05-18T12:34:56Z"}
+                })
+            ]
+        })
+        actual_comments = self.get_comment_list(thread)["results"]
+        self.assertIsNone(actual_comments[0]["endorsed_by"])
 
     @ddt.data(
         ("discussion", None, "children", "resp_total"),
@@ -937,3 +975,126 @@ class GetCommentListTest(CommentsServiceMockMixin, ModuleStoreTestCase):
         # Page past the end
         with self.assertRaises(Http404):
             self.get_comment_list(thread, endorsed=True, page=2, page_size=10)
+
+
+class CreateThreadTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTestCase):
+    """Tests for create_thread"""
+    @mock.patch.dict("django.conf.settings.FEATURES", {"ENABLE_DISCUSSION_SERVICE": True})
+    def setUp(self):
+        super(CreateThreadTest, self).setUp()
+        httpretty.reset()
+        httpretty.enable()
+        self.addCleanup(httpretty.disable)
+        self.user = UserFactory.create()
+        self.register_get_user_response(self.user)
+        self.request = RequestFactory().get("/test_path")
+        self.request.user = self.user
+        self.course = CourseFactory.create()
+        CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id)
+        self.minimal_data = {
+            "course_id": unicode(self.course.id),
+            "topic_id": "test_topic",
+            "type": "discussion",
+            "title": "Test Title",
+            "raw_body": "Test body",
+        }
+
+    @mock.patch("eventtracking.tracker.emit")
+    def test_basic(self, mock_emit):
+        self.register_post_thread_response({
+            "id": "test_id",
+            "username": self.user.username,
+            "created_at": "2015-05-19T00:00:00Z",
+            "updated_at": "2015-05-19T00:00:00Z",
+        })
+        actual = create_thread(self.request, self.minimal_data)
+        expected = {
+            "id": "test_id",
+            "course_id": unicode(self.course.id),
+            "topic_id": "test_topic",
+            "group_id": None,
+            "group_name": None,
+            "author": self.user.username,
+            "author_label": None,
+            "created_at": "2015-05-19T00:00:00Z",
+            "updated_at": "2015-05-19T00:00:00Z",
+            "type": "discussion",
+            "title": "Test Title",
+            "raw_body": "Test body",
+            "pinned": False,
+            "closed": False,
+            "following": False,
+            "abuse_flagged": False,
+            "voted": False,
+            "vote_count": 0,
+            "comment_count": 0,
+            "unread_comment_count": 0,
+            "comment_list_url": "http://testserver/api/discussion/v1/comments/?thread_id=test_id",
+            "endorsed_comment_list_url": None,
+            "non_endorsed_comment_list_url": None,
+        }
+        self.assertEqual(actual, expected)
+        self.assertEqual(
+            httpretty.last_request().parsed_body,
+            {
+                "course_id": [unicode(self.course.id)],
+                "commentable_id": ["test_topic"],
+                "thread_type": ["discussion"],
+                "title": ["Test Title"],
+                "body": ["Test body"],
+                "user_id": [str(self.user.id)],
+            }
+        )
+        event_name, event_data = mock_emit.call_args[0]
+        self.assertEqual(event_name, "edx.forum.thread.created")
+        self.assertEqual(
+            event_data,
+            {
+                "commentable_id": "test_topic",
+                "group_id": None,
+                "thread_type": "discussion",
+                "title": "Test Title",
+                "anonymous": False,
+                "anonymous_to_peers": False,
+                "options": {"followed": False},
+                "id": "test_id",
+                "truncated": False,
+                "body": "Test body",
+                "url": "",
+                "user_forums_roles": [FORUM_ROLE_STUDENT],
+                "user_course_roles": [],
+            }
+        )
+
+    def test_course_id_missing(self):
+        with self.assertRaises(ValidationError) as assertion:
+            create_thread(self.request, {})
+        self.assertEqual(assertion.exception.message_dict, {"course_id": ["This field is required."]})
+
+    def test_course_id_invalid(self):
+        with self.assertRaises(ValidationError) as assertion:
+            create_thread(self.request, {"course_id": "invalid!"})
+        self.assertEqual(assertion.exception.message_dict, {"course_id": ["Invalid value."]})
+
+    def test_nonexistent_course(self):
+        with self.assertRaises(ValidationError) as assertion:
+            create_thread(self.request, {"course_id": "non/existent/course"})
+        self.assertEqual(assertion.exception.message_dict, {"course_id": ["Invalid value."]})
+
+    def test_not_enrolled(self):
+        self.request.user = UserFactory.create()
+        with self.assertRaises(ValidationError) as assertion:
+            create_thread(self.request, self.minimal_data)
+        self.assertEqual(assertion.exception.message_dict, {"course_id": ["Invalid value."]})
+
+    def test_discussions_disabled(self):
+        _remove_discussion_tab(self.course, self.user.id)
+        with self.assertRaises(ValidationError) as assertion:
+            create_thread(self.request, self.minimal_data)
+        self.assertEqual(assertion.exception.message_dict, {"course_id": ["Invalid value."]})
+
+    def test_invalid_field(self):
+        data = self.minimal_data.copy()
+        data["type"] = "invalid_type"
+        with self.assertRaises(ValidationError):
+            create_thread(self.request, data)
