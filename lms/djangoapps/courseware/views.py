@@ -132,7 +132,7 @@ def courses(request):
 
     return render_to_response(
         "courseware/courses.html",
-        {'courses': courses_list, 'course_discovery_meanings': json.dumps(course_discovery_meanings)}
+        {'courses': courses_list, 'course_discovery_meanings': course_discovery_meanings}
     )
 
 
