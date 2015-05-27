@@ -70,7 +70,8 @@ define([
             event.preventDefault();
             var $target = $(event.currentTarget);
             var value = $target.find('.facet-option').data('value');
-            var data = {type: $target.data('facet'), query: value};
+            var name = $target.find('.facet-option').data('text');
+            var data = {type: $target.data('facet'), query: value, name: name};
             this.trigger('addFilter', data);
         },
 
@@ -109,7 +110,7 @@ define([
                 self.$facetViewsEl.append(facetsView.render(name, self.displayName(name), stats).el);
                 $.each(stats.terms, function(term, count) {
                     var facetView = new FacetView();
-                    facetsView.$views.append(facetView.render(name, self.displayName(name, term), count).el);
+                    facetsView.$views.append(facetView.render(name, self.displayName(name, term), term, count).el);
                     facetsView.list.push(facetView);
                 });
                 if(_.size(stats.terms) > 9) {
