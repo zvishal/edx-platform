@@ -61,6 +61,11 @@ class AdvancedSettingsPage(CoursePage):
         Trigger click event of the manual changes button in the modal.
         No need to wait for any ajax.
         """
+        from selenium.webdriver.remote import webdriver, webelement
+
+        #loc = webdriver.WebDriver.find_element_by_css_selector(css_selector=MANUAL_BUTTON_SELECTOR).location
+
+        self.q(css=MANUAL_BUTTON_SELECTOR)
         self.q(css=MANUAL_BUTTON_SELECTOR).click()
 
     def is_validation_modal_present(self):
