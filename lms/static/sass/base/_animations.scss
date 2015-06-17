@@ -279,3 +279,15 @@
     opacity: 0;
   }
 }
+
+
+@-webkit-keyframes throb {
+    from { background-color: darken($action-primary-bg,10%); }
+    50% { background-color: lighten($action-primary-bg,10%); }
+    to { background-color: darken($action-primary-bg,10%); }
+}
+@-moz-keyframes throb {
+    from { background-color: darken($action-primary-bg,10%); }
+    50% { background-color: lighten($action-primary-bg,10%); }
+    to { background-color: darken($action-primary-bg,10%); }
+}
