@@ -1,5 +1,7 @@
 define(["backbone.paginator", "js/models/asset"], function(BackbonePaginator, AssetModel) {
     var AssetCollection = BackbonePaginator.requestPager.extend({
+        sortableColumns: {},
+        filterableColumns: {},
         assetType: '',
         model : AssetModel,
         paginator_core: {
