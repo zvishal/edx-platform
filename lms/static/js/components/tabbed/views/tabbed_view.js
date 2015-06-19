@@ -44,8 +44,7 @@
                        this.$('a.is-active').removeClass('is-active').attr('aria-selected', 'false');
                        this.$('a[data-index='+index+']').addClass('is-active').attr('aria-selected', 'true');
                        var view = this.tabs[index].view;
-                       view.render();
-                       this.$('.page-content-main').html(view.$el.html());
+                       view.setElement(this.$('.page-content-main')).render();
                        this.$('.sr-is-focusable').focus();
                    },
 
