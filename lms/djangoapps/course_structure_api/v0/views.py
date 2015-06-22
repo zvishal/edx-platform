@@ -1,5 +1,6 @@
 """ API implementation for course-oriented interactions. """
 
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 import json
 import logging
@@ -531,62 +532,47 @@ class CourseBlocksAndNavigation(ListAPIView):
             course.id, request.user, course, depth=None,
         )
 
-        # start the recursion with the start_block
-        self.recurse_blocks_nav(request_info, result_data, self.BlockInfo(start_block, request_info))
+        def access_checker(block):
+            return has_access(request_info.request.user, 'load', block, course_key=request_info.course.id)
+
+        def child_iterator(block):
+            return get_dynamic_descriptor_children(block, request_info.request.user.id)
+
+        blocks = BlockGeneratorPostOrder(start_block, access_checker, child_iterator)
+
+        for block in blocks:
+            block_info = self.BlockInfo(block, request_info)
+
+            # bind user data to the block
+            block_info.block = get_module_for_descriptor(
+                request_info.request.user,
+                request_info.request,
+                block_info.block,
+                request_info.field_data_cache,
+                request_info.course.id,
+                course=request_info.course
+            )
+
+            # add the block's value to the result
+            result_data.blocks[unicode(block_info.block.location)] = block_info.value
+
+            # descendants
+            # TODO Can this happen post-order?
+            self.update_descendants(request_info, result_data, block_info)
+
+            # block count
+            self.update_block_count(request_info, result_data, block_info)
+
+            # block JSON data
+            self.add_block_json(request_info, block_info)
+
+            # additional fields
+            self.add_additional_fields(request_info, block_info)
 
         # return response
         response = {"root": unicode(start_block.location)}
         result_data.update_response(response, return_blocks, return_nav)
         return Response(response)
-
-    def recurse_blocks_nav(self, request_info, result_data, block_info):
-        """
-        A depth-first recursive function that supports calculation of both the list of blocks in the course
-        and the navigation information up to the requested navigation_depth of the course.
-
-        Arguments:
-            request_info - Object encapsulating the request information.
-            result_data - Running result data that is updated during the recursion.
-            block_info - Information about the current block in the recursion.
-        """
-        # bind user data to the block
-        block_info.block = get_module_for_descriptor(
-            request_info.request.user,
-            request_info.request,
-            block_info.block,
-            request_info.field_data_cache,
-            request_info.course.id,
-            course=request_info.course
-        )
-
-        # verify the user has access to this block
-        if not has_access(request_info.request.user, 'load', block_info.block, course_key=request_info.course.id):
-            return
-
-        # add the block's value to the result
-        result_data.blocks[unicode(block_info.block.location)] = block_info.value
-
-        # descendants
-        self.update_descendants(request_info, result_data, block_info)
-
-        # children: recursively call the function for each of the children, while supporting dynamic children.
-        if block_info.block.has_children:
-            block_info.children = get_dynamic_descriptor_children(block_info.block, request_info.request.user.id)
-            for child in block_info.children:
-                self.recurse_blocks_nav(
-                    request_info,
-                    result_data,
-                    self.BlockInfo(child, request_info, parent_block_info=block_info)
-                )
-
-        # block count
-        self.update_block_count(request_info, result_data, block_info)
-
-        # block JSON data
-        self.add_block_json(request_info, block_info)
-
-        # additional fields
-        self.add_additional_fields(request_info, block_info)
 
     def update_descendants(self, request_info, result_data, block_info):
         """
@@ -682,3 +668,83 @@ class CourseBlocksAndNavigation(ListAPIView):
         super(CourseBlocksAndNavigation, self).perform_authentication(request)
         if request.user.is_anonymous():
             raise AuthenticationFailed
+
+
+    class BlockGenerator(object):
+        """
+        Abstract Base class for a generator that yields blocks in a DAG block hierarchy
+        """
+        __metaclass__ = ABCMeta
+
+        def __init__(self, start_block, block_access_checker = None, child_iterator=None):
+            self.start_block = start_block
+            self.block_access_checker = block_access_checker or (lambda block: True)
+            self.child_iterator = child_iterator or (lambda block: block.get_children())
+
+        @abstractmethod
+        def __iter__(self):
+            pass
+
+    class BlockGeneratorPreOrder(BlockGenerator):
+        """
+        Block generator that yields blocks using Pre-order traversal of a DAG block hierarchy
+        """
+        def __iter__(self):
+            stack = [self.start_block]
+            while stack:
+                curr_block = stack.pop()
+
+                if self.block_access_checker(curr_block):
+                    yield curr_block
+
+                    if curr_block.has_children:
+                        children = self.child_iterator.get_children(curr_block)
+                        for block in reversed(children):
+                            stack.append(block)
+
+
+    class BlockGeneratorPostOrder(BlockGenerator):
+        """
+        Block generator that yields blocks using Post-order traversal of a DAG block hierarchy
+        """
+
+        class BlockAndChildIndexStackItem(object):
+            """
+            Class for items in the stack.
+            """
+            def __init__(self, block):
+                self.block = block
+                self.children = None
+                self.child_index = 0
+
+            def next_child(self, child_iterator):
+                """
+                Returns the next child of the block for this item in the stack.
+                """
+                if self.children is None:
+                    self.children = child_iterator.get_children(self.block)
+
+                child = None
+                if self.child_index < len(self.children):
+                    child = self.children[self.child_index]
+                    self.child_index += 1
+                return child
+
+        def __iter__(self):
+            stack = [self.BlockAndChildIndexStackItem(self.start_block)]
+            while stack:
+
+                # peek at the next item in the stack
+                current_stack_item = stack[len(stack)-1]
+
+                # continue if the user doesn't have access to the block
+                if not self.block_access_checker(current_stack_item.block):
+                    stack.pop()
+                    continue
+
+                next_child = current_stack_item.next_child(self.child_iterator)
+                if next_child:
+                    stack.append(self.BlockAndChildIndexStackItem(next_child))
+                else:
+                    yield current_stack_item.block
+                    stack.pop()
