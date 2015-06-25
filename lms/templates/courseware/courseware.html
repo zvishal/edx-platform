@@ -21,37 +21,38 @@ ${page_title_breadcrumbs(course_name())}
 
 <%block name="header_extras">
 
-% for template_name in ["message_banner"]:
-    <script type="text/template" id="${template_name}-tpl">
-        <%static:include path="fields/${template_name}.underscore" />
-    </script>
-% endfor
+    % for template_name in ["message_banner"]:
+        <script type="text/template" id="${template_name}-tpl">
+            <%static:include path="fields/${template_name}.underscore" />
+        </script>
+    % endfor
 
-% for template_name in ["image-modal"]:
-<script type="text/template" id="${template_name}-tpl">
-    <%static:include path="common/templates/${template_name}.underscore" />
-</script>
-% endfor
-% if settings.FEATURES.get('ENABLE_COURSEWARE_SEARCH'):
-    % for template_name in ["course_search_item", "course_search_results", "search_loading", "search_error"]:
-    <script type="text/template" id="${template_name}-tpl">
-        <%static:include path="search/${template_name}.underscore" />
-    </script>
-% endfor
+    % for template_name in ["image-modal"]:
+        <script type="text/template" id="${template_name}-tpl">
+            <%static:include path="common/templates/${template_name}.underscore" />
+        </script>
+    % endfor
 
-% for template_name in ["bookmarks_list"]:
-<script type="text/template" id="${template_name}-tpl">
-    <%static:include path="bookmarks/${template_name}.underscore" />
-</script>
-% endfor
+    % if settings.FEATURES.get('ENABLE_COURSEWARE_SEARCH'):
+        % for template_name in ["course_search_item", "course_search_results", "search_loading", "search_error"]:
+            <script type="text/template" id="${template_name}-tpl">
+                <%static:include path="search/${template_name}.underscore" />
+            </script>
+        % endfor
+    % endif
 
-% for template_name in ["message_view"]:
-<script type="text/template" id="${template_name}-tpl">
-    <%static:include path="${template_name}.underscore" />
-</script>
-% endfor
+    % for template_name in ["bookmarks_list"]:
+        <script type="text/template" id="${template_name}-tpl">
+            <%static:include path="bookmarks/${template_name}.underscore" />
+        </script>
+    % endfor
 
-% endif
+    % for template_name in ["message_view"]:
+        <script type="text/template" id="${template_name}-tpl">
+            <%static:include path="${template_name}.underscore" />
+        </script>
+    % endfor
+
 </%block>
 
 <%block name="headextra">
