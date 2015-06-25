@@ -1619,6 +1619,7 @@ STATICFILES_IGNORE_PATTERNS = (
 
     # Symlinks used by js-test-tool
     "xmodule_js",
+    "common",
 )
 
 PIPELINE_UGLIFYJS_BINARY = 'node_modules/.bin/uglifyjs'
