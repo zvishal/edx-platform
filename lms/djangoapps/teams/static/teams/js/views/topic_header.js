@@ -24,8 +24,8 @@
                     message = interpolate(
                         ngettext(
                             // Translators: 'num_topics' is the number of topics that the student sees
-                            'Currently viewing %(num_topics)s topic',
-                            'Currently viewing all %(num_topics)s topics',
+                            'Currently viewing %(num_topics)s bookmark',
+                            'Currently viewing all %(num_topics)s bookmarks',
                             num_topics
                         ),
                         {num_topics: num_topics}, true
@@ -33,7 +33,7 @@
                 } else {
                     // Many pages of results
                     message = interpolate(
-                        gettext('Currently viewing %(first_index)s through %(last_index)s of %(num_topics)s topics'),
+                        gettext('Currently viewing %(first_index)s through %(last_index)s of %(num_topics)s bookmarks'),
                         {first_index: Math.min(start + 1, end), last_index: end, num_topics: num_topics}, true
                     );
                 }

@@ -1,7 +1,8 @@
 ;(function (define, undefined) {
     'use strict';
-    define(['gettext', 'jquery', 'underscore', 'backbone', 'logger', 'moment'],
-        function (gettext, $, _, Backbone, Logger, _moment) {
+    define(['gettext', 'jquery', 'underscore', 'backbone', 'logger', 'moment',
+            'common/js/components/views/paging_footer', 'teams/js/views/topic_header'],
+        function (gettext, $, _, Backbone, Logger, _moment, PagingFooterView, PagingHeaderView) {
 
         var moment = _moment || window.moment;
 
@@ -16,8 +17,6 @@
             errorMessage: gettext('An error has occurred. Please try again.'),
             loadingMessage: gettext('Loading'),
 
-            PAGE_SIZE: 500,
-
             events : {
                 'click .bookmarks-results-list-item': 'visitBookmark'
             },
@@ -26,17 +25,21 @@
                 this.template = _.template($('#bookmarks_list-tpl').text());
                 this.loadingMessageView = options.loadingMessageView;
                 this.errorMessageView = options.errorMessageView;
-                this.courseId = $(this.el).data('courseId');
                 this.langCode = $(this.el).data('langCode');
+                this.pagingFooterView = new PagingFooterView({collection: this.collection});
+                this.pagingHeaderView = new PagingHeaderView({collection: this.collection});
+                this.listenTo(this.collection, 'page_changed', this.render);
                 _.bindAll(this, 'render', 'humanFriendlyDate');
             },
 
             render: function () {
                 var data = {
-                    bookmarks: this.collection.models,
+                    bookmarks: this.collection,
                     humanFriendlyDate: this.humanFriendlyDate
                 };
                 this.$el.html(this.template(data));
+                this.pagingFooterView.setElement(this.$('.paging-footer')).render();
+                this.pagingHeaderView.setElement(this.$('.paging-header')).render();
                 this.delegateEvents();
                 return this;
             },
@@ -48,10 +51,7 @@
                 this.showBookmarksContainer();
                 this.showLoadingMessage();
 
-                this.collection.fetch({
-                    reset: true,
-                    data: {course_id: this.courseId, page_size: this.PAGE_SIZE, fields: 'display_name,path'}
-                }).done(function () {
+                this.collection.goTo(1).done(function () {
                     view.hideLoadingMessage();
                     view.render();
                     view.focusBookmarksElement();
