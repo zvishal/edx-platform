@@ -75,7 +75,7 @@
 }
 
 // teams temporary
-.view-teams {
+//.view-teams {
   .global-new, #global-navigation {
     display: none;
   }
@@ -215,4 +215,15 @@
       }
     }
   }
-}
+//}
+
+// temporarily placed here
+.search-tools {
+    @extend %t-copy-sub1;
+//    margin: ($baseline/10) $baseline;
+    color: $gray-l1;
+
+    p, span { // override
+      color: inherit;
+    }
+  }
