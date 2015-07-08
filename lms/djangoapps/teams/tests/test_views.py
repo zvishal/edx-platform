@@ -333,9 +333,10 @@ class TestListTeamsAPI(TeamAPITestCase):
         data = {'order_by': field} if field else {}
         self.verify_names(data, status, names)
 
-    @ddt.data({'course_id': 'no/such/course'}, {'topic_id': 'no_such_topic'})
-    def test_no_results(self, data):
-        self.get_teams_list(404, data)
+    @ddt.data((404, {'course_id': 'no/such/course'}), (400, {'topic_id': 'no_such_topic'}))
+    @ddt.unpack
+    def test_no_results(self, status, data):
+        self.get_teams_list(status, data)
 
     def test_page_size(self):
         result = self.get_teams_list(200, {'page_size': 2})

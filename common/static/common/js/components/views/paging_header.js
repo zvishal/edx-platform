@@ -20,7 +20,9 @@
                     end = start + this.collection.length,
                     num_items = this.collection.totalCount,
                     context = {first_index: Math.min(start + 1, end), last_index: end, num_items: num_items};
-                if (end <= 1) {
+                if (this.collection.length === 0) {
+                    message = gettext('Showing 0 out of 0 total');
+                } else if (end <= 1) {
                     message = interpolate(gettext('Showing %(first_index)s out of %(num_items)s total'), context, true);
                 } else {
                     message = interpolate(

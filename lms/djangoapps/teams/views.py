@@ -258,7 +258,8 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
             try:
                 course_key = CourseKey.from_string(course_id_string)
                 # Ensure the course exists
-                if not modulestore().has_course(course_key):
+                course_module = modulestore().get_course(course_key)
+                if course_module is None:
                     return Response(status=status.HTTP_404_NOT_FOUND)
                 result_filter.update({'course_id': course_key})
             except InvalidKeyError:
@@ -277,6 +278,13 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
             )
 
         if 'topic_id' in request.QUERY_PARAMS:
+            topic_id = request.QUERY_PARAMS['topic_id']
+            if topic_id not in [topic['id'] for topic in course_module.teams_configuration['topics']]:
+                error = build_api_error(
+                    ugettext_noop('The supplied topic id {topic_id} is not valid'),
+                    topic_id=topic_id
+                )
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
             result_filter.update({'topic_id': request.QUERY_PARAMS['topic_id']})
         if 'include_inactive' in request.QUERY_PARAMS and request.QUERY_PARAMS['include_inactive'].lower() == 'true':
             del result_filter['is_active']
