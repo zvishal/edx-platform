@@ -77,7 +77,10 @@ class TeamsDashboardView(View):
         topics_page = Paginator(topics, TOPICS_PER_PAGE).page(1)
         topics_serializer = PaginationSerializer(instance=topics_page, context={'sort_order': sort_order})
         context = {
-            "course": course, "topics": topics_serializer.data, "topics_url": reverse('topics_list', request=request)
+            "course": course,
+            "topics": topics_serializer.data,
+            "topics_url": reverse('topics_list', request=request),
+            "teams_url": reverse('teams_list', request=request)
         }
         return render_to_response("teams/teams.html", context)
 
