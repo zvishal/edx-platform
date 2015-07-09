@@ -134,12 +134,12 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
         self.test_team_1 = CourseTeamFactory.create(
             name=u'sólar team',
             course_id=self.test_course_1.id,
-            topic_id='renewable'
+            topic_id='topic_0'
         )
         self.test_team_2 = CourseTeamFactory.create(name='Wind Team', course_id=self.test_course_1.id)
         self.test_team_3 = CourseTeamFactory.create(name='Nuclear Team', course_id=self.test_course_1.id)
         self.test_team_4 = CourseTeamFactory.create(name='Coal Team', course_id=self.test_course_1.id, is_active=False)
-        self.test_team_4 = CourseTeamFactory.create(name='Another Team', course_id=self.test_course_2.id)
+        self.test_team_5 = CourseTeamFactory.create(name='Another Team', course_id=self.test_course_2.id)
 
         for user, course in [
                 ('student_enrolled', self.test_course_1),
@@ -153,7 +153,7 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
 
         self.test_team_1.add_user(self.users['student_enrolled'])
         self.test_team_3.add_user(self.users['student_enrolled_both_courses_other_team'])
-        self.test_team_4.add_user(self.users['student_enrolled_both_courses_other_team'])
+        self.test_team_5.add_user(self.users['student_enrolled_both_courses_other_team'])
 
     def login(self, user):
         """Given a user string, logs the given user in.
@@ -312,7 +312,7 @@ class TestListTeamsAPI(TeamAPITestCase):
         self.verify_names({'course_id': self.test_course_2.id}, 200, ['Another Team'], user='staff')
 
     def test_filter_topic_id(self):
-        self.verify_names({'course_id': self.test_course_1.id, 'topic_id': 'renewable'}, 200, [u'sólar team'])
+        self.verify_names({'course_id': self.test_course_1.id, 'topic_id': 'topic_0'}, 200, [u'sólar team'])
 
     def test_filter_include_inactive(self):
         self.verify_names({'include_inactive': True}, 200, ['Coal Team', 'Nuclear Team', u'sólar team', 'Wind Team'])
@@ -348,7 +348,7 @@ class TestListTeamsAPI(TeamAPITestCase):
         self.assertIsNotNone(result['previous'])
 
     def test_expand_user(self):
-        result = self.get_teams_list(200, {'expand': 'user', 'topic_id': 'renewable'})
+        result = self.get_teams_list(200, {'expand': 'user', 'topic_id': 'topic_0'})
         self.verify_expanded_user(result['results'][0]['membership'][0]['user'])
 
 
@@ -561,6 +561,16 @@ class TestListTopicsAPI(TeamAPITestCase):
         response = self.get_topics_list(data={'course_id': self.test_course_1.id})
         self.assertEqual(response['sort_order'], 'name')
 
+    def test_team_count(self):
+        """Test that team_count is included for each topic"""
+        response = self.get_topics_list(data={'course_id': self.test_course_1.id})
+        for topic in response['results']:
+            self.assertIn('team_count', topic)
+            if topic['id'] == u'topic_0':
+                self.assertEqual(topic['team_count'], 1)
+            else:
+                self.assertEqual(topic['team_count'], 0)
+
 
 @ddt.ddt
 class TestDetailTopicAPI(TeamAPITestCase):
@@ -587,6 +597,13 @@ class TestDetailTopicAPI(TeamAPITestCase):
 
     def test_invalid_topic_id(self):
         self.get_topic_detail('no_such_topic', self.test_course_1.id, 404)
+
+    def test_team_count(self):
+        """Test that team_count is included with a topic"""
+        topic = self.get_topic_detail(topic_id='topic_0', course_id=self.test_course_1.id)
+        self.assertEqual(topic['team_count'], 1)
+        topic = self.get_topic_detail(topic_id='topic_1', course_id=self.test_course_1.id)
+        self.assertEqual(topic['team_count'], 0)
 
 
 @ddt.ddt
