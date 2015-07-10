@@ -134,7 +134,8 @@ class TopicSerializer(BaseTopicSerializer):
 
 class PaginatedTopicSerializer(PaginationSerializer):
     """Serializes a set of topics.  Adds team_count field to each topic."""
-    class Meta:
+    class Meta(object):
+        """Defines meta information for the PaginatedTopicSerializer."""
         object_serializer_class = BaseTopicSerializer
 
     def __init__(self, *args, **kwargs):

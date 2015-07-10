@@ -3,10 +3,11 @@
     define(['common/js/components/collections/paging_collection', 'teams/js/models/team', 'gettext'],
         function(PagingCollection, TeamModel, gettext) {
             var TeamCollection = PagingCollection.extend({
-                initialize: function(options) {
+                initialize: function(teams, options) {
                     PagingCollection.prototype.initialize.call(this);
 
                     this.course_id = options.course_id;
+                    this.perPage = teams.results.length;
                     this.server_api['course_id'] = function () { return encodeURIComponent(this.course_id); };
                     this.server_api['order_by'] = function () { return this.sortField; };
                     delete this.server_api['sort_order']; // Sort order is not specified for the Team API

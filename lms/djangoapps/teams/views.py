@@ -300,6 +300,11 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
                 build_api_error(ugettext_noop("last_activity is not yet supported")),
                 status=status.HTTP_400_BAD_REQUEST
             )
+        else:
+            return Response({
+                'developer_message': "unsupported order_by value {}".format(order_by_input),
+                'user_message': _(u"The ordering {} is not supported").format(order_by_input),
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = queryset.order_by(order_by_field)
 
@@ -308,6 +313,7 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
 
         page = self.paginate_queryset(queryset)
         serializer = self.get_pagination_serializer(page)
+        serializer.context.update({'sort_order': order_by_input})  # pylint: disable=maybe-no-member
         return Response(serializer.data)  # pylint: disable=maybe-no-member
 
     def post(self, request):
