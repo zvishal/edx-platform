@@ -5,34 +5,28 @@ define(['backbone',
         'underscore',
         'gettext',
         'js/views/fields',
+        'teams/js/models/team',
         'text!teams/templates/edit-team.underscore'],
-       function (Backbone, _, gettext, FieldViews, edit_team_template) {
+       function (Backbone, _, gettext, FieldViews, TeamModel, edit_team_template) {
            return Backbone.View.extend({
-               fieldsModel: Backbone.Model.extend({
-                    defaults: {
-                        name: '',
-                        description: '',
-                        id: ''
-                    },
-
-                    modelValue: function () {
-                        return '';
-                    }
-               }),
 
                initialize: function(options) {
                    this.topicName = options.topicName;
+                   this.languages = options.languages;
+                   this.countries = options.countries;
 
                    this.teamNameField = new FieldViews.TextFieldView({
-                       model: new this.fieldsModel(),
+                       model: new TeamModel(),
                        title: gettext('Name'),
+                       valueAttribute: 'name',
                        bindEvents: false,
                        helpMessage: gettext("The primary identifier for your teams, limited to 100 characters.")
                    });
 
                    this.teamDescriptionField = new FieldViews.TextareaFieldView({
-                       model: new this.fieldsModel(),
+                       model: new TeamModel(),
                        title: gettext('Description'),
+                       valueAttribute: 'description',
                        editable: 'always',
                        showMessages: false,
                        bindEvents: false,
@@ -40,29 +34,31 @@ define(['backbone',
                    });
 
                    this.optionalDescriptionField = new FieldViews.ReadonlyFieldView({
-                       model: new this.fieldsModel(),
+                       model: new TeamModel(),
                        title: gettext('Optional Characteristics'),
                        helpMessage: gettext("You can help students find your tem by specifying your team's characteristics. The more limitations you add, the fewer students may be interested in joining your group, so choose carefully!")
                    });
 
                    this.teamLanguageField = new FieldViews.DropdownFieldView({
-                       model: new this.fieldsModel(),
+                       model: new TeamModel(),
                        title: gettext('Language Preference'),
+                       valueAttribute: 'language',
                        required: false,
                        showMessages: false,
                        bindEvents: false,
                        titleIconName: 'fa-comment-o',
-                       options: [['a', 'A'], ['b', 'B'], ['c', 'C']]
+                       options: this.languages
                    });
 
                    this.teamCountryField = new FieldViews.DropdownFieldView({
-                       model: new this.fieldsModel(),
+                       model: new TeamModel(),
                        title: gettext('Country'),
+                       valueAttribute: 'country',
                        required: false,
                        showMessages: false,
                        bindEvents: false,
                        titleIconName: 'fa-globe',
-                       options: [['a', 'A'], ['b', 'B'], ['c', 'C']]
+                       options: this.countries
                    });
                },
 

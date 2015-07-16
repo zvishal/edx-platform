@@ -29,7 +29,9 @@ define(['backbone',
 
                    this.editView = new TeamEditView({
                        className: 'create-new-team',
-                       topicName: options.topicName
+                       topicName: options.topicName,
+                       languages: options.languages,
+                       countries: options.countries
                    });
                },
 

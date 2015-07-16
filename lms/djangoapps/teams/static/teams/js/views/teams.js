@@ -17,6 +17,8 @@
             initialize: function (options) {
                 PaginatedView.prototype.initialize.call(this, options);
                 this.topicName = options.topicName;
+                this.languages = options.languages;
+                this.countries = options.countries;
             },
 
             render: function () {
@@ -32,6 +34,8 @@
                 var view = new CreateTeamView({
                     el: $('.teams-content'),
                     topicName: this.topicName,
+                    languages: this.languages,
+                    countries: this.countries,
                     fragment: Backbone.history.fragment,
                     href: Backbone.history.location.href
                 });

@@ -34,6 +34,8 @@
                        this.course_id = options.course_id;
                        this.topics = options.topics;
                        this.teams_url = options.teams_url;
+                       this.languages = options.languages;
+                       this.countries = options.countries;
                        // This slightly tedious approach is necessary
                        // to use regular expressions within Backbone
                        // routes, allowing us to capture which tab
@@ -132,7 +134,12 @@
                            var successCb = function (collection) {
                                self.mainView = self.teamsView = new ViewWithHeader({
                                    header: headerView,
-                                   main: new TeamsView({collection: collection, topicName: topic.get('name')})
+                                   main: new TeamsView({
+                                       collection: collection,
+                                       topicName: topic.get('name'),
+                                       languages: self.languages,
+                                       countries: self.countries
+                                   })
                                });
                                self.render();
                            };
