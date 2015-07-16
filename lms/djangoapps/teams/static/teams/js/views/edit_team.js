@@ -21,6 +21,8 @@ define(['backbone',
                }),
 
                initialize: function(options) {
+                   this.topicName = options.topicName;
+
                    this.teamNameField = new FieldViews.TextFieldView({
                        model: new this.fieldsModel(),
                        title: gettext('Name'),
@@ -65,7 +67,7 @@ define(['backbone',
                },
 
                render: function() {
-                   this.$el.html(_.template(edit_team_template)({topicTitle: gettext("ABC")}));
+                   this.$el.html(_.template(edit_team_template)({topicName: gettext(this.topicName)}));
                    this.assign(this.teamNameField, '.team-name');
                    this.assign(this.teamDescriptionField, '.team-description');
                    this.assign(this.optionalDescriptionField, '.team-optional-fields-descriptions');

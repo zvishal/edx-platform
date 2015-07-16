@@ -132,7 +132,7 @@
                            var successCb = function (collection) {
                                self.mainView = self.teamsView = new ViewWithHeader({
                                    header: headerView,
-                                   main: new TeamsView({collection: collection})
+                                   main: new TeamsView({collection: collection, topicName: topic.get('name')})
                                });
                                self.render();
                            };

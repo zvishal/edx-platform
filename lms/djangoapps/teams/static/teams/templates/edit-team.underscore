@@ -1,4 +1,4 @@
-<div class="topic-title"><b><%= gettext("Topic: ") %></b><%= topicTitle %></div>
+<div class="topic-title"><b><%= gettext("Topic: ") %></b><%= topicName %></div>
 <hr class="divider divider-lv1" />
 
 <div class="team-edit-fields">

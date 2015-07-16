@@ -1,15 +1,22 @@
 ;(function (define) {
     'use strict';
     define([
+        'backbone',
         'teams/js/views/team_card',
-        'common/js/components/views/paginated_view'
-    ], function (TeamCardView, PaginatedView) {
+        'common/js/components/views/paginated_view',
+        'teams/js/views/create_team'
+    ], function (Backbone, TeamCardView, PaginatedView, CreateTeamView) {
         var TeamsView = PaginatedView.extend({
             type: 'teams',
             cardView: TeamCardView,
 
             events: {
-                'click button.action': '' // entry point for team creation
+                'click button.action': 'showCreateTeamForm' // entry point for team creation
+            },
+
+            initialize: function (options) {
+                PaginatedView.prototype.initialize.call(this, options);
+                this.topicName = options.topicName;
             },
 
             render: function () {
@@ -19,6 +26,16 @@
                     $('<button class="action action-primary">' + gettext('Create new team') + '</button>')
                 );
                 return this;
+            },
+
+            showCreateTeamForm: function () {
+                var view = new CreateTeamView({
+                    el: $('.teams-content'),
+                    topicName: this.topicName,
+                    fragment: Backbone.history.fragment,
+                    href: Backbone.history.location.href
+                });
+                view.render();
             }
         });
         return TeamsView;
