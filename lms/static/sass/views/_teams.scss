@@ -473,3 +473,104 @@
     }
   }
 }
+
+.teams-content {
+  .create-new-team {
+    padding: $baseline;
+    overflow: hidden;
+
+    .team-required-fields {
+      float: left;
+      width: 55%;
+      border-right: 2px solid $gray-l4;;
+
+      .team-name {
+        padding-bottom: $baseline;
+
+        .u-field-title {
+          display: block;
+          padding-bottom: ($baseline/4);
+          color: $base-font-color;
+          font-weight: $font-semibold;
+        }
+
+        .u-field-value {
+          display: block;
+          width: 90%;
+
+          input {
+            border-radius: ($baseline/5);
+            height: ($baseline*2);
+          }
+        }
+
+        .u-field-message {
+          padding-left: 0;
+          padding-top: ($baseline/4);
+          width: 100%;
+        }
+      }
+
+      .team-description {
+
+        .u-field-title {
+          padding-bottom: ($baseline/4);
+          color: $base-font-color;
+          font-weight: $font-semibold;
+        }
+
+        .u-field-value {
+          display: block;
+          width: 100%;
+
+          textarea {
+            height: ($baseline*5);
+            width: 90%;
+            border-radius: ($baseline/5)
+          }
+        }
+
+        .u-field-description-message {
+          @extend %t-copy-sub1;
+          margin-top: ($baseline/4);
+          color: $gray-l1;
+          width: 90%;
+        }
+      }
+    }
+
+    .team-optional-fields {
+      float: left;
+      width: 40%;
+      margin: 20px 0 20px 20px;
+
+      .team-optional-fields-descriptions {
+        margin-bottom: $baseline;
+
+        .u-field-title {
+          color: $base-font-color;
+          font-weight: $font-semibold;
+          margin-bottom: ($baseline/2);
+          width: 100%;
+        }
+
+        .u-field-message {
+          padding-left: 0;
+          width: 95%;
+        }
+
+        .u-field-value {
+          display: none;
+        }
+      }
+
+      .u-field-value {
+        width: 50%;
+      }
+
+      .u-field-title {
+        width: 35%;
+      }
+    }
+  }
+}

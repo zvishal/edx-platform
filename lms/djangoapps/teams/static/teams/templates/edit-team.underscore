@@ -1,0 +1,15 @@
+<div class="topic-title"><b><%= gettext("Topic: ") %></b><%= topicTitle %></div>
+<hr class="divider divider-lv1" />
+
+<div class="team-edit-fields">
+    <div class="team-required-fields">
+        <div class="team-name u-field-text"></div>
+        <div class="team-description u-field-textarea"></div>
+    </div>
+
+    <div class="team-optional-fields">
+        <div class="team-optional-fields-descriptions u-field-readonly"></div>
+        <div class="team-language u-field-dropdown"></div>
+        <div class="team-country u-field-dropdown"></div>
+    </div>
+</div>

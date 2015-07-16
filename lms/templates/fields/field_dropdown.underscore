@@ -1,4 +1,7 @@
 <% if (title) { %>
+    <% if (titleIconName) { %>
+        <i class="u-field-icon icon fa <%- titleIconName %> fa-fw" aria-hidden="true"></i>
+    <% } %>
     <label class="u-field-title" for="u-field-select-<%- id %>">
         <%- title %>
     </label>
