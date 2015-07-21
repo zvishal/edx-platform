@@ -480,7 +480,7 @@
     overflow: hidden;
 
     .team-required-fields {
-      float: left;
+      @include float(left);
       width: 55%;
       border-right: 2px solid $gray-l4;;
 
@@ -505,7 +505,7 @@
         }
 
         .u-field-message {
-          padding-left: 0;
+          @include padding-left(0);
           padding-top: ($baseline/4);
           width: 100%;
         }
@@ -540,9 +540,9 @@
     }
 
     .team-optional-fields {
-      float: left;
+      @include float(left);
+      @include margin($baseline, 0, $baseline, $baseline);
       width: 40%;
-      margin: 20px 0 20px 20px;
 
       .team-optional-fields-descriptions {
         margin-bottom: $baseline;
@@ -555,7 +555,7 @@
         }
 
         .u-field-message {
-          padding-left: 0;
+          @include padding-left(0);
           width: 95%;
         }
 

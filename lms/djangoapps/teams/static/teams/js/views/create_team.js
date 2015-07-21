@@ -13,16 +13,14 @@ define(['backbone',
                    this.headerModel = new HeaderModel({
                        description: gettext("Create a new team when you can't find existing teams to join, or if you would like to learn with friends you know."),
                        title: gettext("New Team"),
-                       breadcrumbs: this.constructBreadcurmbs(options.fragment, options.href)
+                       breadcrumbs: [{title: options.topicTitle, url: options.href}]
                    });
 
                    this.headerView = new HeaderView({
                        model: this.headerModel,
                        events: {
-                           'click nav.breadcrumbs a.nav-item': function (event) {
-                               //event.preventDefault();
-                               console.log(Backbone.history);
-                               Backbone.history.navigate('topics/algorithms', {trigger: true});
+                           'click nav.breadcrumbs a.nav-item': function () {
+                               Backbone.history.navigate(options.topicTitle, {trigger: true});
                            }
                        }
                    });
@@ -41,15 +39,6 @@ define(['backbone',
                    this.headerView.render();
                    this.$el.append(this.editView.$el);
                    this.editView.render();
-               },
-
-               constructBreadcurmbs: function (fragment, href) {
-                   return [
-                       {
-                           title: fragment.split('/').pop(),
-                           url: href
-                       }
-                   ];
                }
            });
        });

@@ -36,7 +36,7 @@
                     topicName: this.topicName,
                     languages: this.languages,
                     countries: this.countries,
-                    fragment: Backbone.history.fragment,
+                    topicTitle: Backbone.history.fragment.split('/').pop(),
                     href: Backbone.history.location.href
                 });
                 view.render();
