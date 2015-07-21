@@ -475,6 +475,11 @@
 }
 
 .teams-content {
+
+  .page-header {
+    border-bottom: 2px solid $m-green-s1;
+  }
+
   .create-new-team {
     padding: $baseline;
     overflow: hidden;
@@ -572,5 +577,41 @@
         width: 35%;
       }
     }
+  }
+}
+
+@mixin button-base-sytle($text-color) {
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: 400;
+  text-shadow: none;
+
+  background: none;
+  border: none;
+  box-shadow: none;
+
+  color: $text-color;
+
+  &:hover {
+      background: none;
+  }
+
+  &:focus, &:active {
+    box-shadow: none;
+  }
+}
+
+.page-header-actions {
+  button.action-cancel {
+    @include button-base-sytle($m-gray);
+    @include padding-right($baseline);
+  }
+
+  button.action-create {
+    @include button-base-sytle($white);
+    border-radius: ($baseline/4);
+    background-color: $m-green-s1 !important;
+    height: ($baseline*2);
+    width: 90px;
   }
 }

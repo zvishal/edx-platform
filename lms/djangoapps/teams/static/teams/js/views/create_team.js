@@ -6,21 +6,26 @@ define(['backbone',
         'gettext',
         'js/components/header/models/header',
         'js/components/header/views/header',
-        'teams/js/views/edit_team'],
-       function (Backbone, _, gettext, HeaderModel, HeaderView, TeamEditView) {
+        'teams/js/views/edit_team',
+        'teams/js/views/create_team_actions'],
+       function (Backbone, _, gettext, HeaderModel, HeaderView, TeamEditView, CreateTeamActionsView) {
            return Backbone.View.extend({
                initialize: function(options) {
                    this.headerModel = new HeaderModel({
                        description: gettext("Create a new team when you can't find existing teams to join, or if you would like to learn with friends you know."),
                        title: gettext("New Team"),
-                       breadcrumbs: [{title: options.topicTitle, url: options.href}]
+                       breadcrumbs: [{title: options.topicName, url: options.href}]
                    });
 
                    this.headerView = new HeaderView({
                        model: this.headerModel,
+                       actionsView: new CreateTeamActionsView({}),
+
+                       // As per my understanding we don't need this(`events`) but for
+                       // whatever reason click on breadcrumb link is not working without this
                        events: {
                            'click nav.breadcrumbs a.nav-item': function () {
-                               Backbone.history.navigate(options.topicTitle, {trigger: true});
+                               Backbone.history.navigate('', {trigger: true});
                            }
                        }
                    });

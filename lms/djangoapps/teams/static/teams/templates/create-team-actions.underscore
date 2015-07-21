@@ -1,0 +1,4 @@
+<div class="wrapper-create-team-actions">
+    <button class="action-cancel">Cancel</button>
+    <button class="action-create">Create<span class="sr">Team</span></button>
+</div>
