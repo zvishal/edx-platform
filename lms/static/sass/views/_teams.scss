@@ -615,3 +615,24 @@
     width: 90px;
   }
 }
+
+%team-edit-notification-base {
+  margin-bottom: $baseline;
+  border-left: ($baseline/2) solid red;
+  height: 50px;
+  border-radius: ($baseline/4);
+  padding-left: ($baseline/4);
+  line-height: 50px;
+}
+
+.team-edit-notification-wrapper.error {
+  @extend %team-edit-notification-base;
+  border-left: ($baseline/2) solid $red;
+  background-color: $red-l1;
+}
+
+.team-edit-notification-wrapper.success {
+  @extend %team-edit-notification-base;
+  border-left: ($baseline/2) solid $m-green-s1;
+  background-color: $green-l1;
+}

@@ -8,12 +8,21 @@ define(['backbone',
        function (Backbone, _, gettext, create_team_actions_template) {
            return Backbone.View.extend({
 
+               events: {
+                   "click .action-create": "createTeam"
+               },
+
                initialize: function(options) {
+                   this.eventAggregator = options.eventAggregator;
                },
 
                render: function() {
                    this.$el.html(_.template(create_team_actions_template));
                    return this;
+               },
+
+               createTeam: function () {
+                   this.eventAggregator.trigger("createTeam");
                }
            });
        });

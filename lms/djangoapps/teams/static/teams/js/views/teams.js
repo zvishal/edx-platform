@@ -16,6 +16,9 @@
 
             initialize: function (options) {
                 PaginatedView.prototype.initialize.call(this, options);
+                this.courseId = options.courseId;
+                this.teamsUrl = options.teamsUrl;
+                this.topicId = options.topicId;
                 this.topicName = options.topicName;
                 this.languages = options.languages;
                 this.countries = options.countries;
@@ -33,6 +36,9 @@
             showCreateTeamForm: function () {
                 var view = new CreateTeamView({
                     el: $('.teams-content'),
+                    courseId: this.courseId,
+                    teamsUrl: this.teamsUrl,
+                    topicId: this.topicId,
                     topicName: this.topicName,
                     languages: this.languages,
                     countries: this.countries,

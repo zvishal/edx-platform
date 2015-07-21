@@ -11,6 +11,10 @@ define(['backbone',
        function (Backbone, _, gettext, HeaderModel, HeaderView, TeamEditView, CreateTeamActionsView) {
            return Backbone.View.extend({
                initialize: function(options) {
+
+                   // Please see `The Event Aggregator` at https://lostechies.com/derickbailey/2011/07/19/references-routing-and-the-event-aggregator-coordinating-views-in-backbone-js/
+                   this.eventAggregator = _.extend({}, Backbone.Events);
+
                    this.headerModel = new HeaderModel({
                        description: gettext("Create a new team when you can't find existing teams to join, or if you would like to learn with friends you know."),
                        title: gettext("New Team"),
@@ -19,7 +23,11 @@ define(['backbone',
 
                    this.headerView = new HeaderView({
                        model: this.headerModel,
-                       actionsView: new CreateTeamActionsView({}),
+                       actionsView: new CreateTeamActionsView(
+                           {
+                              eventAggregator: this.eventAggregator
+                           }
+                       ),
 
                        // As per my understanding we don't need this(`events`) but for
                        // whatever reason click on breadcrumb link is not working without this
@@ -32,9 +40,13 @@ define(['backbone',
 
                    this.editView = new TeamEditView({
                        className: 'create-new-team',
+                       courseId: options.courseId,
+                       teamsUrl: options.teamsUrl,
+                       topicId: options.topicId,
                        topicName: options.topicName,
                        languages: options.languages,
-                       countries: options.countries
+                       countries: options.countries,
+                       eventAggregator: this.eventAggregator
                    });
                },
 

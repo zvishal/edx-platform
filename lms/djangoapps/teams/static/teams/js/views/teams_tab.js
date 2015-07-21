@@ -136,6 +136,9 @@
                                    header: headerView,
                                    main: new TeamsView({
                                        collection: collection,
+                                       courseId: self.course_id,
+                                       teamsUrl: self.teams_url,
+                                       topicId: topic.get('id'),
                                        topicName: topic.get('name'),
                                        languages: self.languages,
                                        countries: self.countries

@@ -1,3 +1,7 @@
+<div class="team-edit-notification-wrapper">
+    <span class="team-edit-notification-message" aria-live="polite"></span>
+</div>
+
 <div class="topic-title"><b><%= gettext("Topic: ") %></b><%= topicName %></div>
 <hr class="divider divider-lv1" />
 
