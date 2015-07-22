@@ -472,4 +472,24 @@
       padding-left: 2%;
     }
   }
+
+  .add-team {
+    @extend %ui-well;
+    margin: 20px 1.2%;
+    color: $gray;
+    text-align: center;
+
+    .title {
+      @extend %t-title6;
+      @extend %t-strong;
+      margin-bottom: ($baseline/2);
+      text-align: inherit;
+      color: inherit;
+    }
+
+    .copy {
+      text-align: inherit;
+      color: inherit;
+    }
+  }
 }
