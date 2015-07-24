@@ -87,6 +87,7 @@ from verify_student.views import PayAndVerifyView
       data-verification-good-until='${verification_good_until}'
       data-capture-sound='${capture_sound}'
       data-braintree-enabled='${json.dumps(braintree_enabled)}'
+      data-stripe-enabled='${json.dumps(stripe_enabled)}'
     ></div>
 
     % if is_active:

@@ -390,12 +390,13 @@ class PayAndVerifyView(View):
         processors = []
         if relevant_course_mode.sku:
             # Process transaction with E-Commerce Service
-            if not settings.FEATURES.get('PAY_WITH_BRAINTREE', False):
+            if not settings.FEATURES.get('PAY_WITH_BRAINTREE', False) or settings.FEATURES.get('PAY_WITH_STRIPE', False):
                 processors = ecommerce_api_client(request.user).payment.processors.get()
                 try:
-                    # Remove the Braintree processor, since it cannot be
+                    # Remove the Braintree and Stripe processors, since they cannot be
                     # used like the others.
                     processors.remove('braintree')
+                    processors.remove('stripe')
                 except ValueError:
                     pass
         else:
@@ -427,6 +428,7 @@ class PayAndVerifyView(View):
             'capture_sound': staticfiles_storage.url("audio/camera_capture.wav"),
             'nav_hidden': True,
             'braintree_enabled': settings.FEATURES.get('PAY_WITH_BRAINTREE', False),
+            'stripe_enabled': settings.FEATURES.get('PAY_WITH_STRIPE', False),
         }
         return render_to_response("verify_student/pay_and_verify.html", context)
 

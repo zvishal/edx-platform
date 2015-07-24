@@ -83,6 +83,37 @@ var edx = edx || {};
             $('div.payment-buttons').append(braintreeForm);
         },
 
+        renderStripeForm: function (basketData) {
+            var formAction = basketData.payment_data.payment_page_url,
+                basketId = basketData.id,
+                paymentFormData = basketData.payment_data.payment_form_data,
+                $form = $('<form action="' + formAction + '" method="POST"><input type="hidden" name="basket_id" value="' + basketId + '"></form>');
+
+            var script   = document.createElement("script");
+            script.type  = "text/javascript";
+            script.src   = "https://checkout.stripe.com/checkout.js";
+            script.className = 'stripe-button';
+
+            // Otto controls the payment form attributes.
+            for (var key in paymentFormData) {
+                if (paymentFormData.hasOwnProperty(key)) {
+                    script.setAttribute('data-' + key, paymentFormData[key]);
+                }
+            }
+
+            $('div.payment-buttons').append($form);
+            $form[0].appendChild(script);
+
+            // TODO Use custom button
+            var restyleButton = setInterval(function() {
+                var $button = $('.stripe-button-el');
+                if ($button.length) {
+                    $button.addClass('next action-primary payment-button').html(gettext('Checkout'));
+                    clearInterval(restyleButton);
+                }
+            }, 100);
+        },
+
         handleCreateBasketError: function(xhr){
             // TODO Be better!
             alert('An error occurred!');
@@ -99,6 +130,7 @@ var edx = edx || {};
                 // which does not load an actual template context.
                 processors = templateContext.processors || [],
                 braintreeEnabled = templateContext.braintreeEnabled,
+                stripeEnabled = templateContext.stripeEnabled,
                 self = this;
 
             // Track a virtual pageview, for easy funnel reconstruction.
@@ -130,14 +162,14 @@ var edx = edx || {};
                 self._getProductText( templateContext.courseModeSlug, templateContext.upgrade )
             );
 
-            if(braintreeEnabled){
+            if (braintreeEnabled || stripeEnabled) {
                 // Create a basket, and get the payment parameters, from the server
                 var postData = {
-                        processor: 'braintree',
-                        contribution: this.getPaymentAmount(),
-                        course_id: this.stepData.courseKey
-                    };
-                
+                    processor: braintreeEnabled ? 'braintree' : 'stripe',
+                    contribution: this.getPaymentAmount(),
+                    course_id: this.stepData.courseKey
+                };
+
                 $.ajax({
                     url: '/verify_student/create_order/',
                     type: 'POST',
@@ -146,7 +178,7 @@ var edx = edx || {};
                     },
                     data: postData,
                     context: this,
-                    success: this.renderBraintreeForm,
+                    success: braintreeEnabled ? this.renderBraintreeForm : this.renderStripeForm,
                     error: this.handleCreateBasketError
                 });
             } else {

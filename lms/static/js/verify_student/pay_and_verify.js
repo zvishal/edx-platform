@@ -64,7 +64,8 @@ var edx = edx || {};
                 courseModeSlug: el.data('course-mode-slug'),
                 alreadyVerified: el.data('already-verified'),
                 verificationGoodUntil: el.data('verification-good-until'),
-                braintreeEnabled: el.data('braintree-enabled')
+                braintreeEnabled: el.data('braintree-enabled'),
+                stripeEnabled: el.data('stripe-enabled')
             },
             'payment-confirmation-step': {
                 courseKey: el.data('course-key'),
