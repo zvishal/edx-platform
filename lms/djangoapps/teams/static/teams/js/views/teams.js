@@ -16,12 +16,7 @@
 
             initialize: function (options) {
                 PaginatedView.prototype.initialize.call(this, options);
-                this.courseId = options.courseId;
-                this.teamsUrl = options.teamsUrl;
-                this.topicId = options.topicId;
-                this.topicName = options.topicName;
-                this.languages = options.languages;
-                this.countries = options.countries;
+                this.teamParams = options.teamParams;
             },
 
             render: function () {
@@ -36,13 +31,7 @@
             showCreateTeamForm: function () {
                 var view = new CreateTeamView({
                     el: $('.teams-content'),
-                    courseId: this.courseId,
-                    teamsUrl: this.teamsUrl,
-                    topicId: this.topicId,
-                    topicName: this.topicName,
-                    languages: this.languages,
-                    countries: this.countries,
-                    href: Backbone.history.location.href
+                    teamParams: _.extend(this.teamParams, {href: Backbone.history.location.href})
                 });
                 view.render();
             }

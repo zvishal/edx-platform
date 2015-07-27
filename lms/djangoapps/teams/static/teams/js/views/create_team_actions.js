@@ -9,6 +9,7 @@ define(['backbone',
            return Backbone.View.extend({
 
                events: {
+                   "click .action-cancel": "cancelTeam",
                    "click .action-create": "createTeam"
                },
 
@@ -19,6 +20,10 @@ define(['backbone',
                render: function() {
                    this.$el.html(_.template(create_team_actions_template));
                    return this;
+               },
+
+               cancelTeam: function () {
+                   this.eventAggregator.trigger("cancelTeam");
                },
 
                createTeam: function () {

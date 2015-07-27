@@ -11,16 +11,17 @@ define(['backbone',
            return Backbone.View.extend({
 
                initialize: function(options) {
-                   console.log(options);
-                   this.courseId = options.courseId;
-                   this.teamsUrl = options.teamsUrl;
-                   this.topicId = options.topicId;
-                   this.topicName = options.topicName;
-                   this.languages = options.languages;
-                   this.countries = options.countries;
+                   this.courseId = options.teamParams.courseId;
+                   this.teamsUrl = options.teamParams.teamsUrl;
+                   this.topicId = options.teamParams.topicId;
+                   this.topicName = options.teamParams.topicName;
+                   this.languages = options.teamParams.languages;
+                   this.countries = options.teamParams.countries;
+                   this.topicTeamsUrl = options.teamParams.href;
 
                    this.eventAggregator = options.eventAggregator;
-                   _.bindAll(this, "createTeam");
+                   _.bindAll(this, "cancelTeam", "createTeam");
+                   this.eventAggregator.bind("cancelTeam", this.cancelTeam);
                    this.eventAggregator.bind("createTeam", this.createTeam);
 
                    this.teamNameField = new FieldViews.TextFieldView({
@@ -142,6 +143,10 @@ define(['backbone',
                    var removeClass = messageClass === 'error' ? 'success' : messageClass;
                    this.$('.team-edit-notification-wrapper').removeClass(removeClass).addClass(messageClass);
                    this.$('.team-edit-notification-message').html(message);
+               },
+
+               cancelTeam: function () {
+                   Backbone.history.loadUrl(Backbone.history.fragment);
                }
            });
        });

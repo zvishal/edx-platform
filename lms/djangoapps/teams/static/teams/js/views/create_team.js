@@ -18,7 +18,7 @@ define(['backbone',
                    this.headerModel = new HeaderModel({
                        description: gettext("Create a new team when you can't find existing teams to join, or if you would like to learn with friends you know."),
                        title: gettext("New Team"),
-                       breadcrumbs: [{title: options.topicName, url: options.href}]
+                       breadcrumbs: [{title: options.teamParams.topicName, url: options.teamParams.href}]
                    });
 
                    this.headerView = new HeaderView({
@@ -40,12 +40,7 @@ define(['backbone',
 
                    this.editView = new TeamEditView({
                        className: 'create-new-team',
-                       courseId: options.courseId,
-                       teamsUrl: options.teamsUrl,
-                       topicId: options.topicId,
-                       topicName: options.topicName,
-                       languages: options.languages,
-                       countries: options.countries,
+                       teamParams: options.teamParams,
                        eventAggregator: this.eventAggregator
                    });
                },
