@@ -26,7 +26,7 @@ define(['backbone',
 
                    this.teamNameField = new FieldViews.TextFieldView({
                        model: new TeamModel(),
-                       title: gettext('Name'),
+                       title: gettext("Team Name (Required) *"),
                        valueAttribute: 'name',
                        bindEvents: false,
                        helpMessage: gettext("The primary identifier for your teams, limited to 100 characters.")
@@ -34,7 +34,7 @@ define(['backbone',
 
                    this.teamDescriptionField = new FieldViews.TextareaFieldView({
                        model: new TeamModel(),
-                       title: gettext('Description'),
+                       title: gettext("Team Description (Required) *"),
                        valueAttribute: 'description',
                        editable: 'always',
                        showMessages: false,
@@ -44,19 +44,20 @@ define(['backbone',
 
                    this.optionalDescriptionField = new FieldViews.ReadonlyFieldView({
                        model: new TeamModel(),
-                       title: gettext('Optional Characteristics'),
-                       helpMessage: gettext("You can help students find your tem by specifying your team's characteristics. The more limitations you add, the fewer students may be interested in joining your group, so choose carefully!")
+                       title: gettext("Optional Characteristics"),
+                       helpMessage: gettext("You can help students find your team by specifying your team's characteristics. The more limitations you add, the fewer students may be interested in joining your group, so choose carefully!")
                    });
 
                    this.teamLanguageField = new FieldViews.DropdownFieldView({
                        model: new TeamModel(),
-                       title: gettext('Language Preference'),
+                       title: gettext("Language"),
                        valueAttribute: 'language',
                        required: false,
                        showMessages: false,
                        bindEvents: false,
                        titleIconName: 'fa-comment-o',
-                       options: this.languages
+                       options: this.languages,
+                       helpMessage: gettext("The primary language of the team")
                    });
 
                    this.teamCountryField = new FieldViews.DropdownFieldView({
@@ -67,7 +68,8 @@ define(['backbone',
                        showMessages: false,
                        bindEvents: false,
                        titleIconName: 'fa-globe',
-                       options: this.countries
+                       options: this.countries,
+                       helpMessage: gettext("The primary country of the team")
                    });
                },
 
@@ -121,22 +123,18 @@ define(['backbone',
 
                validateTeamData: function (teamName, teamDescription) {
                    var status = true;
-                   var errorMessages = [];
 
                    if (_.isEmpty(teamName.trim()) ) {
                        status = false;
-                       errorMessages.push(gettext("You must specify a team name"));
+                       //highlightFieldOnError();
                    }
 
                    if (_.isEmpty(teamDescription.trim()) ) {
                        status = false;
-                       errorMessages.push(gettext("You must specify team description"));
+                       //highlightFieldOnError();
                    }
 
-                   return {
-                       status: status,
-                       errorMessages: errorMessages
-                   };
+                   return status;
                },
 
                showMessage: function (messageClass, message) {

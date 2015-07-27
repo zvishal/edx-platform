@@ -358,7 +358,6 @@
                     title: this.options.title,
                     screenReaderTitle: this.options.screenReaderTitle || this.options.title,
                     titleVisible: this.options.titleVisible || true,
-                    titleIconName: this.options.titleIconName,
                     iconName: this.options.iconName,
                     showBlankOption: (!this.options.required || !this.modelValueIsSet()),
                     selectOptions: this.options.options,
