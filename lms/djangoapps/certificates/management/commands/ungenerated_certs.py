@@ -4,16 +4,18 @@ courses that have finished, and put their cert requests on the queue.
 """
 import logging
 import datetime
+from optparse import make_option
+
 from pytz import UTC
 from django.core.management.base import BaseCommand, CommandError
-from certificates.models import certificate_status_for_student
-from certificates.api import generate_user_certificates
 from django.contrib.auth.models import User
-from optparse import make_option
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from xmodule.modulestore.django import modulestore
+
+from certificates.models import certificate_status_for_student
+from certificates.api import generate_user_certificates
 from certificates.models import CertificateStatuses
 
 
@@ -21,7 +23,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-
     help = """
     Find all students that need certificates for courses that have finished and
     put their cert requests on the queue.
@@ -48,15 +49,15 @@ class Command(BaseCommand):
                     dest='course',
                     default=False,
                     help='Grade and generate certificates '
-                    'for a specific course'),
+                         'for a specific course'),
         make_option('-f', '--force-gen',
                     metavar='STATUS',
                     dest='force',
                     default=False,
                     help='Will generate new certificates for only those users '
-                    'whose entry in the certificate table matches STATUS. '
-                    'STATUS can be generating, unavailable, deleted, error '
-                    'or notpassing.'),
+                         'whose entry in the certificate table matches STATUS. '
+                         'STATUS can be generating, unavailable, deleted, error '
+                         'or notpassing.'),
     )
 
     def handle(self, *args, **options):
@@ -154,6 +155,17 @@ class Command(BaseCommand):
                                     u"Added a certificate generation task to the XQueue "
                                     u"for student %s in course '%s'. "
                                     u"The new certificate status is '%s'."
+                                ),
+                                student.id,
+                                unicode(course_key),
+                                ret
+                            )
+                        else:
+                            LOGGER.info(
+                                (
+                                    u"generate_user_certificates did not return status of generating "
+                                    u"for student %s in course '%s'. "
+                                    u"The certificate status is '%s'."
                                 ),
                                 student.id,
                                 unicode(course_key),
