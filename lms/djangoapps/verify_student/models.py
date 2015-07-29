@@ -1236,6 +1236,27 @@ class VerificationStatus(models.Model):
         except cls.DoesNotExist:
             return ""
 
+    @classmethod
+    def check_user_has_completed_checkpoint(cls, user_id, course_key, related_assessment_location):
+        """
+        Get re-verification status against a user for a 'course_id' and checkpoint.
+        Only 'approved' and 'submitted' statuses are considered as completed.
+
+        Args:
+            user_id(str): User Id string
+            course_key(str): A CourseKey of a course
+            related_assessment_location(str): Verification checkpoint location
+
+        Returns:
+            Boolean
+        """
+        return cls.objects.filter(
+            user_id=user_id,
+            checkpoint__course_id=course_key,
+            checkpoint__checkpoint_location=related_assessment_location,
+            status__in=['submitted', 'approved']
+        ).exists()
+
 
 # DEPRECATED: this feature has been permanently enabled.
 # Once the application code has been updated in production,
