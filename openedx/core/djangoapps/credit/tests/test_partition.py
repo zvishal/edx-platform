@@ -3,10 +3,13 @@
 Tests for In-Course Reverification Access Control Partition scheme
 """
 
+import unittest
+
 from mock import Mock
 
-from opaque_keys.edx.keys import CourseKey
+from django.conf import settings
 
+from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.credit.partition_schemes import (
     VerificationPartitionScheme,
     is_enrolled_in_verified_mode,
@@ -27,6 +30,7 @@ from lms.djangoapps.verify_student.models import (
 )
 
 
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
 class ReverificationPartitionTest(ModuleStoreTestCase):
     """Tests for the Reverification Partition Scheme. """
 
