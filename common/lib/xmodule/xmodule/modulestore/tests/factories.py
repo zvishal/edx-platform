@@ -152,6 +152,7 @@ class SampleCourseFactory(CourseFactory):
         user_id = kwargs.get('user_id', ModuleStoreEnum.UserID.test)
         with store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, None):
             course = super(SampleCourseFactory, cls)._create(target_class, **kwargs)
+            course_loc = course.location  # pylint: disable=attribute-defined-outside-init
 
             def create_sub_tree(parent_loc, block_info):
                 """Recursively creates a sub_tree on this parent_loc with this block."""
@@ -166,9 +167,9 @@ class SampleCourseFactory(CourseFactory):
                     create_sub_tree(block.location, tree)
 
             for tree in block_info_tree:
-                create_sub_tree(course.location, tree)
+                create_sub_tree(course_loc, tree)
 
-            store.publish(course.location, user_id)
+            store.publish(course_loc, user_id)
         return course
 
 

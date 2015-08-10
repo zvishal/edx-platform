@@ -43,21 +43,12 @@ class BlockMock(Mock):
     """Mock class that we fill with our "handler" methods."""
 
     def handler(self, _context):
-        """
-        A test handler method.
-        """
         pass
 
     def handler1(self, _context):
-        """
-        A test handler method.
-        """
         pass
 
     def handler_a(self, _context):
-        """
-        A test handler method.
-        """
         pass
 
     @property
