@@ -595,57 +595,6 @@
           margin: 2px 0 0 0;
         }
 
-        // CASE: expandable
-        &.is-expandable {
-
-          .wrapper-tip {
-
-            .message-title, .message-copy {
-              margin-bottom: 0;
-              display: inline-block;
-            }
-
-            .message-title .value, .message-copy {
-              @include transition(color $tmg-f2 ease-in-out 0s);
-            }
-
-            // STATE: hover
-            &:hover {
-              cursor: pointer;
-
-              .message-title .value, .message-copy, .ui-toggle-expansion {
-                color: $link-color;
-              }
-            }
-          }
-
-          .wrapper-extended {
-            @include transition(opacity $tmg-f2 ease-in-out 0);
-            display: none;
-            opacity: 0.0;
-          }
-        }
-
-        // STATE: is expanded
-        &.is-expanded {
-
-          .ui-toggle-expansion {
-            @include rtl {
-              @include transform(rotate(-90deg));
-            }
-
-            @include ltr {
-              @include transform(rotate(90deg));
-            }
-            @include transform-origin(50% 50%);
-          }
-
-          .wrapper-extended {
-            display: block;
-            opacity: 1.0;
-          }
-        }
-
         // TYPE: upsell
         &.message-upsell {
 
@@ -656,33 +605,17 @@
               @include float(left);
             }
 
-            .ui-toggle-expansion {
-              @include transition(all $tmg-f2 ease-in-out 0s);
-              @include font-size(18);
-              display: inline-block;
-              vertical-align: middle;
-              margin-right: ($baseline/4);
-            }
-
-            .message-copy {
+            .message-actions {
               @include float(right);
             }
           }
 
-          .wrapper-extended {
-            padding: ($baseline/2) 0;
-
-            .message-copy {
-              margin-bottom: $baseline;
-            }
-          }
-
           .action-upgrade {
-            @extend %btn-primary-green;
+            @extend %btn-pl-green-base;
             @include clearfix();
+            @include padding(8px, $baseline, 8px, ($baseline*2));
             position: relative;
             left: ($baseline/2);
-            padding: 8px $baseline 8px ($baseline*2);
 
             .deco-graphic {
               position: absolute;
