@@ -221,3 +221,79 @@ class UserPartitionTransformation(CourseStructureTransformation):
                 ).check_group_access(user_groups),
                 remove_orphans
             )
+
+
+class ContentLibraryTransformation(CourseStructureTransformation):
+    def collect(self, course_key, block_structure, xblock_dict):
+        """
+        Computes any information for each XBlock that's necessary to execute
+        this transformation's apply method.
+
+        Arguments:
+            course_key (CourseKey)
+            block_structure (CourseBlockStructure)
+            xblock_dict (dict[UsageKey: XBlock])
+
+        Returns:
+            dict[UsageKey: dict]
+        """
+        result_dict = {block_key: {} for block_key in block_structure.get_block_keys()}
+
+        xblock = xblock_dict[block_structure.root_block_key]
+
+        # For each block, compute merged group access. Because this is a
+        # topological sort, we know a block's parents are guaranteed to
+        # already have merged group access computed before the block itself.
+        for block_key in block_structure.topological_traversal():
+            xblock = xblock_dict[block_key]
+            result_dict[block_key]['content_library_children'] = []
+            if getattr(xblock, 'display_name', None):
+                if getattr(xblock, 'display_name') == u'Library':
+            #        print xblock
+                    children = [child.location for child in xblock_dict[xblock.children[0]].get_children()]
+                    result_dict[block_key]['content_library_children'] =  children
+                    # print getattr(xblock, 'display_name')
+                    # print 'has_dynamic_children'
+                    # print xblock_dict[xblock.children[0]].has_dynamic_children()
+                    # print xblock_dict[xblock.children[0]].selected
+                    # print xblock_dict[xblock.children[0]].get_children()
+                    # print dir(xblock_dict[xblock.children[0]])
+    #                print dir(xblock_dict[xblock.children[0]])
+    #        parent_keys = block_structure.get_parents(block_key)
+
+        return result_dict
+
+    def apply(self, user, course_key, block_structure, block_data, remove_orphans):
+        print user
+        print 'apply'
+        """
+        Mutates block_structure and block_data based on the given user_info.
+
+        Arguments:
+            user (User)
+            course_key (CourseKey)
+            block_structure (CourseBlockStructure)
+            block_data (dict[UsageKey: CourseBlockData]).
+            remove_orphans (bool)
+        """
+    #    print block_data
+        for block_key, block_value in block_data.iteritems():
+            children = block_data[block_key].get_transformation_data(self, 'content_library_children')
+            print children
+            if children:
+                for child in children: 
+                    print block_data[child]
+                print 'jeeeeeeee'
+                print dir(block_structure)
+                print block_structure.get_block_keys()
+                print block_structure.get_children(block_key)
+        #        print children
+        # if not _has_access_to_course(user, 'staff', course_key):
+        #     block_structure.remove_block_if(
+        #         lambda block_key: not block_data[block_key].get_transformation_data(
+        #             self, 'merged_group_access'
+        #         ).check_group_access(user_groups),
+        #         remove_orphans
+        #     )
+        # for child in self._xmodule.get_child_descriptors():
+        # pass
