@@ -559,6 +559,8 @@ class UnitPublishingTest(ContainerBase):
     Tests of the publishing control and related widgets on the Unit page.
     """
 
+    from nose.plugins.multiprocess import MultiProcess
+    __multiprocess_can_split = True
     PUBLISHED_STATUS = "Publishing Status\nPublished (not yet released)"
     PUBLISHED_LIVE_STATUS = "Publishing Status\nPublished and Live"
     DRAFT_STATUS = "Publishing Status\nDraft (Unpublished changes)"
