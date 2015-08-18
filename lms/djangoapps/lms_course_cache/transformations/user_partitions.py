@@ -3,12 +3,7 @@
 """
 from courseware.access import _has_access_to_course
 from openedx.core.lib.course_cache.transformation import CourseStructureTransformation
-from openedx.core.djangoapps.user_api.partition_schemes import RandomUserPartitionScheme
-from openedx.core.djangoapps.course_groups.partition_scheme import CohortPartitionScheme
-
-# TODO 8874: Make it so we support all schemes instead of manually declaring them here.
-INCLUDE_SCHEMES = [CohortPartitionScheme, RandomUserPartitionScheme,]
-SCHEME_SUPPORTS_ASSIGNMENT = [RandomUserPartitionScheme,]
+from .helpers import get_user_partition_groups
 
 
 class MergedGroupAccess(object):
@@ -114,41 +109,10 @@ class MergedGroupAccess(object):
         else:
             return True
 
-
 class UserPartitionTransformation(CourseStructureTransformation):
     """
     ...
     """
-
-    @staticmethod
-    def _get_user_partition_groups(course_key, user_partitions, user):
-        """
-        Collect group ID for each partition in this course for this user.
-
-        Arguments:
-            course_key (CourseKey)
-            user_partitions (list[UserPartition])
-            user (User)
-
-        Returns:
-            dict[int: Group]: Mapping from user partitions to the group to which
-                the user belongs in each partition. If the user isn't in a group
-                for a particular partition, then that partition's ID will not be
-                in the dict.
-        """
-        partition_groups = {}
-        for partition in user_partitions:
-            if partition.scheme not in INCLUDE_SCHEMES:
-                continue
-            group = partition.scheme.get_group_for_user(
-                course_key,
-                user,
-                partition,
-                **({'assign': False} if partition.scheme in SCHEME_SUPPORTS_ASSIGNMENT else {})
-            )
-            if group is not None:
-                partition_groups[partition.id] = group
-        return partition_groups
 
     def collect(self, course_key, block_structure, xblock_dict):
         """
@@ -211,7 +175,7 @@ class UserPartitionTransformation(CourseStructureTransformation):
         if not user_partitions:
             return
 
-        user_groups = UserPartitionTransformation._get_user_partition_groups(
+        user_groups = get_user_partition_groups(
             course_key, user_partitions, user
         )
         if not _has_access_to_course(user, 'staff', course_key):
@@ -249,17 +213,9 @@ class ContentLibraryTransformation(CourseStructureTransformation):
             result_dict[block_key]['content_library_children'] = []
             if getattr(xblock, 'display_name', None):
                 if getattr(xblock, 'display_name') == u'Library':
-            #        print xblock
                     children = [child.location for child in xblock_dict[xblock.children[0]].get_children()]
                     result_dict[block_key]['content_library_children'] =  children
-                    # print getattr(xblock, 'display_name')
-                    # print 'has_dynamic_children'
-                    # print xblock_dict[xblock.children[0]].has_dynamic_children()
-                    # print xblock_dict[xblock.children[0]].selected
-                    # print xblock_dict[xblock.children[0]].get_children()
-                    # print dir(xblock_dict[xblock.children[0]])
-    #                print dir(xblock_dict[xblock.children[0]])
-    #        parent_keys = block_structure.get_parents(block_key)
+
 
         return result_dict
 
@@ -279,21 +235,113 @@ class ContentLibraryTransformation(CourseStructureTransformation):
     #    print block_data
         for block_key, block_value in block_data.iteritems():
             children = block_data[block_key].get_transformation_data(self, 'content_library_children')
+#            print block_structure.get_children(block_key)
+            xblock = block_data[block_key]
             print children
             if children:
-                for child in children: 
-                    print block_data[child]
-                print 'jeeeeeeee'
-                print dir(block_structure)
-                print block_structure.get_block_keys()
-                print block_structure.get_children(block_key)
-        #        print children
-        # if not _has_access_to_course(user, 'staff', course_key):
-        #     block_structure.remove_block_if(
-        #         lambda block_key: not block_data[block_key].get_transformation_data(
-        #             self, 'merged_group_access'
-        #         ).check_group_access(user_groups),
-        #         remove_orphans
-        #     )
-        # for child in self._xmodule.get_child_descriptors():
-        # pass
+                library = block_structure.get_children(block_key)
+                for lib in library:
+                    print lib
+                for child in children:
+                    print '--------child-----------'
+                    print dir(child)
+
+
+
+class SplitTestTransformation(CourseStructureTransformation):
+
+    @staticmethod
+    def check_split_access(split_test_groups, user_groups):
+        """
+        Check that user has access to specific split test group.
+        
+        Arguments: 
+            split_test_groups (list)
+            user_groups (dict[Partition Id: Group])
+
+        Returns:
+            bool
+        """
+        if split_test_groups:
+            for partition, group in user_groups.iteritems():
+                if group.id in split_test_groups:
+                    return True
+            return False
+        return True
+
+    def collect(self, course_key, block_structure, xblock_dict):
+        """
+        Computes any information for each XBlock that's necessary to execute
+        this transformation's apply method.
+
+        Arguments:
+            course_key (CourseKey)
+            block_structure (CourseBlockStructure)
+            xblock_dict (dict[UsageKey: XBlock])
+
+        Returns:
+            dict[UsageKey: dict]
+        """
+        result_dict = {block_key: {} for block_key in block_structure.get_block_keys()}
+
+        # Check potential previously set values for user_partitions and split_test_partitions
+        xblock = xblock_dict[block_structure.root_block_key]
+        user_partitions = getattr(xblock, 'user_partitions', [])
+        split_test_partitions = getattr(xblock, 'split_test_partition', []) or []
+        result_dict[block_structure.root_block_key]['split_test_partition'] = split_test_partitions
+        # For each block, check if there is an split_test block. 
+        # If split_test is found, check it's user_partition value and get children. 
+        # Set split_test_group on each of the children for fast retrival in apply phase. 
+        # Add same group to childrens children, because due to structure restrictions first level 
+        # children are verticals.
+        for block_key in block_structure.topological_traversal():
+            xblock = xblock_dict[block_key]
+            category = getattr(xblock, 'category', None)
+            if category == 'split_test':
+                for user_partition in user_partitions: 
+                    if user_partition.id == xblock.user_partition_id: 
+                        if user_partition not in split_test_partitions:
+                            split_test_partitions.append(user_partition)
+                        for child in xblock.children:
+                            for group in user_partition.groups:
+                                child_location = xblock.group_id_to_child.get(unicode(group.id), None)
+                                if child_location == child:
+                                    result_dict[child]['split_test_groups'] = [group.id]
+                                    for component in xblock_dict[child].children:
+                                        result_dict[component]['split_test_groups'] = [group.id]
+                result_dict[block_structure.root_block_key]['split_test_partition'] = split_test_partitions
+
+        return result_dict
+
+    def apply(self, user, course_key, block_structure, block_data, remove_orphans):
+        """
+        Mutates block_structure and block_data based on the given user_info.
+
+        Arguments:
+            user (User)
+            course_key (CourseKey)
+            block_structure (CourseBlockStructure)
+            block_data (dict[UsageKey: CourseBlockData]).
+            remove_orphans (bool)
+        """
+        user_partitions = block_data[block_structure.root_block_key].get_transformation_data(
+            self, 'split_test_partition'
+        )
+
+        # If there are no split test user partitions, this transformation is a no-op,
+        # so there is nothing to apply.
+        if not user_partitions:
+            return
+
+        user_groups = get_user_partition_groups(
+            course_key, user_partitions, user
+        )
+
+        if not _has_access_to_course(user, 'staff', course_key):
+            block_structure.remove_block_if(
+                lambda block_key: not SplitTestTransformation.check_split_access(
+                    block_data[block_key].get_transformation_data(
+                        self, 'split_test_groups', default=[]
+                    ), user_groups),
+                remove_orphans
+            )

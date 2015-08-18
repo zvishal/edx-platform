@@ -16,7 +16,8 @@ LMS_COURSE_TRANSFORMATIONS = {
     visibility.VisibilityTransformation(),
     start_date.StartDateTransformation(),
     user_partitions.UserPartitionTransformation(),
-    user_partitions.ContentLibraryTransformation(),
+#    user_partitions.ContentLibraryTransformation(),
+    user_partitions.SplitTestTransformation(),
 }
 
 
