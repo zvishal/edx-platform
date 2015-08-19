@@ -54,7 +54,6 @@ class UserPartitionTransformationTestCase(CourseStructureTestCase):
         # Set up cohorts.
         config_course_cohorts(self.course, is_cohorted=True)
         self.cohorts = [CohortFactory(course_id=self.course.id) for __ in enumerate(self.groups)]
-        self.add_user_to_cohort_group(0)
 
     def get_test_course_hierarchy(self):
         """
@@ -103,15 +102,17 @@ class UserPartitionTransformationTestCase(CourseStructureTestCase):
             ]
         }
 
-    def add_user_to_cohort_group(self, cohort_index):
+    def add_user_to_cohort_group(self, cohort_index, group_id=None):
         """
         Add user to cohort, link cohort to content group, and update blocks.
         """
         add_user_to_cohort(self.cohorts[cohort_index], self.user.username)
+        if not group_id:
+            group_id = self.groups[cohort_index].id
         link_cohort_to_partition_group(
             self.cohorts[cohort_index],
             self.user_partition.id,
-            self.groups[cohort_index].id,
+            group_id,
         )
         store = modulestore()
         for __, block in self.blocks.iteritems():
@@ -128,7 +129,51 @@ class UserPartitionTransformationTestCase(CourseStructureTestCase):
         xblocks = (self.blocks[ref] for ref in refs)
         return set([xblock.location for xblock in xblocks])
 
+    def test_course_structure_with_user_partition_not_enrolled(self):
+        self.transformation = UserPartitionTransformation()
+
+        __, raw_data_blocks = get_course_blocks(
+            self.user,
+            self.course.id,
+            transformations={}
+        )
+        self.assertEqual(len(raw_data_blocks), len(self.blocks))
+
+        clear_course_from_cache(self.course.id)
+        __, trans_data_blocks = get_course_blocks(
+            self.user,
+            self.course.id,
+            transformations={self.transformation}
+        )
+        self.assertEqual(
+            set(trans_data_blocks.keys()),
+            self.get_block_key_set('course', 'chapter1')
+        )
+
     def test_course_structure_with_user_partition_enrolled(self):
+        self.add_user_to_cohort_group(0, 2)
+        self.transformation = UserPartitionTransformation()
+
+        __, raw_data_blocks = get_course_blocks(
+            self.user,
+            self.course.id,
+            transformations={}
+        )
+        self.assertEqual(len(raw_data_blocks), len(self.blocks))
+
+        clear_course_from_cache(self.course.id)
+        __, trans_data_blocks = get_course_blocks(
+            self.user,
+            self.course.id,
+            transformations={self.transformation}
+        )
+        self.assertEqual(
+            set(trans_data_blocks.keys()),
+            self.get_block_key_set('course', 'chapter1', 'lesson1', 'vertical1')
+        )
+
+    def test_course_structure_with_user_partition_enrolled_visible_html(self):
+        self.add_user_to_cohort_group(0)
         self.transformation = UserPartitionTransformation()
 
         __, raw_data_blocks = get_course_blocks(
@@ -180,9 +225,6 @@ class SplitTestTransformationTestCase(CourseStructureTestCase):
         self.password = 'test'
         self.user = UserFactory.create(password=self.password)
         CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id, is_active=True)
-
-        # Add user to split test.
-        self.add_user_to_splittest_group()
 
     def get_test_course_hierarchy(self):
         """
@@ -254,7 +296,7 @@ class SplitTestTransformationTestCase(CourseStructureTestCase):
             ]
         }
 
-    def add_user_to_splittest_group(self):
+    def add_user_to_splittest_group(self, assign=True):
         """
         Add user to split test, get group for him and update blocks.
         """
@@ -262,7 +304,7 @@ class SplitTestTransformationTestCase(CourseStructureTestCase):
             CourseKey.from_string(unicode(self.course.id)),
             self.user,
             self.split_test_user_partition,
-            assign=True,
+            assign=assign,
         )
         store = modulestore()
         for __, block in self.blocks.iteritems():
@@ -281,6 +323,38 @@ class SplitTestTransformationTestCase(CourseStructureTestCase):
 
     def test_course_structure_with_user_split_test(self):
         self.transformation = SplitTestTransformation()
+
+        # Add user to split test.
+        self.add_user_to_splittest_group(assign=False)
+
+        __, raw_data_blocks = get_course_blocks(
+            self.user,
+            self.course.id,
+            transformations={}
+        )
+        self.assertEqual(len(raw_data_blocks), len(self.blocks))
+
+        clear_course_from_cache(self.course.id)
+        __, trans_data_blocks = get_course_blocks(
+            self.user,
+            self.course.id,
+            transformations={self.transformation}
+        )
+
+        user_groups = get_user_partition_groups(
+            self.course.id, [self.split_test_user_partition], self.user
+        )
+
+        self.assertEqual(
+            set(trans_data_blocks.keys()),
+            self.get_block_key_set('course', 'chapter1', 'lesson1', 'vertical1', 'split_test1')
+        )
+
+    def test_course_structure_with_user_split_test_group_assigned(self):
+        self.transformation = SplitTestTransformation()
+
+        # Add user to split test.
+        self.add_user_to_splittest_group()
 
         __, raw_data_blocks = get_course_blocks(
             self.user,
