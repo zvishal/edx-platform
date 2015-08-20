@@ -6,7 +6,7 @@ from django.core.cache import get_cache
 
 from openedx.core.lib.course_cache.interface import CourseCacheInterface
 
-from transformations import start_date, user_partitions, visibility
+from transformations import start_date, user_partitions, visibility, split_test, library_content
 
 
 _cache_interface = None
@@ -16,8 +16,8 @@ LMS_COURSE_TRANSFORMATIONS = {
     visibility.VisibilityTransformation(),
     start_date.StartDateTransformation(),
     user_partitions.UserPartitionTransformation(),
-#    user_partitions.ContentLibraryTransformation(),
-    user_partitions.SplitTestTransformation(),
+    library_content.ContentLibraryTransformation(),
+    split_test.SplitTestTransformation(),
 }
 
 
