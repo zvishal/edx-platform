@@ -191,7 +191,7 @@ class BrowseTeamsPage(CoursePage, PaginatedUIMixin):
             self.wait_for_ajax()
 
 
-class CreateTeamPage(CoursePage, FieldsMixin):
+class CreateOrEditTeamPage(CoursePage, FieldsMixin):
     """
     Create team page.
     """
@@ -202,7 +202,7 @@ class CreateTeamPage(CoursePage, FieldsMixin):
         representation of a topic following the same convention as a
         course module's topic.
         """
-        super(CreateTeamPage, self).__init__(browser, course_id)
+        super(CreateOrEditTeamPage, self).__init__(browser, course_id)
         self.topic = topic
         self.url_path = "teams/#topics/{topic_id}/create-team".format(topic_id=self.topic['id'])
 
@@ -231,6 +231,11 @@ class CreateTeamPage(CoursePage, FieldsMixin):
     def validation_message_text(self):
         """Get the error message text"""
         return self.q(css='.create-team.wrapper-msg .copy')[0].text
+
+    @property
+    def warning_message_text(self):
+        """Get the fixed warning message text"""
+        return self.q(css='.team-info.wrapper-msg-fixed .copy')[0].text
 
     def submit_form(self):
         """Click on create team button"""
@@ -388,3 +393,12 @@ class TeamPage(CoursePage, PaginatedUIMixin):
     def new_post_button_present(self):
         """ Returns True if New Post button is present else False """
         return self.q(css='.discussion-module .new-post-btn').present
+
+    @property
+    def edit_team_button_present(self):
+        """ Returns True if Edit Team button is present else False """
+        return self.q(css='.form-actions .action-edit-team').present
+
+    def click_edit_team_button(self):
+        """ Click on Edit Team button"""
+        self.q(css='.form-actions .action-edit-team').first.click()
