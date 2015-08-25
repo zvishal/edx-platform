@@ -8,6 +8,8 @@
     <% } %>
 
     <% if (showEditButton) { %>
-        <button class="btn btn-secondary action-edit-team"><%- gettext("Edit Team") %></button>
+        <button class="btn btn-secondary action-edit-team">
+            <%- gettext("Edit Team") %>
+        </button>
     <% } %>
 </div>

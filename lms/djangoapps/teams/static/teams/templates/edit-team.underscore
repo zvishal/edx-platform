@@ -20,7 +20,8 @@
 <% if (isNew) { %>
     <div class="form-instructions create-team-instructions">
         <p class="copy">
-            <%- gettext("Enter information to describe your team. You cannot change these details after you create the team.") %></p>
+            <%- gettext("Enter information to describe your team. You cannot change these details after you create the team.") %>
+        </p>
     </div>
 <% } else { %>
     <div class="team-info wrapper-msg-fixed is-incontext urgency-low warning" tabindex="-1">
@@ -30,7 +31,9 @@
                 <p>
                     <%=
                         interpolate_text(
-                            _.escape(gettext("The team that you are editing has {total_members} members. Notify team members prior to making significant changes.")),
+                            _.escape(
+                                gettext("The team that you are editing has {total_members} members. Notify team members prior to making significant changes.")
+                            ),
                             {
                                 'total_members': totalMembers
                             }
@@ -51,10 +54,14 @@
         <fieldset>
             <div class="u-field u-field-optional_description">
                 <legend aria-describedby="optional-characteristics-help">
-                    <p class="u-field-title"><%- gettext('Optional Characteristics') %></p>
+                    <p class="u-field-title">
+                        <%- gettext('Optional Characteristics') %>
+                    </p>
                 </legend>
                 <span id="optional-characteristics-help" class="u-field-message">
-                    <p class="u-field-message-help"><%- gettext('Help other learners decide whether to join your team by specifying some characteristics for your team. Choose carefully, because fewer people might be interested in joining your team if it seems too restrictive.') %></p>
+                    <p class="u-field-message-help">
+                        <%- gettext('Help other learners decide whether to join your team by specifying some characteristics for your team. Choose carefully, because fewer people might be interested in joining your team if it seems too restrictive.') %>
+                    </p>
                 </span>
             </div>
         </fieldset>
@@ -65,7 +72,9 @@
     <button class="action action-primary">
         <%=
             interpolate_text(
-                _.escape(gettext("{primaryButtonTitle} {span_start}a team{span_end}")),
+                _.escape(
+                    gettext("{primaryButtonTitle} {span_start}a team{span_end}")
+                ),
                 {
                     'primaryButtonTitle': primaryButtonTitle, 'span_start': '<span class="sr">', 'span_end': '</span>'
                 }
@@ -75,7 +84,9 @@
     <button class="action action-cancel">
         <%=
             interpolate_text(
-                _.escape(gettext("Cancel {span_start} team {span_end}")),
+                _.escape(
+                    gettext("Cancel {span_start} team {span_end}")
+                ),
                 {
                     'span_start': '<span class="sr">', 'span_end': '</span>'
                 }
