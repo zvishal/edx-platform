@@ -30,23 +30,6 @@ class StringListField(serializers.CharField):
         return [int(item) for item in items]
 
 
-# def serialize_course(course, include_expired=False):
-#     """TODO """
-#     course_modes = CourseMode.modes_for_course(
-#         course.id,
-#         include_expired=include_expired,
-#         only_selectable=False
-#     )
-
-#     return {
-#         'course_id': unicode(course.id),
-#         'enrollment_start': course.enrollment_start,
-#         'enrollment_end': course.enrollment_end,
-#         'course_start': course.start,
-#         'course_end': course.end,
-#         'invite_only': course.invitation_only,
-#         'course_modes': ModeSerializer(course_modes, many=True).data,
-#     }
 class CourseSerializer(serializers.Serializer):
     """TODO """
 
@@ -84,30 +67,6 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
     """
     course_details = CourseSerializer(source="course_overview")
     user = serializers.SerializerMethodField('get_username')
-
-    def validate(self, obj):
-        """TODO """
-        if obj.course is None:
-            msg = u"Course '{0}' does not exist (maybe deleted), in which User (user_id: '{1}') is enrolled.".format(
-                obj.course_id,
-                obj.user.id
-            )
-            log.warning(msg)
-
-        return obj
-
-    @property
-    def data(self):
-        serialized_data = super(CourseEnrollmentSerializer, self).data
-
-        # filter the results with empty courses 'course_details'
-        if isinstance(serialized_data, dict):
-            if serialized_data.get('course_details') is None:
-                return None
-
-            return serialized_data
-
-        return [enrollment for enrollment in serialized_data if enrollment.get('course_details')]
 
     def get_username(self, model):
         """Retrieves the username from the associated model."""
