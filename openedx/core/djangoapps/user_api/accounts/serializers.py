@@ -153,7 +153,7 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
     """
     profile_image = serializers.SerializerMethodField("_get_profile_image")
     requires_parental_consent = serializers.SerializerMethodField("get_requires_parental_consent")
-    language_proficiencies = LanguageProficiencySerializer(many=True, allow_add_remove=True, required=False)
+    language_proficiencies = LanguageProficiencySerializer(many=True, required=False)
 
     class Meta(object):  # pylint: disable=missing-docstring
         model = UserProfile

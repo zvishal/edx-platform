@@ -1,4 +1,5 @@
-from rest_framework import pagination, serializers
+from rest_framework import serializers
+import openedx.core.lib.api.compat_pagination as pagination
 
 
 class PaginationSerializer(pagination.PaginationSerializer):
