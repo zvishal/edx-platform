@@ -9,10 +9,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
-from rest_framework.authentication import (
-    SessionAuthentication,
-    OAuth2Authentication
-)
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_oauth.authentication import OAuth2Authentication
 from rest_framework import status
 from rest_framework import permissions
 from django.db.models import Count

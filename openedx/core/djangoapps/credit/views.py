@@ -19,7 +19,8 @@ from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 import pytz
 from rest_framework import viewsets, mixins, permissions, authentication
-
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_oauth.authentication import OAuth2Authentication
 from util.json_request import JsonResponse
 from util.date_utils import from_timestamp
 from openedx.core.djangoapps.credit import api
@@ -377,7 +378,7 @@ class CreditCourseViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, view
     lookup_value_regex = settings.COURSE_KEY_REGEX
     queryset = CreditCourse.objects.all()
     serializer_class = CreditCourseSerializer
-    authentication_classes = (authentication.OAuth2Authentication, authentication.SessionAuthentication,)
+    authentication_classes = (OAuth2Authentication, SessionAuthentication,)
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
 
     # This CSRF exemption only applies when authenticating without SessionAuthentication.

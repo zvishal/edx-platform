@@ -2,7 +2,8 @@
 import logging
 
 from django.http import Http404
-from rest_framework.authentication import OAuth2Authentication, SessionAuthentication
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_oauth.authentication import OAuth2Authentication
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
