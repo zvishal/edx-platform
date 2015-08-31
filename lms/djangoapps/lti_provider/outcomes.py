@@ -94,7 +94,6 @@ def generate_replace_result_xml(result_sourcedid, score):
     )
     return etree.tostring(xml, xml_declaration=True, encoding='UTF-8')
 
-
 def sign_and_send_replace_result(assignment, xml):
     """
     Take the XML document generated in generate_replace_result_xml, and sign it
@@ -112,7 +111,12 @@ def sign_and_send_replace_result(assignment, xml):
     # message. Testing with Canvas throws an error when this field is included.
     # This code may need to be revisited once we test with other LMS platforms,
     # and confirm whether there's a bug in Canvas.
-    oauth = requests_oauthlib.OAuth1(consumer_key, consumer_secret)
+    oauth = requests_oauthlib.OAuth1(
+        consumer_key,
+        consumer_secret,
+        signature_type='body',
+        signature_method='HMAC-SHA1',
+    )
 
     headers = {'content-type': 'application/xml'}
     response = requests.post(
