@@ -17,7 +17,6 @@ from courseware.models import StudentModule
 from edxmako.shortcuts import render_to_string
 from lang_pref import LANGUAGE_KEY
 
-from submissions import api as sub_api  # installed from the edx-submissions repository
 from student.models import anonymous_id_for_user
 from openedx.core.djangoapps.user_api.models import UserPreference
 
@@ -221,6 +220,11 @@ def reset_student_attempts(course_id, student, module_state_key, delete_module=F
                     pass
     except ItemNotFoundError:
         log.warning("Could not find %s in modulestore when attempting to reset attempts.", module_state_key)
+
+    # Installed from the edx-submissions repository
+    # We need to import this here to avoid a gnarly circular dependency:
+    # edx-submissions --> DRF --> Django translation --> SGA XBlock --> edx-submissions
+    from submissions import api as sub_api
 
     # Reset the student's score in the submissions API
     # Currently this is used only by open assessment (ORA 2)
