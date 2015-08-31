@@ -34,6 +34,9 @@ class CourseRetrieveUpdateView(RetrieveUpdateAPIView):
     permission_classes = (ApiKeyOrModelPermission,)
     serializer_class = CourseSerializer
 
+    # TODO -- explain this more
+    queryset = CourseMode.objects.all()
+
     def get_object(self, queryset=None):
         course_id = self.kwargs.get(self.lookup_url_kwarg)
         course = Course.get(course_id)

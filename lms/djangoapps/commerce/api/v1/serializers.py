@@ -68,7 +68,7 @@ class CourseSerializer(serializers.Serializer):
 
             # Find the earliest upgrade deadline
             for mode in attrs['modes']:
-                expires = mode.expiration_datetime
+                expires = mode.get("expires")
                 if expires:
                     # If we don't already have an upgrade_deadline value, use datetime.max so that we can actually
                     # complete the comparison.
@@ -82,9 +82,13 @@ class CourseSerializer(serializers.Serializer):
 
         return attrs
 
-    def restore_object(self, attrs, instance=None):
-        if instance is None:
-            return Course(attrs['id'], attrs['modes'], attrs['verification_deadline'])
+    def create(self, validated_data):
+        """TODO """
+        modes = CourseMode.objects.filter(course_id=validated_data['id'])
+        course = Course(validated_data['id'], modes, validated_data['verification_deadline'])
+        return course
 
-        instance.update(attrs)
+    def update(self, instance, validated_data):
+        """TODO """
+        instance.update(validated_data)
         return instance
