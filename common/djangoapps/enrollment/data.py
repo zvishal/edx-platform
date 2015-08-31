@@ -11,7 +11,7 @@ from enrollment.errors import (
     CourseNotFoundError, CourseEnrollmentClosedError, CourseEnrollmentFullError,
     CourseEnrollmentExistsError, UserNotFoundError, InvalidEnrollmentAttribute
 )
-from enrollment.serializers import CourseEnrollmentSerializer, CourseField
+from enrollment.serializers import CourseEnrollmentSerializer, serialize_course
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from student.models import (
     CourseEnrollment, NonExistentCourseError, EnrollmentClosedError,
@@ -271,4 +271,4 @@ def get_course_enrollment_info(course_id, include_expired=False):
         log.warning(msg)
         raise CourseNotFoundError(msg)
     else:
-        return CourseField().to_native(course, include_expired=include_expired)
+        return serialize_course(course, include_expired=include_expired)

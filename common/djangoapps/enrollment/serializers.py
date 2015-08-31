@@ -12,6 +12,25 @@ from student.models import CourseEnrollment
 log = logging.getLogger(__name__)
 
 
+def serialize_course(course, include_expired=False):
+    """TODO """
+    course_modes = CourseMode.modes_for_course(
+        course.id,
+        include_expired=include_expired,
+        only_selectable=False
+    )
+
+    return {
+        'course_id': unicode(course.id),
+        'enrollment_start': course.enrollment_start,
+        'enrollment_end': course.enrollment_end,
+        'course_start': course.start,
+        'course_end': course.end,
+        'invite_only': course.invitation_only,
+        'course_modes': ModeSerializer(course_modes, many=True).data,
+    }
+
+
 class StringListField(serializers.CharField):
     """Custom Serializer for turning a comma delimited string into a list.
 
@@ -30,34 +49,6 @@ class StringListField(serializers.CharField):
         return [int(item) for item in items]
 
 
-class CourseField(serializers.RelatedField):
-    """Read-Only representation of course enrollment information.
-
-    Aggregates course information from the CourseDescriptor as well as the Course Modes configured
-    for enrolling in the course.
-
-    """
-
-    def to_native(self, course, **kwargs):
-        course_modes = ModeSerializer(
-            CourseMode.modes_for_course(
-                course.id,
-                include_expired=kwargs.get('include_expired', False),
-                only_selectable=False
-            )
-        ).data
-
-        return {
-            'course_id': unicode(course.id),
-            'enrollment_start': course.enrollment_start,
-            'enrollment_end': course.enrollment_end,
-            'course_start': course.start,
-            'course_end': course.end,
-            'invite_only': course.invitation_only,
-            'course_modes': course_modes,
-        }
-
-
 class CourseEnrollmentSerializer(serializers.ModelSerializer):
     """Serializes CourseEnrollment models
 
@@ -65,7 +56,7 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
     the Course Descriptor and course modes, to give a complete representation of course enrollment.
 
     """
-    course_details = serializers.SerializerMethodField('get_course_details')
+    course_details = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField('get_username')
 
     @property
@@ -90,8 +81,7 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
             log.warning(msg)
             return None
 
-        field = CourseField()
-        return field.to_native(model.course)
+        return serialize_course(model.course)
 
     def get_username(self, model):
         """Retrieves the username from the associated model."""
