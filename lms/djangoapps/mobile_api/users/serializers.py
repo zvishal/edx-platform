@@ -77,7 +77,7 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
     """
     Serializes CourseEnrollment models
     """
-    course = CourseOverviewField(source="course_overview")
+    course = CourseOverviewField(source="course_overview", read_only=True)
     certificate = serializers.SerializerMethodField('get_certificate')
 
     def get_certificate(self, model):

@@ -18,7 +18,7 @@ class CourseModeSerializer(serializers.ModelSerializer):
     """ CourseMode serializer. """
     name = serializers.CharField(source='mode_slug')
     price = serializers.IntegerField(source='min_price')
-    expires = serializers.DateTimeField(source='expiration_datetime', required=False, blank=True)
+    expires = serializers.DateTimeField(source='expiration_datetime', required=False, format=None)
 
     def get_identity(self, data):
         try:
@@ -56,8 +56,8 @@ class CourseSerializer(serializers.Serializer):
     """ Course serializer. """
     id = serializers.CharField(validators=[validate_course_id])  # pylint: disable=invalid-name
     name = serializers.CharField(read_only=True)
-    verification_deadline = serializers.DateTimeField(blank=True)
-    modes = CourseModeSerializer(many=True, allow_add_remove=True)
+    verification_deadline = serializers.DateTimeField(format=None)
+    modes = CourseModeSerializer(many=True)
 
     def validate(self, attrs):
         """ Ensure the verification deadline occurs AFTER the course mode enrollment deadlines. """

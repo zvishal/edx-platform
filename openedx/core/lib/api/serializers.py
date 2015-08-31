@@ -55,7 +55,7 @@ class CollapsedReferenceSerializer(serializers.HyperlinkedModelSerializer):
 
         super(CollapsedReferenceSerializer, self).__init__(*args, **kwargs)
 
-        self.fields[id_source] = serializers.CharField(read_only=True, source=id_source)
+        self.fields[id_source] = serializers.CharField(read_only=True)
         self.fields['url'].view_name = view_name
         self.fields['url'].lookup_field = lookup_field
 
