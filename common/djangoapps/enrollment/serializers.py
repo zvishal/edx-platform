@@ -12,25 +12,6 @@ from student.models import CourseEnrollment
 log = logging.getLogger(__name__)
 
 
-def serialize_course(course, include_expired=False):
-    """TODO """
-    course_modes = CourseMode.modes_for_course(
-        course.id,
-        include_expired=include_expired,
-        only_selectable=False
-    )
-
-    return {
-        'course_id': unicode(course.id),
-        'enrollment_start': course.enrollment_start,
-        'enrollment_end': course.enrollment_end,
-        'course_start': course.start,
-        'course_end': course.end,
-        'invite_only': course.invitation_only,
-        'course_modes': ModeSerializer(course_modes, many=True).data,
-    }
-
-
 class StringListField(serializers.CharField):
     """Custom Serializer for turning a comma delimited string into a list.
 
@@ -49,6 +30,51 @@ class StringListField(serializers.CharField):
         return [int(item) for item in items]
 
 
+# def serialize_course(course, include_expired=False):
+#     """TODO """
+#     course_modes = CourseMode.modes_for_course(
+#         course.id,
+#         include_expired=include_expired,
+#         only_selectable=False
+#     )
+
+#     return {
+#         'course_id': unicode(course.id),
+#         'enrollment_start': course.enrollment_start,
+#         'enrollment_end': course.enrollment_end,
+#         'course_start': course.start,
+#         'course_end': course.end,
+#         'invite_only': course.invitation_only,
+#         'course_modes': ModeSerializer(course_modes, many=True).data,
+#     }
+class CourseSerializer(serializers.Serializer):
+    """TODO """
+
+    course_id = serializers.CharField(source="id")
+    enrollment_start = serializers.DateTimeField(format=None)
+    enrollment_end = serializers.DateTimeField(format=None)
+    course_start = serializers.DateTimeField(source="start", format=None)
+    course_end = serializers.DateTimeField(source="end", format=None)
+    invite_only = serializers.BooleanField(source="invitation_only")
+    course_modes = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        self.include_expired = kwargs.pop("include_expired", False)
+        return super(CourseSerializer, self).__init__(*args, **kwargs)
+
+    def get_course_modes(self, obj):
+        """TODO """
+        course_modes = CourseMode.modes_for_course(
+            obj.id,
+            include_expired=self.include_expired,
+            only_selectable=False
+        )
+        return [
+            ModeSerializer(mode).data
+            for mode in course_modes
+        ]
+
+
 class CourseEnrollmentSerializer(serializers.ModelSerializer):
     """Serializes CourseEnrollment models
 
@@ -56,8 +82,19 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
     the Course Descriptor and course modes, to give a complete representation of course enrollment.
 
     """
-    course_details = serializers.SerializerMethodField()
+    course_details = CourseSerializer(source="course_overview")
     user = serializers.SerializerMethodField('get_username')
+
+    def validate(self, obj):
+        """TODO """
+        if obj.course is None:
+            msg = u"Course '{0}' does not exist (maybe deleted), in which User (user_id: '{1}') is enrolled.".format(
+                obj.course_id,
+                obj.user.id
+            )
+            log.warning(msg)
+
+        return obj
 
     @property
     def data(self):
@@ -71,17 +108,6 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
             return serialized_data
 
         return [enrollment for enrollment in serialized_data if enrollment.get('course_details')]
-
-    def get_course_details(self, model):
-        if model.course is None:
-            msg = u"Course '{0}' does not exist (maybe deleted), in which User (user_id: '{1}') is enrolled.".format(
-                model.course_id,
-                model.user.id
-            )
-            log.warning(msg)
-            return None
-
-        return serialize_course(model.course)
 
     def get_username(self, model):
         """Retrieves the username from the associated model."""
