@@ -84,11 +84,16 @@ class CourseSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """TODO """
-        modes = CourseMode.objects.filter(course_id=validated_data['id'])
-        course = Course(validated_data['id'], modes, validated_data['verification_deadline'])
+        course = Course(
+            validated_data['id'],
+            verification_deadline=validated_data['verification_deadline']
+        )
+        course.update(validated_data)
+        course.save()
         return course
 
     def update(self, instance, validated_data):
         """TODO """
         instance.update(validated_data)
+        instance.save()
         return instance
