@@ -293,12 +293,19 @@ div.course-wrapper {
       }
     }
     .proctored-exam-skip-confirm-wrapper {
-      padding: 20px 30px;
-      background-color: black;
+      padding: $baseline 30px;
+      background-color: rgb(242, 244, 245);
       border-left: 5px solid $red;
-        .msg-title,
+        .msg-title {
+          margin-bottom: 12px;
+          font-size: 22px;
+          font-weight: 600;
+        }
         .msg-content {
-            color: white;
+          color: rgb(121, 118, 118);;
+          strong {
+            font-weight: 600;
+          }
         }
         .proctored-exam-skip-actions {
           margin-top: 10px;
