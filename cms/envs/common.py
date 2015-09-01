@@ -263,6 +263,14 @@ from lms.envs.common import (
 CSRF_COOKIE_AGE = 60 * 60 * 24 * 7 * 52
 
 
+######################### Django Rest Framework ########################
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'openedx.core.lib.api.paginators.DefaultPagination',
+    'PAGE_SIZE': 10,
+}
+
+
 #################### CAPA External Code Evaluation #############################
 XQUEUE_INTERFACE = {
     'url': 'http://localhost:8888',

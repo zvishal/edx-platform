@@ -1979,6 +1979,14 @@ INSTALLED_APPS = (
 CSRF_COOKIE_AGE = 60 * 60 * 24 * 7 * 52
 
 
+######################### Django Rest Framework ########################
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'openedx.core.lib.api.paginators.DefaultPagination',
+    'PAGE_SIZE': 10,
+}
+
+
 ######################### MARKETING SITE ###############################
 EDXMKTG_LOGGED_IN_COOKIE_NAME = 'edxloggedin'
 EDXMKTG_USER_INFO_COOKIE_NAME = 'edx-user-info'

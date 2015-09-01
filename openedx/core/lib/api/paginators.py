@@ -3,6 +3,24 @@
 from django.http import Http404
 from django.core.paginator import Paginator, InvalidPage
 
+from rest_framework.response import Response
+from rest_framework import pagination
+
+
+class DefaultPagination(pagination.PageNumberPagination):
+    """TODO """
+    page_size = 20
+    page_size_query_param = "page_size"
+
+    def get_paginated_response(self, data):
+        return Response({
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'count': self.page.paginator.count,
+            'num_pages': self.page.paginator.num_pages,
+            'results': data
+        })
+
 
 def paginate_search_results(object_class, search_results, page_size, page):
     """
