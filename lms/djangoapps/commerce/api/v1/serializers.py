@@ -73,7 +73,7 @@ class CourseSerializer(serializers.Serializer):
 
             # Find the earliest upgrade deadline
             for mode in attrs['modes']:
-                expires = mode.get("expires")
+                expires = mode.get("expiration_datetime")
                 if expires:
                     # If we don't already have an upgrade_deadline value, use datetime.max so that we can actually
                     # complete the comparison.
