@@ -18,7 +18,12 @@ class CourseModeSerializer(serializers.ModelSerializer):
     """ CourseMode serializer. """
     name = serializers.CharField(source='mode_slug')
     price = serializers.IntegerField(source='min_price')
-    expires = serializers.DateTimeField(source='expiration_datetime', required=False, format=None)
+    expires = serializers.DateTimeField(
+        source='expiration_datetime',
+        required=False,
+        allow_null=True,
+        format=None
+    )
 
     def get_identity(self, data):
         try:
@@ -56,7 +61,7 @@ class CourseSerializer(serializers.Serializer):
     """ Course serializer. """
     id = serializers.CharField(validators=[validate_course_id])  # pylint: disable=invalid-name
     name = serializers.CharField(read_only=True)
-    verification_deadline = serializers.DateTimeField(format=None)
+    verification_deadline = serializers.DateTimeField(format=None, allow_null=True, required=False)
     modes = CourseModeSerializer(many=True)
 
     def validate(self, attrs):
@@ -84,6 +89,7 @@ class CourseSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """TODO """
+        from nose.tools import set_trace; set_trace()
         course = Course(
             validated_data['id'],
             verification_deadline=validated_data['verification_deadline']

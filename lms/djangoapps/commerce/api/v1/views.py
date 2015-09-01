@@ -5,6 +5,7 @@ from django.http import Http404
 from rest_framework.authentication import SessionAuthentication
 from rest_framework_oauth.authentication import OAuth2Authentication
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
 
 from commerce.api.v1.models import Course
@@ -25,9 +26,9 @@ class CourseListView(ListAPIView):
         return Course.iterator()
 
 
-class CourseRetrieveUpdateView(RetrieveUpdateAPIView):
+class CourseRetrieveUpdateView(RetrieveUpdateAPIView, CreateModelMixin):
     """ Retrieve, update, or create courses/modes. """
-    lookup_field = 'id'
+    lookup_field = 'course_id'
     lookup_url_kwarg = 'course_id'
     model = CourseMode
     authentication_classes = (OAuth2Authentication, SessionAuthentication,)
@@ -45,6 +46,15 @@ class CourseRetrieveUpdateView(RetrieveUpdateAPIView):
             return course
 
         raise Http404
+
+    def update(self, request, *args, **kwargs):
+        # First, try to update the existing instance
+        try:
+            return super(CourseRetrieveUpdateView, self).update(request, *args, **kwargs)
+        except Http404:
+            # If no instance exists yet, create it.
+            # This is backwards-compatible with Django Rest Framework v2.
+            return super(CourseRetrieveUpdateView, self).create(request, *args, **kwargs)
 
     def pre_save(self, obj):
         # There is nothing to pre-save. The default behavior changes the Course.id attribute from
