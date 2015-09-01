@@ -28,14 +28,16 @@ class CourseListView(ListAPIView):
 
 class CourseRetrieveUpdateView(RetrieveUpdateAPIView, CreateModelMixin):
     """ Retrieve, update, or create courses/modes. """
-    lookup_field = 'course_id'
+    lookup_field = 'id'
     lookup_url_kwarg = 'course_id'
     model = CourseMode
     authentication_classes = (OAuth2Authentication, SessionAuthentication,)
     permission_classes = (ApiKeyOrModelPermission,)
     serializer_class = CourseSerializer
 
-    # TODO -- explain this more
+    # Django Rest Framework v3 requires that we provide a queryset.
+    # Note that we're overriding `get_object()` below to return a `Course`
+    # rather than a CourseMode, so this isn't really used.
     queryset = CourseMode.objects.all()
 
     def get_object(self, queryset=None):
@@ -48,6 +50,13 @@ class CourseRetrieveUpdateView(RetrieveUpdateAPIView, CreateModelMixin):
         raise Http404
 
     def update(self, request, *args, **kwargs):
+        """
+        Create/update course modes for a course.
+
+        NOTE: we override the generic view's update() method to preserve
+        backwards compatibility with Django Rest Framework v2, which allowed
+        creation of new resources using PUT.
+        """
         # First, try to update the existing instance
         try:
             return super(CourseRetrieveUpdateView, self).update(request, *args, **kwargs)

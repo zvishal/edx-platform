@@ -88,18 +88,26 @@ class CourseSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
-        """TODO """
-        from nose.tools import set_trace; set_trace()
+        """Create course modes for a course. """
         course = Course(
-            validated_data['id'],
-            verification_deadline=validated_data['verification_deadline']
+            validated_data["id"],
+            self._new_course_mode_models(validated_data["modes"]),
+            verification_deadline=validated_data["verification_deadline"]
         )
-        course.update(validated_data)
         course.save()
         return course
 
     def update(self, instance, validated_data):
-        """TODO """
+        """Update course modes for an existing course. """
+        validated_data["modes"] = self._new_course_mode_models(validated_data["modes"])
+
         instance.update(validated_data)
         instance.save()
         return instance
+
+    def _new_course_mode_models(self, modes_data):
+        """Convert validated course mode data to CourseMode objects. """
+        return [
+            CourseMode(**modes_dict)
+            for modes_dict in modes_data
+        ]

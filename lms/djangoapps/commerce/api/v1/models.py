@@ -18,14 +18,9 @@ class Course(object):
     modes = None
     _deleted_modes = None
 
-    def __init__(self, id, course_modes=None, verification_deadline=None):  # pylint: disable=invalid-name,redefined-builtin
+    def __init__(self, id, modes, verification_deadline=None):  # pylint: disable=invalid-name,redefined-builtin
         self.id = CourseKey.from_string(unicode(id))  # pylint: disable=invalid-name
-
-        self.modes = list(
-            course_modes if course_modes is not None
-            else CourseMode.objects.filter(course_id=self.id)
-        )
-
+        self.modes = list(modes)
         self.verification_deadline = verification_deadline
         self._deleted_modes = []
 
@@ -84,15 +79,15 @@ class Course(object):
         merged_mode_keys = set()
 
         for posted_mode in attrs.get('modes', []):
-            merged_mode = existing_modes.get(posted_mode["mode_slug"], CourseMode())
+            merged_mode = existing_modes.get(posted_mode.mode_slug, CourseMode())
 
             merged_mode.course_id = self.id
-            merged_mode.mode_slug = posted_mode["mode_slug"]
-            merged_mode.mode_display_name = posted_mode["mode_slug"]
-            merged_mode.min_price = posted_mode["min_price"]
-            merged_mode.currency = posted_mode["currency"]
-            merged_mode.sku = posted_mode["sku"]
-            merged_mode.expiration_datetime = posted_mode["expiration_datetime"]
+            merged_mode.mode_slug = posted_mode.mode_slug
+            merged_mode.mode_display_name = posted_mode.mode_slug
+            merged_mode.min_price = posted_mode.min_price
+            merged_mode.currency = posted_mode.currency
+            merged_mode.sku = posted_mode.sku
+            merged_mode.expiration_datetime = posted_mode.expiration_datetime
 
             merged_modes.add(merged_mode)
             merged_mode_keys.add(merged_mode.mode_slug)
@@ -114,7 +109,7 @@ class Course(object):
 
         if course_modes:
             verification_deadline = VerificationDeadline.deadline_for_course(course_id)
-            return cls(course_id, course_modes=course_modes, verification_deadline=verification_deadline)
+            return cls(course_id, list(course_modes), verification_deadline=verification_deadline)
 
         return None
 
