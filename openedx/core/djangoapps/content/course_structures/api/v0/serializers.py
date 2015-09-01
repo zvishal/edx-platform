@@ -17,7 +17,7 @@ class BlockSerializer(serializers.Serializer):
     """ Serializer for course structure block. """
     id = serializers.CharField(source='usage_key')
     type = serializers.CharField(source='block_type')
-    parent = serializers.CharField(source='parent')
+    parent = serializers.CharField()
     display_name = serializers.CharField()
     graded = serializers.BooleanField(default=False)
     format = serializers.CharField()
@@ -26,8 +26,8 @@ class BlockSerializer(serializers.Serializer):
 
 class CourseStructureSerializer(serializers.Serializer):
     """ Serializer for course structure. """
-    root = serializers.CharField(source='root')
-    blocks = serializers.SerializerMethodField('get_blocks')
+    root = serializers.CharField()
+    blocks = serializers.SerializerMethodField()
 
     def get_blocks(self, structure):
         """ Serialize the individual blocks. """
