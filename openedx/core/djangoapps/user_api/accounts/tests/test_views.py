@@ -359,10 +359,10 @@ class TestAccountAPI(UserAPITestCase):
         self.assertEqual(404, response.status_code)
 
     @ddt.data(
-        ("gender", "f", "not a gender", u"Select a valid choice. not a gender is not one of the available choices."),
-        ("level_of_education", "none", u"ȻħȺɍłɇs", u"Select a valid choice. ȻħȺɍłɇs is not one of the available choices."),
-        ("country", "GB", "XY", u"Select a valid choice. XY is not one of the available choices."),
-        ("year_of_birth", 2009, "not_an_int", u"Enter a whole number."),
+        ("gender", "f", "not a gender", u'"not a gender" is not a valid choice.'),
+        ("level_of_education", "none", u"ȻħȺɍłɇs", u'"ȻħȺɍłɇs" is not a valid choice.'),
+        ("country", "GB", "XY", u'"XY" is not a valid choice.'),
+        ("year_of_birth", 2009, "not_an_int", u"A valid integer is required."),
         ("name", "bob", "z" * 256, u"Ensure this value has at most 255 characters (it has 256)."),
         ("name", u"ȻħȺɍłɇs", "z   ", u"The name field must be at least 2 characters long."),
         ("goals", "Smell the roses"),
@@ -568,8 +568,8 @@ class TestAccountAPI(UserAPITestCase):
             self.assertItemsEqual(response.data["language_proficiencies"], proficiencies)
 
     @ddt.data(
-        (u"not_a_list", [{u'non_field_errors': [u'Expected a list of items.']}]),
-        ([u"not_a_JSON_object"], [{u'non_field_errors': [u'Invalid data']}]),
+        (u"not_a_list", {u'non_field_errors': [u'Expected a list of items but got type "unicode".']}),
+        ([u"not_a_JSON_object"], [{u'non_field_errors': [u'Invalid data. Expected a dictionary, but got unicode.']}]),
         ([{}], [{"code": [u"This field is required."]}]),
         ([{u"code": u"invalid_language_code"}], [{'code': [u'Select a valid choice. invalid_language_code is not one of the available choices.']}]),
         ([{u"code": u"kw"}, {u"code": u"el"}, {u"code": u"kw"}], [u'The language_proficiencies field must consist of unique languages']),
