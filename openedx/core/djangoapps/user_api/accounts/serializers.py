@@ -53,7 +53,7 @@ class UserReadOnlySerializer(serializers.Serializer):
 
         super(UserReadOnlySerializer, self).__init__(*args, **kwargs)
 
-    def to_native(self, user):
+    def to_representation(self, user):
         """
         Overwrite to_native to handle custom logic since we are serializing two models as one here
         :param user: User object
@@ -165,14 +165,12 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
         read_only_fields = ()
         explicit_read_only_fields = ("profile_image", "requires_parental_consent")
 
-    def validate_name(self, value):
+    def validate_name(self, new_name):
         """ Enforce minimum length for name. """
-        new_name = value.strip()
         if len(new_name) < NAME_MIN_LENGTH:
             raise serializers.ValidationError(
                 "The name field must be at least {} characters long.".format(NAME_MIN_LENGTH)
             )
-
         return new_name
 
     def validate_language_proficiencies(self, value):
@@ -241,7 +239,7 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
         for field_name in update_fields:
             default = getattr(instance, field_name)
             field_value = validated_data.get(field_name, default)
-            setattr(instance, field_name, default)
+            setattr(instance, field_name, field_value)
 
         instance.save()
 
@@ -252,9 +250,5 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
                 LanguageProficiency(user_profile=instance, code=language["code"])
                 for language in language_proficiencies
             ])
-        # TODO -- language proficiency
-
-            # "name", "gender", "goals", "year_of_birth", "level_of_education", "country",
-            # "mailing_address", "bio", "profile_image", "requires_parental_consent", "language_proficiencies"
 
         return instance
