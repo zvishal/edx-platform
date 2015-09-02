@@ -381,6 +381,14 @@ class CreditCourseViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, view
     authentication_classes = (OAuth2Authentication, SessionAuthentication,)
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
 
+    # In Django Rest Framework v3, there is a default pagination
+    # class that transmutes the response data into a dictionary
+    # with pagination information.  The original response data (a list)
+    # is stored in a "results" value of the dictionary.
+    # For backwards compatibility with the existing API, we disable
+    # the default behavior by setting the pagination_class to None.
+    pagination_class = None
+
     # This CSRF exemption only applies when authenticating without SessionAuthentication.
     # SessionAuthentication will enforce CSRF protection.
     @method_decorator(csrf_exempt)
