@@ -99,42 +99,6 @@ div.course-wrapper {
     padding: ($baseline*2);
     line-height: 1.6;
 
-    .action {
-      font: 16px/1.3 "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
-      box-sizing: border-box;
-      cursor: pointer;
-      transition: color .25s ease-in-out, background .25s ease-in-out;
-      display: inline-block;
-      border: 1px solid $m-blue-d1;
-      border-radius: 4px;
-      padding: 10px 15px;
-      text-align: center;
-      text-decoration: none;
-      background-image: none;
-      box-shadow: none;
-      text-shadow: none;
-
-      &:hover,
-      &:active,
-      &:focus {
-        background-color: $m-blue-d5 !important;
-        border: 1px solid $m-blue-d5 !important;
-        color: $white !important;
-        text-decoration: none;
-        background-image: none;
-        box-shadow: none;
-        text-shadow: none;
-      }
-    }
-    .action-primary {
-      background-color: $m-blue-d1;
-      color: $white;
-    }
-    .action-secondary {
-      background-color: transparent;
-      border: 1px solid $white;
-      color: $white;
-    }
     .msg-title {
         font-weight: bold;
         margin-bottom: 10px;
@@ -296,36 +260,129 @@ div.course-wrapper {
       padding: $baseline 30px;
       background-color: rgb(242, 244, 245);
       border-left: 5px solid $red;
-        .msg-title {
-          margin-bottom: 12px;
-          font-size: 22px;
+      .msg-title {
+        margin-bottom: 12px;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .msg-content {
+        color: rgb(121, 118, 118);
+        strong {
           font-weight: 600;
         }
-        .msg-content {
-          color: rgb(121, 118, 118);
-          strong {
-            font-weight: 600;
-          }
-        }
-        .proctored-exam-skip-actions {
-          margin-top: 10px;
-          @include float(right);
+      }
+      .proctored-exam-skip-actions {
+        margin-top: $baseline;
+        @include float(right);
+      }
+
+      .btn {
+        transition: color .125s ease-in-out 0s,border-color
+        .125s ease-in-out 0s,background
+        .125s ease-in-out 0s,box-shadow
+        .125s ease-in-out 0s;;
+
+        // Display: inline, side-by-side
+        display: inline-block;
+        border-style: solid;
+        border-radius: 3px;
+        border-width: 1px;
+        font-weight: 600;
+
+        // Display: block, one button per line, full width
+        &.block {
+            display: block;
+            width: 100%;
         }
 
-        .proctored-exam-skip-cancel-button {
-          padding: 10px 30px;
-          background-color: $black;
-          border: 1px solid $white;
-          color: white;
-          width: auto;
-          display: inline-block;
+        // STATE: is disabled
+        &:disabled,
+        &.is-disabled {
+          pointer-events: none;
+          outline: none;
+          cursor: default;
+        }
+      }
+      .btn-base {
+        padding: 10px $baseline;
+        font-size: 16px;
+      }
+      // ----------------------------
+      // #DEFAULT
+      // ----------------------------
+      .btn-default {
+        border-color: rgb(0, 121, 188);
+        background: $white-t1;
+        color: rgb(0, 121, 188);;
+
+        // STATE: hover and focus
+        &:hover,
+        &.is-hovered,
+        &:focus,
+        &.is-focused {
+          background: rgb(0, 121, 188);
+          color: $white;
+          box-shadow: none;
+          text-shadow: none;
         }
 
-        .proctored-exam-skip-confirm-button {
-          margin-top: 15px;
-          width: auto;
-          display: inline-block;
+        // STATE: is pressed or active
+        &:active,
+        &.is-pressed,
+        &.is-active {
+          border-color: $m-blue-d5;
+          background: $m-blue-d5;
+          box-shadow: none;
+          text-shadow: none;
         }
+
+        // STATE: is disabled
+        &:disabled,
+        &.is-disabled {
+          border-color: $m-gray-d1;
+          background: $white-t1;
+          color: $m-gray-d3;
+        }
+      }
+      // ----------------------------
+      // #PRIMARY
+      // ----------------------------
+      .btn-primary {
+        border-color: rgb(0, 121, 188);
+        background: rgb(0, 121, 188);
+        color: $white;
+        box-shadow: none;
+        text-shadow: none;
+
+        // STATE: hover and focus
+        &:hover,
+        &.is-hovered,
+        &:focus,
+        &.is-focused {
+          border-color: $m-blue-d5;
+          background: $m-blue-d5;
+          box-shadow: none;
+          text-shadow: none;
+        }
+
+        // STATE: is pressed or active
+        &:active,
+        &.is-pressed,
+        &.is-active {
+          border-color: rgb(0, 121, 188);
+          background: rgb(0, 121, 188);
+          box-shadow: none;
+          text-shadow: none;
+        }
+
+        // STATE: is disabled
+        &:disabled,
+        &.is-disabled {
+          border-color: $m-gray-d1;
+          background: $white-t1;
+          color: $m-gray-d3;
+        }
+      }
     }
     .footer-sequence {
       padding: 30px 0px 20px 0px;
