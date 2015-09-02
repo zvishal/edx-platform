@@ -230,8 +230,6 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
     def update(self, instance, validated_data):
         """TODO """
         language_proficiencies = validated_data.pop("language_proficiencies", None)
-        requires_parental_consent = validated_data.pop("requires_parental_consent", None)
-        profile_image = validated_data.pop("profile_image", None)
 
         # Update all fields on the user profile that are writeable,
         # except for "language_proficiencies", which we'll update separately
