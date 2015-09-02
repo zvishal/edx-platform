@@ -100,7 +100,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializes User models
     """
-    name = serializers.Field(source='profile.name')
+    name = serializers.ReadOnlyField(source='profile.name')
     course_enrollments = serializers.HyperlinkedIdentityField(
         view_name='courseenrollment-detail',
         lookup_field='username'
