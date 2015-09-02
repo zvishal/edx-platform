@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.test.client import RequestFactory
 from dateutil.parser import parse as parse_datetime
 
 from student.tests.factories import UserFactory
@@ -47,6 +48,16 @@ class TestPreferenceAPI(TestCase):
         self.test_preference_key = "test_key"
         self.test_preference_value = "test_value"
         set_user_preference(self.user, self.test_preference_key, self.test_preference_value)
+
+        # Django Rest Framework v3 requires that we pass the current request
+        # to serializers with hyperlink fields.  Usually, we call the user API
+        # in the context of a view, so the API call can retrieve the request
+        # from the request cache.  We need to simulate that here since we're calling
+        # the API method directly (not within the context of an HTTP request).
+        patcher = patch("openedx.core.djangoapps.user_api.preferences.api.get_request")
+        mock_get_request = patcher.start()
+        mock_get_request.returns = RequestFactory().get("/")
+        self.addCleanup(lambda: patcher.stop())
 
     def test_get_user_preference(self):
         """

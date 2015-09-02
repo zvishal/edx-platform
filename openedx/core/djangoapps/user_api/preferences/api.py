@@ -9,9 +9,10 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.utils.translation import ugettext as _
-from student.models import User, UserProfile
 from django.utils.translation import ugettext_noop
 
+from student.models import User, UserProfile
+from request_cache import get_request
 from ..errors import (
     UserAPIInternalError, UserAPIRequestError, UserNotFound, UserNotAuthorized,
     PreferenceValidationError, PreferenceUpdateError
@@ -68,7 +69,17 @@ def get_user_preferences(requesting_user, username=None):
          UserAPIInternalError: the operation failed due to an unexpected error.
     """
     existing_user = _get_user(requesting_user, username, allow_staff=True)
-    user_serializer = UserSerializer(existing_user)
+
+    # Django Rest Framework V3 uses the current request to version
+    # hyperlinked URLS, so we need to retrieve the request and pass
+    # it in the serializer's context (otherwise we get an AssertionError).
+    # We're retrieving the request from the cache rather than passing it in
+    # as an argument because this is an implementation detail of how we're
+    # serializing data, which we want to encapsulate in the API call.
+    context = {
+        "request": get_request()
+    }
+    user_serializer = UserSerializer(existing_user, context=context)
     return user_serializer.data["preferences"]
 
 
