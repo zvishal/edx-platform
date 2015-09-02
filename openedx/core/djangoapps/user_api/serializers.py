@@ -34,7 +34,9 @@ class UserPreferenceSerializer(serializers.HyperlinkedModelSerializer):
 class RawUserPreferenceSerializer(serializers.ModelSerializer):
     """Serializer that generates a raw representation of a user preference.
     """
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    # TODO: explain that we removed the read-only field
+    # because we need it when passing in data for the user.
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta(object):  # pylint: disable=missing-docstring
         model = UserPreference
