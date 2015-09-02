@@ -18,7 +18,7 @@ from django.views.decorators.http import require_POST, require_GET
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 import pytz
-from rest_framework import viewsets, mixins, permissions, authentication
+from rest_framework import viewsets, mixins, permissions
 from rest_framework.authentication import SessionAuthentication
 from rest_framework_oauth.authentication import OAuth2Authentication
 from util.json_request import JsonResponse
@@ -393,10 +393,13 @@ class CreditCourseViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, view
     # SessionAuthentication will enforce CSRF protection.
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        # Convert the course ID/key from a string to an actual CourseKey object.
-        course_id = kwargs.get(self.lookup_field, None)
-
-        if course_id:
-            kwargs[self.lookup_field] = CourseKey.from_string(course_id)
-
         return super(CreditCourseViewSet, self).dispatch(request, *args, **kwargs)
+
+    def get_object(self):
+        # Convert the serialized course key into a CourseKey instance
+        # so we can look up the object.
+        course_key = self.kwargs.get(self.lookup_field)
+        if course_key is not None:
+            self.kwargs[self.lookup_field] = CourseKey.from_string(course_key)
+
+        return super(CreditCourseViewSet, self).get_object()
