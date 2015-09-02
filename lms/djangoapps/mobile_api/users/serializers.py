@@ -15,7 +15,7 @@ from xmodule.course_module import DEFAULT_START_DATE
 class CourseOverviewField(serializers.RelatedField):
     """Custom field to wrap a CourseDescriptor object. Read-only."""
 
-    def to_native(self, course_overview):
+    def to_representation(self, course_overview):
         course_id = unicode(course_overview.id)
         request = self.context.get('request', None)
         if request:
@@ -78,7 +78,7 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
     Serializes CourseEnrollment models
     """
     course = CourseOverviewField(source="course_overview", read_only=True)
-    certificate = serializers.SerializerMethodField('get_certificate')
+    certificate = serializers.SerializerMethodField()
 
     def get_certificate(self, model):
         """Returns the information about the user's certificate in the course."""

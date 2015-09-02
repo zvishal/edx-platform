@@ -356,7 +356,7 @@ def validate_user_preference_serializer(serializer, preference_key, preference_v
         developer_message = u"Value '{preference_value}' not valid for preference '{preference_key}': {error}".format(
             preference_key=preference_key, preference_value=preference_value, error=serializer.errors
         )
-        if serializer.errors["key"]:
+        if "key" in serializer.errors:
             user_message = _(u"Invalid user preference key '{preference_key}'.").format(
                 preference_key=preference_key
             )

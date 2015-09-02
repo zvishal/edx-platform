@@ -31,7 +31,7 @@ class CoursesWithFriends(generics.ListAPIView):
     serializer_class = serializers.CoursesWithFriendsSerializer
 
     def list(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.GET, files=request.FILES)
+        serializer = self.get_serializer(data=request.GET)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

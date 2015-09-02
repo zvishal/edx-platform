@@ -6,8 +6,8 @@ from .models import UserPreference
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-    name = serializers.SerializerMethodField("get_name")
-    preferences = serializers.SerializerMethodField("get_preferences")
+    name = serializers.SerializerMethodField()
+    preferences = serializers.SerializerMethodField()
 
     def get_name(self, user):
         profile = UserProfile.objects.get(user=user)
@@ -57,3 +57,9 @@ class ReadOnlyFieldsSerializerMixin(object):
         cls.Meta.read_only_fields tuple.
         """
         return getattr(cls.Meta, 'read_only_fields', '') + getattr(cls.Meta, 'explicit_read_only_fields', '')
+
+    @classmethod
+    def get_writeable_fields(cls):
+        """TODO """
+        all_fields = getattr(cls.Meta, 'fields', tuple())
+        return tuple(set(all_fields) - set(cls.get_read_only_fields()))
