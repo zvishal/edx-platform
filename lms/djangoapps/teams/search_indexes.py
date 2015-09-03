@@ -28,7 +28,13 @@ class CourseTeamIndexer(object):
 
         Returns serialized object with additional search fields.
         """
-        serialized_course_team = CourseTeamSerializer(self.course_team).data
+        # TODO -- explain this
+        from request_cache import get_request
+        context = {
+            "request": get_request()
+        }
+
+        serialized_course_team = CourseTeamSerializer(self.course_team, context=context).data
         # Save the primary key so we can load the full objects easily after we search
         serialized_course_team['pk'] = self.course_team.pk
         # Don't save the membership relations in elasticsearch
