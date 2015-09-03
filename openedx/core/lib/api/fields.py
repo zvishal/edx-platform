@@ -13,14 +13,13 @@ class ExpandableField(Field):
         self.expanded = kwargs.pop('expanded_serializer')
         super(ExpandableField, self).__init__(**kwargs)
 
-    def field_to_native(self, obj, field_name):
-        """Converts obj to a native representation, using the expanded serializer if the context requires it."""
-        if 'expand' in self.context and field_name in self.context['expand']:
-            self.expanded.initialize(self, field_name)
-            return self.expanded.field_to_native(obj, field_name)
+    def to_representation(self, obj):
+        if self.field_name in self.context.get("expand", []):
+            self.expanded.bind(self.field_name, self)
+            return self.expanded.to_representation(obj)
         else:
-            self.collapsed.initialize(self, field_name)
-            return self.collapsed.field_to_native(obj, field_name)
+            self.collapsed.bind(self.field_name, self)
+            return self.collapsed.to_representation(obj)
 
 
 class NonEmptyCharField(CharField):
