@@ -145,7 +145,8 @@ class ProfileImageUploadTestCase(ProfileImageEndpointTestCase):
     """
     _view_name = "profile_image_upload"
 
-    # TODO -- explain this!
+    # Use the patched version of the API client to workaround a unicode issue
+    # with DRF 3.1 and Django 1.4.  Remove this after we upgrade Django past 1.4!
     client_class = PatchedClient
 
     def check_upload_event_emitted(self, old=None, new=TEST_UPLOAD_DT):
