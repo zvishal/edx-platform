@@ -583,6 +583,7 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
             partial=True,
             context=get_context(self.course, self.request)
         )
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
             {field: ["This field is required."] for field in ["topic_id", "title", "raw_body"]}
@@ -595,6 +596,7 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
             partial=True,
             context=get_context(self.course, self.request)
         )
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
             {"course_id": ["This field is not allowed in an update."]}

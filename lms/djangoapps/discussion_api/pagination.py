@@ -43,7 +43,7 @@ def get_paginated_data(request, results, page_num, per_page):
     previous: The URL for the previous page
     results: The results on this page
     """
-    # Note: Previous versions of this function used Djano Rest Framework's
+    # Note: Previous versions of this function used Django Rest Framework's
     # paginated serializer.  With the upgrade to DRF 3.1, paginated serializers
     # have been removed.  We *could* use DRF's paginator classes, but there are
     # some slight differences between how DRF does pagination and how we're doing
