@@ -68,7 +68,7 @@ def get_context(course, request, thread=None):
 
 class _ContentSerializer(serializers.Serializer):
     """A base class for thread and comment serializers."""
-    id_ = serializers.CharField(read_only=True)
+    id = serializers.CharField(read_only=True)
     author = serializers.SerializerMethodField()
     author_label = serializers.SerializerMethodField()
     created_at = serializers.CharField(read_only=True)
@@ -86,7 +86,7 @@ class _ContentSerializer(serializers.Serializer):
         super(_ContentSerializer, self).__init__(*args, **kwargs)
         # id is an invalid class attribute name, so we must declare a different
         # name above and modify it here
-        self.fields["id"] = self.fields.pop("id_")
+        #self.fields["id"] = self.fields.pop("id_")
 
         # TODO
         # for field in self.non_updatable_fields:
