@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from search.search_engine_base import SearchEngine
+from request_cache import get_request
 
 from .serializers import CourseTeamSerializer, CourseTeam
 
@@ -29,7 +30,6 @@ class CourseTeamIndexer(object):
         Returns serialized object with additional search fields.
         """
         # TODO -- explain this
-        from request_cache import get_request
         context = {
             "request": get_request()
         }

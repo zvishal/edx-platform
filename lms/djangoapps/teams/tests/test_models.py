@@ -4,8 +4,9 @@ from contextlib import contextmanager
 from datetime import datetime
 import ddt
 import itertools
-from mock import Mock
+from mock import Mock, patch
 import pytz
+from django.test.client import RequestFactory
 
 from django_comment_common.signals import (
     thread_created,
@@ -117,6 +118,16 @@ class TeamSignalsTest(SharedModuleStoreTestCase):
         self.moderator = UserFactory.create(username="moderator")
         self.team = CourseTeamFactory(discussion_topic_id=self.DISCUSSION_TOPIC_ID)
         self.team_membership = CourseTeamMembershipFactory(user=self.user, team=self.team)
+
+        # Django Rest Framework v3 requires that we pass the current request
+        # to serializers with hyperlink fields.  Usually, we call the user API
+        # in the context of a view, so the API call can retrieve the request
+        # from the request cache.  We need to simulate that here since we're calling
+        # the API method directly (not within the context of an HTTP request).
+        patcher = patch("teams.search_indexes.get_request")
+        mock_get_request = patcher.start()
+        mock_get_request.returns = RequestFactory().get("/")
+        self.addCleanup(lambda: patcher.stop())
 
     def mock_comment(self, context=TEAM_DISCUSSION_CONTEXT, user=None):
         """Create a mock comment service object with the given context."""
