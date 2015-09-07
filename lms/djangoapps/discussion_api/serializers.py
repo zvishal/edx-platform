@@ -69,16 +69,16 @@ def get_context(course, request, thread=None):
 class _ContentSerializer(serializers.Serializer):
     """A base class for thread and comment serializers."""
     id_ = serializers.CharField(read_only=True)
-    author = serializers.SerializerMethodField("get_author")
-    author_label = serializers.SerializerMethodField("get_author_label")
+    author = serializers.SerializerMethodField()
+    author_label = serializers.SerializerMethodField()
     created_at = serializers.CharField(read_only=True)
     updated_at = serializers.CharField(read_only=True)
     raw_body = NonEmptyCharField(source="body")
-    rendered_body = serializers.SerializerMethodField("get_rendered_body")
-    abuse_flagged = serializers.SerializerMethodField("get_abuse_flagged")
-    voted = serializers.SerializerMethodField("get_voted")
-    vote_count = serializers.SerializerMethodField("get_vote_count")
-    editable_fields = serializers.SerializerMethodField("get_editable_fields")
+    rendered_body = serializers.SerializerMethodField()
+    abuse_flagged = serializers.SerializerMethodField()
+    voted = serializers.SerializerMethodField()
+    vote_count = serializers.SerializerMethodField()
+    editable_fields = serializers.SerializerMethodField()
 
     non_updatable_fields = set()
 
@@ -93,7 +93,7 @@ class _ContentSerializer(serializers.Serializer):
 
     def _validate_non_updatable(self, attrs, _source):
         """Ensure that a field is not edited in an update operation."""
-        if self.object:
+        if self.data:
             raise ValidationError("This field is not allowed in an update.")
         return attrs
 
@@ -171,7 +171,7 @@ class ThreadSerializer(_ContentSerializer):
     course_id = serializers.CharField()
     topic_id = NonEmptyCharField(source="commentable_id")
     group_id = serializers.IntegerField(required=False)
-    group_name = serializers.SerializerMethodField("get_group_name")
+    group_name = serializers.SerializerMethodField()
     type_ = serializers.ChoiceField(
         source="thread_type",
         choices=[(val, val) for val in ["discussion", "question"]]
@@ -179,12 +179,12 @@ class ThreadSerializer(_ContentSerializer):
     title = NonEmptyCharField()
     pinned = serializers.BooleanField(read_only=True)
     closed = serializers.BooleanField(read_only=True)
-    following = serializers.SerializerMethodField("get_following")
+    following = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(source="comments_count", read_only=True)
     unread_comment_count = serializers.IntegerField(source="unread_comments_count", read_only=True)
-    comment_list_url = serializers.SerializerMethodField("get_comment_list_url")
-    endorsed_comment_list_url = serializers.SerializerMethodField("get_endorsed_comment_list_url")
-    non_endorsed_comment_list_url = serializers.SerializerMethodField("get_non_endorsed_comment_list_url")
+    comment_list_url = serializers.SerializerMethodField()
+    endorsed_comment_list_url = serializers.SerializerMethodField()
+    non_endorsed_comment_list_url = serializers.SerializerMethodField()
     read = serializers.BooleanField(read_only=True)
     has_endorsed = serializers.BooleanField(read_only=True, source="endorsed")
 
@@ -197,8 +197,8 @@ class ThreadSerializer(_ContentSerializer):
         self.fields["type"] = self.fields.pop("type_")
         # Compensate for the fact that some threads in the comments service do
         # not have the pinned field set
-        if self.object and self.object.get("pinned") is None:
-            self.object["pinned"] = False
+        if self.data and self.data.get("pinned") is None:
+            self.data["pinned"] = False
 
     def get_group_name(self, obj):
         """Returns the name of the group identified by the thread's group_id."""
@@ -257,10 +257,10 @@ class CommentSerializer(_ContentSerializer):
     thread_id = serializers.CharField()
     parent_id = serializers.CharField(required=False)
     endorsed = serializers.BooleanField(required=False)
-    endorsed_by = serializers.SerializerMethodField("get_endorsed_by")
-    endorsed_by_label = serializers.SerializerMethodField("get_endorsed_by_label")
-    endorsed_at = serializers.SerializerMethodField("get_endorsed_at")
-    children = serializers.SerializerMethodField("get_children")
+    endorsed_by = serializers.SerializerMethodField()
+    endorsed_by_label = serializers.SerializerMethodField()
+    endorsed_at = serializers.SerializerMethodField()
+    children = serializers.SerializerMethodField()
 
     non_updatable_fields = NON_UPDATABLE_COMMENT_FIELDS
 
