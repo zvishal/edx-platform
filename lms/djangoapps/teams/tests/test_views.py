@@ -5,10 +5,12 @@ import pytz
 from datetime import datetime
 from dateutil import parser
 import ddt
+from mock import patch
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db.models.signals import post_save
+from django.test.client import RequestFactory
 from nose.plugins.attrib import attr
 from rest_framework.test import APITestCase, APIClient
 
@@ -528,7 +530,10 @@ class TestListTeamsAPI(TeamAPITestCase):
         CourseTeamIndexer.engine().destroy()
 
         for team in self.test_team_name_id_map.values():
-            CourseTeamIndexer.index(team)
+            # TODO: explain this
+            with patch.object(CourseTeamIndexer, "_get_request") as mock_get_request:
+                mock_get_request.returns = RequestFactory().get("/")
+                CourseTeamIndexer.index(team)
 
         self.verify_names(
             {'course_id': self.test_course_2.id, 'text_search': text_search},

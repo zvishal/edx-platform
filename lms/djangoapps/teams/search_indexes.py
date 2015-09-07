@@ -31,7 +31,7 @@ class CourseTeamIndexer(object):
         """
         # TODO -- explain this
         context = {
-            "request": get_request()
+            "request": self._get_request()
         }
 
         serialized_course_team = CourseTeamSerializer(self.course_team, context=context).data
@@ -67,6 +67,9 @@ class CourseTeamIndexer(object):
             return languages[self.course_team.language]
         except KeyError:
             return self.course_team.language
+
+    def _get_request(self):
+        return get_request()
 
     @classmethod
     def index(cls, course_team):
