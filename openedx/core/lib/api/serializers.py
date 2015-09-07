@@ -58,6 +58,7 @@ class CollapsedReferenceSerializer(serializers.HyperlinkedModelSerializer):
         self.fields[id_source] = serializers.CharField(read_only=True)
         self.fields['url'].view_name = view_name
         self.fields['url'].lookup_field = lookup_field
+        self.fields['url'].lookup_url_kwarg = lookup_field
 
     class Meta(object):
         """Defines meta information for the ModelSerializer.
