@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.conf import settings
 
+from django_countries import countries
 from rest_framework import serializers
 
 from openedx.core.lib.api.serializers import CollapsedReferenceSerializer, PaginationSerializer
@@ -11,6 +12,21 @@ from openedx.core.lib.api.fields import ExpandableField
 from openedx.core.djangoapps.user_api.accounts.serializers import UserReadOnlySerializer
 
 from .models import CourseTeam, CourseTeamMembership
+
+
+class CountryField(serializers.Field):
+
+    COUNTRY_CODES = dict(countries).keys()
+
+    def to_representation(self, obj):
+        return unicode(obj)
+
+    def to_internal_value(self, data):
+        if data not in self.COUNTRY_CODES:
+            raise serializers.ValidationError(
+                u"{code} is not a valid country code".format(code=data)
+            )
+        return data
 
 
 class UserMembershipSerializer(serializers.ModelSerializer):
@@ -44,6 +60,9 @@ class CourseTeamSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source='team_id', read_only=True)  # pylint: disable=invalid-name
     membership = UserMembershipSerializer(many=True, read_only=True)
 
+    # TODO: experimental; see if this forces country to be serialized to unicode
+    country = CountryField()
+
     class Meta(object):
         """Defines meta information for the ModelSerializer."""
         model = CourseTeam
@@ -66,6 +85,9 @@ class CourseTeamSerializer(serializers.ModelSerializer):
 
 class CourseTeamCreationSerializer(serializers.ModelSerializer):
     """Deserializes a CourseTeam for creation."""
+
+    # TODO: experimental; see if this forces country to be serialized to unicode
+    country = CountryField()
 
     class Meta(object):
         """Defines meta information for the ModelSerializer."""
