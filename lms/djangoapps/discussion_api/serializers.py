@@ -88,14 +88,16 @@ class _ContentSerializer(serializers.Serializer):
         # name above and modify it here
         self.fields["id"] = self.fields.pop("id_")
 
-        for field in self.non_updatable_fields:
-            setattr(self, "validate_{}".format(field), self._validate_non_updatable)
+        # TODO
+        # for field in self.non_updatable_fields:
+        #     setattr(self, "validate_{}".format(field), self._validate_non_updatable)
 
-    def _validate_non_updatable(self, attrs, _source):
-        """Ensure that a field is not edited in an update operation."""
-        if self.data:
-            raise ValidationError("This field is not allowed in an update.")
-        return attrs
+    #
+    # def _validate_non_updatable(self, value):
+    #     """Ensure that a field is not edited in an update operation."""
+    #     if self.data:
+    #         raise ValidationError("This field is not allowed in an update.")
+    #     return value
 
     def _is_user_privileged(self, user_id):
         """
@@ -195,10 +197,11 @@ class ThreadSerializer(_ContentSerializer):
         # type is an invalid class attribute name, so we must declare a
         # different name above and modify it here
         self.fields["type"] = self.fields.pop("type_")
+
+    def validate_pinned(self, value):
         # Compensate for the fact that some threads in the comments service do
         # not have the pinned field set
-        if self.data and self.data.get("pinned") is None:
-            self.data["pinned"] = False
+        return value if value is not None else False
 
     def get_group_name(self, obj):
         """Returns the name of the group identified by the thread's group_id."""
@@ -237,13 +240,13 @@ class ThreadSerializer(_ContentSerializer):
         """Returns the URL to retrieve the thread's non-endorsed comments."""
         return self.get_comment_list_url(obj, endorsed=False)
 
-    def restore_object(self, attrs, instance=None):
-        if instance:
-            for key, val in attrs.items():
-                instance[key] = val
-            return instance
-        else:
-            return Thread(user_id=self.context["cc_requester"]["id"], **attrs)
+    def create(self, validated_data):
+        return Thread(user_id=self.context["cc_requester"]["id"], **validated_data)
+
+    def update(self, instance, validated_data):
+        for key, val in validated_data.items():
+            instance[key] = val
+        return instance
 
 
 class CommentSerializer(_ContentSerializer):
@@ -324,18 +327,20 @@ class CommentSerializer(_ContentSerializer):
             raise ValidationError({"parent_id": ["Comment level is too deep."]})
         return attrs
 
-    def restore_object(self, attrs, instance=None):
-        if instance:
-            for key, val in attrs.items():
-                instance[key] = val
-                # TODO: The comments service doesn't populate the endorsement
-                # field on comment creation, so we only provide
-                # endorsement_user_id on update
-                if key == "endorsed":
-                    instance["endorsement_user_id"] = self.context["cc_requester"]["id"]
-            return instance
+    def create(self, validated_data):
         return Comment(
             course_id=self.context["thread"]["course_id"],
             user_id=self.context["cc_requester"]["id"],
-            **attrs
+            **validated_data
         )
+
+    def update(self, instance, validated_data):
+        for key, val in validated_data.items():
+            instance[key] = val
+            # TODO: The comments service doesn't populate the endorsement
+            # field on comment creation, so we only provide
+            # endorsement_user_id on update
+            if key == "endorsed":
+                instance["endorsement_user_id"] = self.context["cc_requester"]["id"]
+
+        return instance
