@@ -2170,7 +2170,7 @@ class UpdateThreadTest(
             update_thread(self.request, "test_thread", {"raw_body": ""})
         self.assertEqual(
             assertion.exception.message_dict,
-            {"raw_body": ["This field is required."]}
+            {"raw_body": ["This field may not be blank."]}
         )
 
 
