@@ -346,11 +346,12 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
             paginated_results = paginate_search_results(
                 CourseTeam,
                 search_results,
-                self.get_paginate_by(),
+                self.paginator.get_page_size(request),
                 self.get_page()
             )
-
-            serializer = self.get_pagination_serializer(paginated_results)
+            page = self.paginate_queryset(paginated_results)
+            serializer = self.get_serializer(page, many=True)
+            order_by_input = None
         else:
             queryset = CourseTeam.objects.filter(**result_filter)
             order_by_input = request.QUERY_PARAMS.get('order_by', 'name')
@@ -376,9 +377,9 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
             page = self.paginate_queryset(queryset)
             serializer = self.get_serializer(page, many=True)
 
-        #return Response(serializer.data)  # pylint: disable=maybe-no-member
         response = self.get_paginated_response(serializer.data)
-        response.data['sort_order'] = order_by_input
+        if order_by_input is not None:
+            response.data['sort_order'] = order_by_input
         return response
 
     def post(self, request):
@@ -436,8 +437,8 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
         """ Returns page number specified in args, params, or defaults to 1. """
         # This code is taken from within the GenericAPIView#paginate_queryset method.
         # We need need access to the page outside of that method for our paginate_search_results method
-        page_kwarg = self.kwargs.get(self.page_kwarg)
-        page_query_param = self.request.QUERY_PARAMS.get(self.page_kwarg)
+        page_kwarg = self.kwargs.get(self.paginator.page_query_param)
+        page_query_param = self.request.QUERY_PARAMS.get(self.paginator.page_query_param)
         return page_kwarg or page_query_param or 1
 
 
