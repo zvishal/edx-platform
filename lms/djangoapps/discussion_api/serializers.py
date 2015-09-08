@@ -65,6 +65,11 @@ def get_context(course, request, thread=None):
     }
 
 
+def validate_not_blank(value):
+    if not value.strip():
+        raise ValidationError("This field may not be blank.")
+
+
 class _ContentSerializer(serializers.Serializer):
     """A base class for thread and comment serializers."""
     id = serializers.CharField(read_only=True)
@@ -72,7 +77,7 @@ class _ContentSerializer(serializers.Serializer):
     author_label = serializers.SerializerMethodField()
     created_at = serializers.CharField(read_only=True)
     updated_at = serializers.CharField(read_only=True)
-    raw_body = serializers.CharField(source="body")
+    raw_body = serializers.CharField(source="body", validators=[validate_not_blank])
     rendered_body = serializers.SerializerMethodField()
     abuse_flagged = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
@@ -169,14 +174,14 @@ class ThreadSerializer(_ContentSerializer):
     at introspection and Thread's __getattr__.
     """
     course_id = serializers.CharField()
-    topic_id = serializers.CharField(source="commentable_id")
+    topic_id = serializers.CharField(source="commentable_id", validators=[validate_not_blank])
     group_id = serializers.IntegerField(required=False)
     group_name = serializers.SerializerMethodField()
     type_ = serializers.ChoiceField(
         source="thread_type",
         choices=[(val, val) for val in ["discussion", "question"]]
     )
-    title = serializers.CharField()
+    title = serializers.CharField(validators=[validate_not_blank])
     pinned = serializers.SerializerMethodField(read_only=True)
     closed = serializers.BooleanField(read_only=True)
     following = serializers.SerializerMethodField()
