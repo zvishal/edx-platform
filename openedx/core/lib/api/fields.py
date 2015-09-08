@@ -1,7 +1,5 @@
 """Fields useful for edX API implementations."""
-from django.core.exceptions import ValidationError
-
-from rest_framework.serializers import CharField, Field
+from rest_framework.serializers import Field
 
 
 class ExpandableField(Field):
@@ -20,17 +18,3 @@ class ExpandableField(Field):
         else:
             self.collapsed.bind(self.field_name, self)
             return self.collapsed.to_representation(obj)
-
-
-class NonEmptyCharField(CharField):
-    """
-    A field that enforces non-emptiness even for partial updates.
-
-    This is necessary because prior to version 3, DRF skips validation for empty
-    values. Thus, CharField's min_length and RegexField cannot be used to
-    enforce this constraint.
-    """
-    def validate(self, value):
-        super(NonEmptyCharField, self).validate(value)
-        if not value.strip():
-            raise ValidationError(self.error_messages["required"])

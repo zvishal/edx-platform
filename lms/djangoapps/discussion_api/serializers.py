@@ -28,7 +28,6 @@ from lms.lib.comment_client.thread import Thread
 from lms.lib.comment_client.user import User as CommentClientUser
 from lms.lib.comment_client.utils import CommentClientRequestError
 from openedx.core.djangoapps.course_groups.cohorts import get_cohort_names
-from openedx.core.lib.api.fields import NonEmptyCharField
 
 
 def get_context(course, request, thread=None):
@@ -73,7 +72,7 @@ class _ContentSerializer(serializers.Serializer):
     author_label = serializers.SerializerMethodField()
     created_at = serializers.CharField(read_only=True)
     updated_at = serializers.CharField(read_only=True)
-    raw_body = NonEmptyCharField(source="body")
+    raw_body = serializers.CharField(source="body")
     rendered_body = serializers.SerializerMethodField()
     abuse_flagged = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
@@ -84,20 +83,15 @@ class _ContentSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         super(_ContentSerializer, self).__init__(*args, **kwargs)
-        # id is an invalid class attribute name, so we must declare a different
-        # name above and modify it here
-        #self.fields["id"] = self.fields.pop("id_")
 
-        # TODO
-        # for field in self.non_updatable_fields:
-        #     setattr(self, "validate_{}".format(field), self._validate_non_updatable)
+        for field in self.non_updatable_fields:
+            setattr(self, "validate_{}".format(field), self._validate_non_updatable)
 
-    #
-    # def _validate_non_updatable(self, value):
-    #     """Ensure that a field is not edited in an update operation."""
-    #     if self.data:
-    #         raise ValidationError("This field is not allowed in an update.")
-    #     return value
+    def _validate_non_updatable(self, value):
+        """Ensure that a field is not edited in an update operation."""
+        if self.instance:
+            raise ValidationError("This field is not allowed in an update.")
+        return value
 
     def _is_user_privileged(self, user_id):
         """
@@ -175,15 +169,15 @@ class ThreadSerializer(_ContentSerializer):
     at introspection and Thread's __getattr__.
     """
     course_id = serializers.CharField()
-    topic_id = NonEmptyCharField(source="commentable_id")
+    topic_id = serializers.CharField(source="commentable_id")
     group_id = serializers.IntegerField(required=False)
     group_name = serializers.SerializerMethodField()
     type_ = serializers.ChoiceField(
         source="thread_type",
         choices=[(val, val) for val in ["discussion", "question"]]
     )
-    title = NonEmptyCharField()
-    pinned = serializers.BooleanField(read_only=True)
+    title = serializers.CharField()
+    pinned = serializers.SerializerMethodField(read_only=True)
     closed = serializers.BooleanField(read_only=True)
     following = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(source="comments_count", read_only=True)
@@ -202,10 +196,10 @@ class ThreadSerializer(_ContentSerializer):
         # different name above and modify it here
         self.fields["type"] = self.fields.pop("type_")
 
-    def validate_pinned(self, value):
+    def get_pinned(self, obj):
         # Compensate for the fact that some threads in the comments service do
         # not have the pinned field set
-        return value if value is not None else False
+        return bool(obj["pinned"])
 
     def get_group_name(self, obj):
         """Returns the name of the group identified by the thread's group_id."""
