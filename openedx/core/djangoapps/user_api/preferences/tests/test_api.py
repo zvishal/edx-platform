@@ -57,7 +57,7 @@ class TestPreferenceAPI(TestCase):
         patcher = patch("openedx.core.djangoapps.user_api.preferences.api.get_request")
         mock_get_request = patcher.start()
         mock_get_request.returns = RequestFactory().get("/")
-        self.addCleanup(lambda: patcher.stop())
+        self.addCleanup(patcher.stop)
 
     def test_get_user_preference(self):
         """

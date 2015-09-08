@@ -368,7 +368,10 @@ class TestAccountAPI(UserAPITestCase):
         ("goals", "Smell the roses"),
         ("mailing_address", "Sesame Street"),
         # Note that we store the raw data, so it is up to client to escape the HTML.
-        ("bio", u"<html>Lacrosse-playing superhero 壓是進界推日不復女</html>", "z" * 3001, u"Ensure this field has no more than 3000 characters."),
+        (
+            "bio", u"<html>Lacrosse-playing superhero 壓是進界推日不復女</html>",
+            "z" * 3001, u"Ensure this field has no more than 3000 characters."
+        ),
         # Note that email is tested below, as it is not immediately updated.
         # Note that language_proficiencies is tested below as there are multiple error and success conditions.
     )
