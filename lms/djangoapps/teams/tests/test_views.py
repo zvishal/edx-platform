@@ -305,7 +305,17 @@ class TeamAPITestCase(APITestCase, SharedModuleStoreTestCase):
             response = func(url, data=data, content_type=content_type)
         else:
             response = func(url, data=data)
-        self.assertEqual(expected_status, response.status_code)
+
+        self.assertEqual(
+            expected_status,
+            response.status_code,
+            msg="Expected status {expected} but got {actual}: {content}".format(
+                expected=expected_status,
+                actual=response.status_code,
+                content=response.content,
+            )
+        )
+
         if expected_status == 200:
             return json.loads(response.content)
         else:

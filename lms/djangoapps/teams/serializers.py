@@ -87,7 +87,7 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
     """Deserializes a CourseTeam for creation."""
 
     # TODO: experimental; see if this forces country to be serialized to unicode
-    country = CountryField()
+    country = CountryField(required=False)
 
     class Meta(object):
         """Defines meta information for the ModelSerializer."""
@@ -101,15 +101,14 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
             "language",
         )
 
-    def restore_object(self, attrs, instance=None):
-        """Restores a CourseTeam instance from the given attrs."""
+    def create(self, validated_data):
         return CourseTeam.create(
-            name=attrs.get("name", ''),
-            course_id=attrs.get("course_id"),
-            description=attrs.get("description", ''),
-            topic_id=attrs.get("topic_id", ''),
-            country=attrs.get("country", ''),
-            language=attrs.get("language", ''),
+            name=validated_data.get("name", ''),
+            course_id=validated_data.get("course_id"),
+            description=validated_data.get("description", ''),
+            topic_id=validated_data.get("topic_id", ''),
+            country=validated_data.get("country", ''),
+            language=validated_data.get("language", ''),
         )
 
 
