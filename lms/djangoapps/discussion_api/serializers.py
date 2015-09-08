@@ -177,7 +177,7 @@ class ThreadSerializer(_ContentSerializer):
     topic_id = serializers.CharField(source="commentable_id", validators=[validate_not_blank])
     group_id = serializers.IntegerField(required=False)
     group_name = serializers.SerializerMethodField()
-    type_ = serializers.ChoiceField(
+    type = serializers.ChoiceField(
         source="thread_type",
         choices=[(val, val) for val in ["discussion", "question"]]
     )
@@ -194,12 +194,6 @@ class ThreadSerializer(_ContentSerializer):
     has_endorsed = serializers.BooleanField(read_only=True, source="endorsed")
 
     non_updatable_fields = NON_UPDATABLE_THREAD_FIELDS
-
-    def __init__(self, *args, **kwargs):
-        super(ThreadSerializer, self).__init__(*args, **kwargs)
-        # type is an invalid class attribute name, so we must declare a
-        # different name above and modify it here
-        self.fields["type"] = self.fields.pop("type_")
 
     def get_pinned(self, obj):
         # Compensate for the fact that some threads in the comments service do
