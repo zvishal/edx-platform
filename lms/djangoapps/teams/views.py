@@ -619,8 +619,8 @@ class TopicListView(GenericAPIView):
     authentication_classes = (OAuth2Authentication, SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
 
+    # TODO: is this still necessary?
     paginate_by = TOPICS_PER_PAGE
-    paginate_by_param = 'page_size'
 
     def get(self, request):
         """GET /api/team/v0/topics/?course_id={course_id}"""
@@ -666,18 +666,25 @@ class TopicListView(GenericAPIView):
             add_team_count(topics, course_id)
             topics.sort(key=lambda t: t['team_count'], reverse=True)
             page = self.paginate_queryset(topics)
-            # Since team_count has already been added to all the topics, use PaginatedTopicSerializer.
-            # Even though sorting is done outside of the serializer, sort_order needs to be passed
-            # to the serializer so that the paginated results indicate how they were sorted.
-            serializer = PaginatedTopicSerializer(page, context={'course_id': course_id, 'sort_order': ordering})
+            serializer = TopicSerializer(
+                page,
+                context={'course_id': course_id},
+                many=True,
+            )
         else:
             page = self.paginate_queryset(topics)
             # Use the serializer that adds team_count in a bulk operation per page.
-            serializer = BulkTeamCountPaginatedTopicSerializer(
-                page, context={'course_id': course_id, 'sort_order': ordering}
+            # TODO: this used to be a bulk ops serializer.  Will this impact performance?
+            serializer = TopicSerializer(
+                page,
+                context={'course_id': course_id},
+                many=True,
             )
 
-        return Response(serializer.data)
+        response = self.get_paginated_response(serializer.data)
+        response.data['sort_order'] = ordering
+
+        return response
 
 
 def get_alphabetical_topics(course_module):

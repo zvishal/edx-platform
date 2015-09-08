@@ -166,7 +166,7 @@ class TopicSerializer(BaseTopicSerializer):
     model to get the count. Requires that `context` is provided with a valid course_id
     in order to filter teams within the course.
     """
-    team_count = serializers.SerializerMethodField('get_team_count')
+    team_count = serializers.SerializerMethodField()
 
     def get_team_count(self, topic):
         """Get the number of teams associated with this topic"""
