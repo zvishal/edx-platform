@@ -102,7 +102,7 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        return CourseTeam.create(
+        team = CourseTeam.create(
             name=validated_data.get("name", ''),
             course_id=validated_data.get("course_id"),
             description=validated_data.get("description", ''),
@@ -110,6 +110,8 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
             country=validated_data.get("country", ''),
             language=validated_data.get("language", ''),
         )
+        team.save()
+        return team
 
 
 class MembershipSerializer(serializers.ModelSerializer):
