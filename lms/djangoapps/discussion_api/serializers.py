@@ -133,7 +133,11 @@ class _ContentSerializer(serializers.Serializer):
 
     def get_author_label(self, obj):
         """Returns the role label for the content author."""
-        return None if self._is_anonymous(obj) else self._get_user_label(int(obj["user_id"]))
+        if self._is_anonymous(obj) or obj["user_id"] is None:
+            return None
+        else:
+            user_id = int(obj["user_id"])
+            return self._get_user_label(user_id)
 
     def get_rendered_body(self, obj):
         """Returns the rendered body content."""
@@ -261,7 +265,7 @@ class CommentSerializer(_ContentSerializer):
     at introspection and Comment's __getattr__.
     """
     thread_id = serializers.CharField()
-    parent_id = serializers.CharField(required=False)
+    parent_id = serializers.CharField(required=False, allow_null=True)
     endorsed = serializers.BooleanField(required=False)
     endorsed_by = serializers.SerializerMethodField()
     endorsed_by_label = serializers.SerializerMethodField()
