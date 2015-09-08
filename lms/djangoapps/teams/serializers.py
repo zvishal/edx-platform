@@ -15,13 +15,26 @@ from .models import CourseTeam, CourseTeamMembership
 
 
 class CountryField(serializers.Field):
+    """
+    Field to serialize a country code.
+    """
 
     COUNTRY_CODES = dict(countries).keys()
 
     def to_representation(self, obj):
+        """
+        Represent the country as a 2-character unicode identifier.
+        """
         return unicode(obj)
 
     def to_internal_value(self, data):
+        """
+        Check that the code is a valid country code.
+
+        We leave the data in its original format so that the Django model's
+        CountryField can convert it to the internal representation used
+        by the django-countries library.
+        """
         if data not in self.COUNTRY_CODES:
             raise serializers.ValidationError(
                 u"{code} is not a valid country code".format(code=data)
@@ -59,8 +72,6 @@ class CourseTeamSerializer(serializers.ModelSerializer):
     """Serializes a CourseTeam with membership information."""
     id = serializers.CharField(source='team_id', read_only=True)  # pylint: disable=invalid-name
     membership = UserMembershipSerializer(many=True, read_only=True)
-
-    # TODO: experimental; see if this forces country to be serialized to unicode
     country = CountryField()
 
     class Meta(object):
@@ -86,7 +97,6 @@ class CourseTeamSerializer(serializers.ModelSerializer):
 class CourseTeamCreationSerializer(serializers.ModelSerializer):
     """Deserializes a CourseTeam for creation."""
 
-    # TODO: experimental; see if this forces country to be serialized to unicode
     country = CountryField(required=False)
 
     class Meta(object):

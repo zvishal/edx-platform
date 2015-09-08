@@ -29,7 +29,9 @@ class CourseTeamIndexer(object):
 
         Returns serialized object with additional search fields.
         """
-        # TODO -- explain this
+        # Django Rest Framework v3.1 requires that we pass the request to the serializer
+        # so it can construct hyperlinks.  To avoid changing the interface of this object,
+        # we retrieve the request from the request cache.
         context = {
             "request": self._get_request()
         }
@@ -69,6 +71,12 @@ class CourseTeamIndexer(object):
             return self.course_team.language
 
     def _get_request(self):
+        """
+        Helper to retrieve the current request.
+
+        We make this a separate instance method to make it easier to patch
+        in unit tests.
+        """
         return get_request()
 
     @classmethod

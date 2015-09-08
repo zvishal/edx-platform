@@ -127,7 +127,7 @@ class TeamSignalsTest(SharedModuleStoreTestCase):
         patcher = patch("teams.search_indexes.get_request")
         mock_get_request = patcher.start()
         mock_get_request.returns = RequestFactory().get("/")
-        self.addCleanup(lambda: patcher.stop())
+        self.addCleanup(patcher.stop)
 
     def mock_comment(self, context=TEAM_DISCUSSION_CONTEXT, user=None):
         """Create a mock comment service object with the given context."""

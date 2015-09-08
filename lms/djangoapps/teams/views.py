@@ -3,8 +3,6 @@
 from django.shortcuts import render_to_response
 from django.http import Http404
 from django.conf import settings
-from django.core.paginator import Paginator
-from django.views.generic.base import View
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -53,10 +51,12 @@ MAXIMUM_SEARCH_SIZE = 100000
 
 
 class TopicsPagination(DefaultPagination):
+    """Paginate topics. """
     page_size = TOPICS_PER_PAGE
 
 
 class MembershipPagination(DefaultPagination):
+    """Paginate memberships. """
     page_size = TEAM_MEMBERSHIPS_PER_PAGE
 
 
