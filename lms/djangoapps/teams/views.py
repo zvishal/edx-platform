@@ -26,8 +26,7 @@ from openedx.core.lib.api.view_utils import (
     build_api_error,
     ExpandableFieldViewMixin
 )
-from openedx.core.lib.api.serializers import PaginationSerializer
-from openedx.core.lib.api.paginators import paginate_search_results
+from openedx.core.lib.api.paginators import paginate_search_results, DefaultPagination
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
@@ -42,10 +41,7 @@ from .serializers import (
     CourseTeamSerializer,
     CourseTeamCreationSerializer,
     TopicSerializer,
-    PaginatedTopicSerializer,
-    BulkTeamCountPaginatedTopicSerializer,
     MembershipSerializer,
-    PaginatedMembershipSerializer,
     add_team_count
 )
 from .search_indexes import CourseTeamIndexer
@@ -56,7 +52,15 @@ TOPICS_PER_PAGE = 12
 MAXIMUM_SEARCH_SIZE = 100000
 
 
-class TeamsDashboardView(View):
+class TopicsPagination(DefaultPagination):
+    page_size = TOPICS_PER_PAGE
+
+
+class MembershipPagination(DefaultPagination):
+    page_size = TEAM_MEMBERSHIPS_PER_PAGE
+
+
+class TeamsDashboardView(GenericAPIView):
     """
     View methods related to the teams dashboard.
     """
@@ -82,25 +86,36 @@ class TeamsDashboardView(View):
         # to the serializer so that the paginated results indicate how they were sorted.
         sort_order = 'name'
         topics = get_alphabetical_topics(course)
-        topics_page = Paginator(topics, TOPICS_PER_PAGE).page(1)
+
         # BulkTeamCountPaginatedTopicSerializer will add team counts to the topics in a single
         # bulk operation per page.
-        topics_serializer = BulkTeamCountPaginatedTopicSerializer(
-            instance=topics_page,
-            context={'course_id': course.id, 'sort_order': sort_order}
+        # TODO: update the above comment; check for perf issues
+        topic_paginator = TopicsPagination()
+        topics_page = topic_paginator.paginate_queryset(topics, request)
+        topics_serializer = TopicSerializer(
+            topics_page,
+            context={'course_id': course.id},
+            many=True,
         )
+        topics_data = topic_paginator.get_paginated_response(topics_serializer.data).data
+        topics_data["sort_order"] = sort_order
+
         user = request.user
 
+        # TODO: refactor this nonsense to avoid duplication
+        membership_paginator = MembershipPagination()
         team_memberships = CourseTeamMembership.get_memberships(request.user.username, [course.id])
-        team_memberships_page = Paginator(team_memberships, TEAM_MEMBERSHIPS_PER_PAGE).page(1)
-        team_memberships_serializer = PaginatedMembershipSerializer(
-            instance=team_memberships_page,
+        team_memberships_page = membership_paginator.paginate_queryset(team_memberships, request)
+        team_memberships_serializer = MembershipSerializer(
+            team_memberships_page,
             context={'expand': ('team',)},
+            many=True,
         )
+        memberships_data = membership_paginator.get_paginated_response(team_memberships_serializer.data).data
 
         context = {
             "course": course,
-            "topics": topics_serializer.data,
+            "topics": topics_data,
             # It is necessary to pass both privileged and staff because only privileged users can
             # administer discussion threads, but both privileged and staff users are allowed to create
             # multiple teams (since they are not automatically added to teams upon creation).
@@ -108,7 +123,7 @@ class TeamsDashboardView(View):
                 "username": user.username,
                 "privileged": has_discussion_privileges(user, course_key),
                 "staff": bool(has_access(user, 'staff', course_key)),
-                "team_memberships_data": team_memberships_serializer.data,
+                "team_memberships_data": memberships_data,
             },
             "topic_url": reverse(
                 'topics_detail', kwargs={'topic_id': 'topic_id', 'course_id': str(course_id)}, request=request

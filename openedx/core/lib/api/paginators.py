@@ -9,6 +9,7 @@ from rest_framework import pagination
 
 class DefaultPagination(pagination.PageNumberPagination):
     """TODO """
+    # TODO: do we need to specify the page size?
     page_size = 20
     page_size_query_param = "page_size"
 

@@ -7,7 +7,7 @@ from django.conf import settings
 from django_countries import countries
 from rest_framework import serializers
 
-from openedx.core.lib.api.serializers import CollapsedReferenceSerializer, PaginationSerializer
+from openedx.core.lib.api.serializers import CollapsedReferenceSerializer
 from openedx.core.lib.api.fields import ExpandableField
 from openedx.core.djangoapps.user_api.accounts.serializers import UserReadOnlySerializer
 
@@ -146,13 +146,6 @@ class MembershipSerializer(serializers.ModelSerializer):
         read_only_fields = ("date_joined", "last_activity_at")
 
 
-class PaginatedMembershipSerializer(PaginationSerializer):
-    """Serializes team memberships with support for pagination."""
-    class Meta(object):
-        """Defines meta information for the PaginatedMembershipSerializer."""
-        object_serializer_class = MembershipSerializer
-
-
 class BaseTopicSerializer(serializers.Serializer):
     """Serializes a topic without team_count."""
     description = serializers.CharField()
@@ -176,33 +169,6 @@ class TopicSerializer(BaseTopicSerializer):
             return topic['team_count']
         else:
             return CourseTeam.objects.filter(course_id=self.context['course_id'], topic_id=topic['id']).count()
-
-
-class PaginatedTopicSerializer(PaginationSerializer):
-    """
-    Serializes a set of topics, adding the team_count field to each topic individually, if team_count
-    is not already present in the topic data. Requires that `context` is provided with a valid course_id in
-    order to filter teams within the course.
-    """
-    class Meta(object):
-        """Defines meta information for the PaginatedTopicSerializer."""
-        object_serializer_class = TopicSerializer
-
-
-class BulkTeamCountPaginatedTopicSerializer(PaginationSerializer):
-    """
-    Serializes a set of topics, adding the team_count field to each topic as a bulk operation per page
-    (only on the page being returned). Requires that `context` is provided with a valid course_id in
-    order to filter teams within the course.
-    """
-    class Meta(object):
-        """Defines meta information for the BulkTeamCountPaginatedTopicSerializer."""
-        object_serializer_class = BaseTopicSerializer
-
-    def __init__(self, *args, **kwargs):
-        """Adds team_count to each topic on the current page."""
-        super(BulkTeamCountPaginatedTopicSerializer, self).__init__(*args, **kwargs)
-        add_team_count(self.data['results'], self.context['course_id'])
 
 
 def add_team_count(topics, course_id):

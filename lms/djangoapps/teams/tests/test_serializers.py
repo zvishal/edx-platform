@@ -2,16 +2,11 @@
 """
 Tests for custom Teams Serializers.
 """
-from django.core.paginator import Paginator
-
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
 from lms.djangoapps.teams.tests.factories import CourseTeamFactory
-from lms.djangoapps.teams.serializers import (
-    BaseTopicSerializer, PaginatedTopicSerializer, BulkTeamCountPaginatedTopicSerializer,
-    TopicSerializer, add_team_count
-)
+from lms.djangoapps.teams.serializers import BaseTopicSerializer, TopicSerializer
 
 
 class TopicTestCase(ModuleStoreTestCase):
@@ -95,129 +90,129 @@ class TopicSerializerTestCase(TopicTestCase):
             )
 
 
-class BasePaginatedTopicSerializerTestCase(TopicTestCase):
-    """
-    Base class for testing the two paginated topic serializers.
-    """
-    __test__ = False
-    PAGE_SIZE = 5
-    # Extending test classes should specify their serializer class.
-    serializer = None
+# class BasePaginatedTopicSerializerTestCase(TopicTestCase):
+#     """
+#     Base class for testing the two paginated topic serializers.
+#     """
+#     __test__ = False
+#     PAGE_SIZE = 5
+#     # Extending test classes should specify their serializer class.
+#     serializer = None
 
-    def _merge_dicts(self, first, second):
-        """Convenience method to merge two dicts in a single expression"""
-        result = first.copy()
-        result.update(second)
-        return result
+#     def _merge_dicts(self, first, second):
+#         """Convenience method to merge two dicts in a single expression"""
+#         result = first.copy()
+#         result.update(second)
+#         return result
 
-    def setup_topics(self, num_topics=5, teams_per_topic=0):
-        """
-        Helper method to set up topics on the course.  Returns a list of
-        created topics.
-        """
-        self.course.teams_configuration['topics'] = []
-        topics = [
-            {u'name': u'Tøpic {}'.format(i), u'description': u'The bést topic! {}'.format(i), u'id': unicode(i)}
-            for i in xrange(num_topics)
-        ]
-        for i in xrange(num_topics):
-            topic_id = unicode(i)
-            self.course.teams_configuration['topics'].append(topics[i])
-            for _ in xrange(teams_per_topic):
-                CourseTeamFactory.create(course_id=self.course.id, topic_id=topic_id)
-        return topics
+#     def setup_topics(self, num_topics=5, teams_per_topic=0):
+#         """
+#         Helper method to set up topics on the course.  Returns a list of
+#         created topics.
+#         """
+#         self.course.teams_configuration['topics'] = []
+#         topics = [
+#             {u'name': u'Tøpic {}'.format(i), u'description': u'The bést topic! {}'.format(i), u'id': unicode(i)}
+#             for i in xrange(num_topics)
+#         ]
+#         for i in xrange(num_topics):
+#             topic_id = unicode(i)
+#             self.course.teams_configuration['topics'].append(topics[i])
+#             for _ in xrange(teams_per_topic):
+#                 CourseTeamFactory.create(course_id=self.course.id, topic_id=topic_id)
+#         return topics
 
-    def assert_serializer_output(self, topics, num_teams_per_topic, num_queries):
-        """
-        Verify that the serializer produced the expected topics.
-        """
-        with self.assertNumQueries(num_queries):
-            page = Paginator(self.course.teams_topics, self.PAGE_SIZE).page(1)
-            # pylint: disable=not-callable
-            serializer = self.serializer(instance=page, context={'course_id': self.course.id})
-            self.assertEqual(
-                serializer.data['results'],
-                [self._merge_dicts(topic, {u'team_count': num_teams_per_topic}) for topic in topics]
-            )
+#     def assert_serializer_output(self, topics, num_teams_per_topic, num_queries):
+#         """
+#         Verify that the serializer produced the expected topics.
+#         """
+#         with self.assertNumQueries(num_queries):
+#             page = Paginator(self.course.teams_topics, self.PAGE_SIZE).page(1)
+#             # pylint: disable=not-callable
+#             serializer = self.serializer(instance=page, context={'course_id': self.course.id})
+#             self.assertEqual(
+#                 serializer.data['results'],
+#                 [self._merge_dicts(topic, {u'team_count': num_teams_per_topic}) for topic in topics]
+#             )
 
-    def test_no_topics(self):
-        """
-        Verify that we return no results and make no SQL queries for a page
-        with no topics.
-        """
-        self.course.teams_configuration['topics'] = []
-        self.assert_serializer_output([], num_teams_per_topic=0, num_queries=0)
-
-
-class BulkTeamCountPaginatedTopicSerializerTestCase(BasePaginatedTopicSerializerTestCase):
-    """
-    Tests for the `BulkTeamCountPaginatedTopicSerializer`, which should serialize team_count
-    data for many topics with constant time SQL queries.
-    """
-    __test__ = True
-    serializer = BulkTeamCountPaginatedTopicSerializer
-
-    def test_topics_with_no_team_counts(self):
-        """
-        Verify that we serialize topics with no team count, making only one SQL
-        query.
-        """
-        topics = self.setup_topics(teams_per_topic=0)
-        self.assert_serializer_output(topics, num_teams_per_topic=0, num_queries=1)
-
-    def test_topics_with_team_counts(self):
-        """
-        Verify that we serialize topics with a positive team count, making only
-        one SQL query.
-        """
-        teams_per_topic = 10
-        topics = self.setup_topics(teams_per_topic=teams_per_topic)
-        self.assert_serializer_output(topics, num_teams_per_topic=teams_per_topic, num_queries=1)
-
-    def test_subset_of_topics(self):
-        """
-        Verify that we serialize a subset of the course's topics, making only
-        one SQL query.
-        """
-        teams_per_topic = 10
-        topics = self.setup_topics(num_topics=self.PAGE_SIZE + 1, teams_per_topic=teams_per_topic)
-        self.assert_serializer_output(topics[:self.PAGE_SIZE], num_teams_per_topic=teams_per_topic, num_queries=1)
-
-    def test_scoped_within_course(self):
-        """Verify that team counts are scoped within a course."""
-        teams_per_topic = 10
-        first_course_topics = self.setup_topics(num_topics=self.PAGE_SIZE, teams_per_topic=teams_per_topic)
-        duplicate_topic = first_course_topics[0]
-        second_course = CourseFactory.create(
-            teams_configuration={
-                "max_team_size": 10,
-                "topics": [duplicate_topic]
-            }
-        )
-        CourseTeamFactory.create(course_id=second_course.id, topic_id=duplicate_topic[u'id'])
-        self.assert_serializer_output(first_course_topics, num_teams_per_topic=teams_per_topic, num_queries=1)
+#     def test_no_topics(self):
+#         """
+#         Verify that we return no results and make no SQL queries for a page
+#         with no topics.
+#         """
+#         self.course.teams_configuration['topics'] = []
+#         self.assert_serializer_output([], num_teams_per_topic=0, num_queries=0)
 
 
-class PaginatedTopicSerializerTestCase(BasePaginatedTopicSerializerTestCase):
-    """
-    Tests for the `PaginatedTopicSerializer`, which will add team_count information per topic if not present.
-    """
-    __test__ = True
-    serializer = PaginatedTopicSerializer
+# class BulkTeamCountPaginatedTopicSerializerTestCase(BasePaginatedTopicSerializerTestCase):
+#     """
+#     Tests for the `BulkTeamCountPaginatedTopicSerializer`, which should serialize team_count
+#     data for many topics with constant time SQL queries.
+#     """
+#     __test__ = True
+#     serializer = BulkTeamCountPaginatedTopicSerializer
 
-    def test_topics_with_team_counts(self):
-        """
-        Verify that we serialize topics with team_count, making one SQL query per topic.
-        """
-        teams_per_topic = 2
-        topics = self.setup_topics(teams_per_topic=teams_per_topic)
-        self.assert_serializer_output(topics, num_teams_per_topic=teams_per_topic, num_queries=5)
+#     def test_topics_with_no_team_counts(self):
+#         """
+#         Verify that we serialize topics with no team count, making only one SQL
+#         query.
+#         """
+#         topics = self.setup_topics(teams_per_topic=0)
+#         self.assert_serializer_output(topics, num_teams_per_topic=0, num_queries=1)
 
-    def test_topics_with_team_counts_prepopulated(self):
-        """
-        Verify that if team_count is pre-populated, there are no additional SQL queries.
-        """
-        teams_per_topic = 8
-        topics = self.setup_topics(teams_per_topic=teams_per_topic)
-        add_team_count(topics, self.course.id)
-        self.assert_serializer_output(topics, num_teams_per_topic=teams_per_topic, num_queries=0)
+#     def test_topics_with_team_counts(self):
+#         """
+#         Verify that we serialize topics with a positive team count, making only
+#         one SQL query.
+#         """
+#         teams_per_topic = 10
+#         topics = self.setup_topics(teams_per_topic=teams_per_topic)
+#         self.assert_serializer_output(topics, num_teams_per_topic=teams_per_topic, num_queries=1)
+
+#     def test_subset_of_topics(self):
+#         """
+#         Verify that we serialize a subset of the course's topics, making only
+#         one SQL query.
+#         """
+#         teams_per_topic = 10
+#         topics = self.setup_topics(num_topics=self.PAGE_SIZE + 1, teams_per_topic=teams_per_topic)
+#         self.assert_serializer_output(topics[:self.PAGE_SIZE], num_teams_per_topic=teams_per_topic, num_queries=1)
+
+#     def test_scoped_within_course(self):
+#         """Verify that team counts are scoped within a course."""
+#         teams_per_topic = 10
+#         first_course_topics = self.setup_topics(num_topics=self.PAGE_SIZE, teams_per_topic=teams_per_topic)
+#         duplicate_topic = first_course_topics[0]
+#         second_course = CourseFactory.create(
+#             teams_configuration={
+#                 "max_team_size": 10,
+#                 "topics": [duplicate_topic]
+#             }
+#         )
+#         CourseTeamFactory.create(course_id=second_course.id, topic_id=duplicate_topic[u'id'])
+#         self.assert_serializer_output(first_course_topics, num_teams_per_topic=teams_per_topic, num_queries=1)
+
+
+# class PaginatedTopicSerializerTestCase(BasePaginatedTopicSerializerTestCase):
+#     """
+#     Tests for the `PaginatedTopicSerializer`, which will add team_count information per topic if not present.
+#     """
+#     __test__ = True
+#     serializer = PaginatedTopicSerializer
+
+#     def test_topics_with_team_counts(self):
+#         """
+#         Verify that we serialize topics with team_count, making one SQL query per topic.
+#         """
+#         teams_per_topic = 2
+#         topics = self.setup_topics(teams_per_topic=teams_per_topic)
+#         self.assert_serializer_output(topics, num_teams_per_topic=teams_per_topic, num_queries=5)
+
+#     def test_topics_with_team_counts_prepopulated(self):
+#         """
+#         Verify that if team_count is pre-populated, there are no additional SQL queries.
+#         """
+#         teams_per_topic = 8
+#         topics = self.setup_topics(teams_per_topic=teams_per_topic)
+#         add_team_count(topics, self.course.id)
+#         self.assert_serializer_output(topics, num_teams_per_topic=teams_per_topic, num_queries=0)
