@@ -431,7 +431,9 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
             if not team_administrator:
                 # Add the creating user to the team.
                 team.add_user(request.user)
-            return Response(CourseTeamSerializer(team).data)
+
+            data = CourseTeamSerializer(team, context={"request": request}).data
+            return Response(data)
 
     def get_page(self):
         """ Returns page number specified in args, params, or defaults to 1. """
