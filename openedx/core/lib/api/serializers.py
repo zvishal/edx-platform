@@ -1,3 +1,7 @@
+"""
+Serializers to be used in APIs.
+"""
+
 from rest_framework import serializers
 
 
