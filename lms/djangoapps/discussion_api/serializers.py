@@ -66,13 +66,14 @@ def get_context(course, request, thread=None):
 
 
 def validate_not_blank(value):
+    """Validate that a value is not an empty string or whitespace. """
     if not value.strip():
         raise ValidationError("This field may not be blank.")
 
 
 class _ContentSerializer(serializers.Serializer):
     """A base class for thread and comment serializers."""
-    id = serializers.CharField(read_only=True)
+    id = serializers.CharField(read_only=True)  # pylint: disable=invalid-name
     author = serializers.SerializerMethodField()
     author_label = serializers.SerializerMethodField()
     created_at = serializers.CharField(read_only=True)
@@ -196,8 +197,10 @@ class ThreadSerializer(_ContentSerializer):
     non_updatable_fields = NON_UPDATABLE_THREAD_FIELDS
 
     def get_pinned(self, obj):
-        # Compensate for the fact that some threads in the comments service do
-        # not have the pinned field set
+        """
+        Compensate for the fact that some threads in the comments service do
+        not have the pinned field set.
+        """
         return bool(obj["pinned"])
 
     def get_group_name(self, obj):
