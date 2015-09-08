@@ -144,7 +144,7 @@ class _ContentSerializer(serializers.Serializer):
         Returns a boolean indicating whether the requester has flagged the
         content as abusive.
         """
-        return self.context["cc_requester"]["id"] in obj["abuse_flaggers"]
+        return self.context["cc_requester"]["id"] in obj.get("abuse_flaggers", [])
 
     def get_voted(self, obj):
         """
@@ -155,7 +155,7 @@ class _ContentSerializer(serializers.Serializer):
 
     def get_vote_count(self, obj):
         """Returns the number of votes for the content."""
-        return obj["votes"]["up_count"]
+        return obj.get("votes", {}).get("up_count", 0)
 
     def get_editable_fields(self, obj):
         """Return the list of the fields the requester can edit"""
@@ -241,11 +241,14 @@ class ThreadSerializer(_ContentSerializer):
         return self.get_comment_list_url(obj, endorsed=False)
 
     def create(self, validated_data):
-        return Thread(user_id=self.context["cc_requester"]["id"], **validated_data)
+        thread = Thread(user_id=self.context["cc_requester"]["id"], **validated_data)
+        thread.save()
+        return thread
 
     def update(self, instance, validated_data):
         for key, val in validated_data.items():
             instance[key] = val
+        instance.save()
         return instance
 
 
@@ -328,11 +331,13 @@ class CommentSerializer(_ContentSerializer):
         return attrs
 
     def create(self, validated_data):
-        return Comment(
+        comment = Comment(
             course_id=self.context["thread"]["course_id"],
             user_id=self.context["cc_requester"]["id"],
             **validated_data
         )
+        comment.save()
+        return comment
 
     def update(self, instance, validated_data):
         for key, val in validated_data.items():
@@ -343,4 +348,5 @@ class CommentSerializer(_ContentSerializer):
             if key == "endorsed":
                 instance["endorsement_user_id"] = self.context["cc_requester"]["id"]
 
+        instance.save()
         return instance
