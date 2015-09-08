@@ -892,12 +892,7 @@ class MembershipListView(ExpandableFieldViewMixin, GenericAPIView):
 
     authentication_classes = (OAuth2Authentication, SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
-
     serializer_class = MembershipSerializer
-
-    paginate_by = 10
-    paginate_by_param = 'page_size'
-    pagination_serializer_class = PaginationSerializer
 
     def get(self, request):
         """GET /api/team/v0/team_membership"""
@@ -955,8 +950,8 @@ class MembershipListView(ExpandableFieldViewMixin, GenericAPIView):
 
         queryset = CourseTeamMembership.get_memberships(username, course_keys, team_id)
         page = self.paginate_queryset(queryset)
-        serializer = self.get_pagination_serializer(page)
-        return Response(serializer.data)  # pylint: disable=maybe-no-member
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """POST /api/team/v0/team_membership"""
