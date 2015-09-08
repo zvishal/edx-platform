@@ -30,8 +30,10 @@ class StringListField(serializers.CharField):
         return [int(item) for item in items]
 
 
-class CourseSerializer(serializers.Serializer):
-    """TODO """
+class CourseSerializer(serializers.Serializer):  # pylint: disable=abstract-method
+    """
+    Serialize a course descriptor and related information.
+    """
 
     course_id = serializers.CharField(source="id")
     enrollment_start = serializers.DateTimeField(format=None)
@@ -43,10 +45,12 @@ class CourseSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         self.include_expired = kwargs.pop("include_expired", False)
-        return super(CourseSerializer, self).__init__(*args, **kwargs)
+        super(CourseSerializer, self).__init__(*args, **kwargs)
 
     def get_course_modes(self, obj):
-        """TODO """
+        """
+        Retrieve course modes associated with the course.
+        """
         course_modes = CourseMode.modes_for_course(
             obj.id,
             include_expired=self.include_expired,
