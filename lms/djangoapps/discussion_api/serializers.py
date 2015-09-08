@@ -312,6 +312,15 @@ class CommentSerializer(_ContentSerializer):
             for child in obj.get("children", [])
         ]
 
+    def to_representation(self, data):
+        data = super(CommentSerializer, self).to_representation(data)
+
+        # TODO: explain
+        if 'parent_id' not in data:
+            data["parent_id"] = None
+
+        return data
+
     def validate(self, attrs):
         """
         Ensure that parent_id identifies a comment that is actually in the
