@@ -282,10 +282,6 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
     # OAuth2Authentication must come first to return a 401 for unauthenticated users
     authentication_classes = (OAuth2Authentication, SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
-
-    paginate_by = 10
-    paginate_by_param = 'page_size'
-    pagination_serializer_class = PaginationSerializer
     serializer_class = CourseTeamSerializer
 
     def get(self, request):
@@ -378,10 +374,12 @@ class TeamsListView(ExpandableFieldViewMixin, GenericAPIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             page = self.paginate_queryset(queryset)
-            serializer = self.get_pagination_serializer(page)
-            serializer.context.update({'sort_order': order_by_input})  # pylint: disable=maybe-no-member
+            serializer = self.get_serializer(page, many=True)
 
-        return Response(serializer.data)  # pylint: disable=maybe-no-member
+        #return Response(serializer.data)  # pylint: disable=maybe-no-member
+        response = self.get_paginated_response(serializer.data)
+        response.data['sort_order'] = order_by_input
+        return response
 
     def post(self, request):
         """POST /api/team/v0/teams/"""

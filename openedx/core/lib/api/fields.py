@@ -12,9 +12,15 @@ class ExpandableField(Field):
         super(ExpandableField, self).__init__(**kwargs)
 
     def to_representation(self, obj):
-        if self.field_name in self.context.get("expand", []):
-            self.expanded.bind(self.field_name, self)
-            return self.expanded.to_representation(obj)
-        else:
-            self.collapsed.bind(self.field_name, self)
-            return self.collapsed.to_representation(obj)
+        field = (
+            self.expanded
+            if self.field_name in self.context.get("expand", [])
+            else self.collapsed
+        )
+
+        # Avoid double-binding the field, otherwise we'll get
+        # an error about the source kwarg being redundant.
+        if field.source is None:
+            field.bind(self.field_name, self)
+
+        return field.to_representation(obj)
