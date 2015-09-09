@@ -32,11 +32,23 @@ class TestDashboard(SharedModuleStoreTestCase):
     """Tests for the Teams dashboard."""
     test_password = "test"
 
+    NUM_TOPICS = 10
+
     @classmethod
     def setUpClass(cls):
         super(TestDashboard, cls).setUpClass()
         cls.course = CourseFactory.create(
-            teams_configuration={"max_team_size": 10, "topics": [{"name": "foo", "id": 0, "description": "test topic"}]}
+            teams_configuration={
+                "max_team_size": 10,
+                "topics": [
+                    {
+                        "name": "Topic {}".format(topic_id),
+                        "id": topic_id,
+                        "description": "Description for topic {}".format(topic_id)
+                    }
+                    for topic_id in range(cls.NUM_TOPICS)
+                ]
+            }
         )
 
     def setUp(self):
@@ -92,6 +104,30 @@ class TestDashboard(SharedModuleStoreTestCase):
         self.client.login(username=self.user.username, password=self.test_password)
         response = self.client.get(teams_url)
         self.assertEqual(404, response.status_code)
+
+    def test_query_counts(self):
+        # Enroll in the course and log in
+        CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id)
+        self.client.login(username=self.user.username, password=self.test_password)
+
+        # Check the query count on the dashboard With no teams
+        with self.assertNumQueries(15):
+            self.client.get(self.teams_url)
+
+        # Create some teams
+        for topic_id in range(self.NUM_TOPICS):
+            team = CourseTeamFactory.create(
+                name=u"Team for topic {}".format(topic_id),
+                course_id=self.course.id,
+                topic_id=topic_id,
+            )
+
+        # Add the user to the last team
+        team.add_user(self.user)
+
+        # Check the query count on the dashboard again
+        with self.assertNumQueries(19):
+            self.client.get(self.teams_url)
 
     def test_bad_course_id(self):
         """
