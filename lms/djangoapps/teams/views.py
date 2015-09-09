@@ -94,7 +94,7 @@ class TeamsDashboardView(GenericAPIView):
         topics_page = topic_paginator.paginate_queryset(topics, request)
         topics_serializer = TopicSerializer(
             topics_page,
-            context={'course_id': course.id},
+            context={'course_id': course.id, "request": request},
             many=True,
         )
         topics_data = topic_paginator.get_paginated_response(topics_serializer.data).data
@@ -108,7 +108,7 @@ class TeamsDashboardView(GenericAPIView):
         team_memberships_page = membership_paginator.paginate_queryset(team_memberships, request)
         team_memberships_serializer = MembershipSerializer(
             team_memberships_page,
-            context={'expand': ('team',)},
+            context={'expand': ('team',), "request": request},
             many=True,
         )
         memberships_data = membership_paginator.get_paginated_response(team_memberships_serializer.data).data
