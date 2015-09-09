@@ -16,7 +16,6 @@ from django.utils.http import urlencode
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_oauth import permissions
-from rest_framework_oauth.authentication import OAuthAuthentication, OAuth2Authentication
 from rest_framework_oauth.compat import oauth2_provider, oauth2_provider_scope
 from rest_framework.test import APIRequestFactory, APIClient
 from rest_framework.views import APIView
@@ -25,40 +24,31 @@ from provider import scope, constants
 
 from ..authentication import OAuth2AuthenticationAllowInactiveUser
 
-factory = APIRequestFactory()
+factory = APIRequestFactory()  # pylint: disable=invalid-name
 
 
-class MockView(APIView):
+class MockView(APIView):  # pylint: disable=missing-docstring
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request):
+    def get(self, request):  # pylint: disable=missing-docstring,unused-argument
         return HttpResponse({'a': 1, 'b': 2, 'c': 3})
 
-    def post(self, request):
+    def post(self, request):  # pylint: disable=missing-docstring,unused-argument
         return HttpResponse({'a': 1, 'b': 2, 'c': 3})
 
-    def put(self, request):
+    def put(self, request):  # pylint: disable=missing-docstring,unused-argument
         return HttpResponse({'a': 1, 'b': 2, 'c': 3})
 
 
 # This is the a change we've made from the django-rest-framework-oauth version
 # of these tests.  We're subclassing our custom OAuth2AuthenticationAllowInactiveUser
 # instead of OAuth2Authentication.
-class OAuth2AuthenticationDebug(OAuth2AuthenticationAllowInactiveUser):
+class OAuth2AuthenticationDebug(OAuth2AuthenticationAllowInactiveUser):  # pylint: disable=missing-docstring
     allow_query_params_token = True
 
 
 urlpatterns = patterns(
     '',
-    (r'^oauth/$', MockView.as_view(authentication_classes=[OAuthAuthentication])),
-    (
-        r'^oauth-with-scope/$',
-        MockView.as_view(
-            authentication_classes=[OAuthAuthentication],
-            permission_classes=[permissions.TokenHasReadWriteScope]
-        )
-    ),
-
     url(r'^oauth2/', include('provider.oauth2.urls', namespace='oauth2')),
     url(r'^oauth2-test/$', MockView.as_view(authentication_classes=[OAuth2AuthenticationAllowInactiveUser])),
     url(r'^oauth2-test-debug/$', MockView.as_view(authentication_classes=[OAuth2AuthenticationDebug])),
@@ -83,10 +73,10 @@ class OAuth2Tests(TestCase):
         self.password = 'password'
         self.user = User.objects.create_user(self.username, self.email, self.password)
 
-        self.CLIENT_ID = 'client_key'
-        self.CLIENT_SECRET = 'client_secret'
-        self.ACCESS_TOKEN = "access_token"
-        self.REFRESH_TOKEN = "refresh_token"
+        self.CLIENT_ID = 'client_key'  # pylint: disable=invalid-name
+        self.CLIENT_SECRET = 'client_secret'  # pylint: disable=invalid-name
+        self.ACCESS_TOKEN = "access_token"  # pylint: disable=invalid-name
+        self.REFRESH_TOKEN = "refresh_token"  # pylint: disable=invalid-name
 
         self.oauth2_client = oauth2_provider.oauth2.models.Client.objects.create(
             client_id=self.CLIENT_ID,
@@ -121,7 +111,7 @@ class OAuth2Tests(TestCase):
         # edx-auth2-provider.
         scope.SCOPE_NAME_DICT = {'read': constants.READ, 'write': constants.WRITE}
 
-    def _create_authorization_header(self, token=None):
+    def _create_authorization_header(self, token=None):  # pylint: disable=missing-docstring
         return "Bearer {0}".format(token or self.access_token.token)
 
     @unittest.skipUnless(oauth2_provider, 'django-oauth2-provider not installed')

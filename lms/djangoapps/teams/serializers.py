@@ -181,7 +181,7 @@ class TopicSerializer(BaseTopicSerializer):
             return CourseTeam.objects.filter(course_id=self.context['course_id'], topic_id=topic['id']).count()
 
 
-class BulkTeamCountTopicListSerializer(serializers.ListSerializer):
+class BulkTeamCountTopicListSerializer(serializers.ListSerializer):  # pylint: disable=abstract-method
     """
     List serializer for efficiently serializing a set of topics.
     """
@@ -193,12 +193,12 @@ class BulkTeamCountTopicListSerializer(serializers.ListSerializer):
         return data
 
 
-class BulkTeamCountTopicSerializer(BaseTopicSerializer):
+class BulkTeamCountTopicSerializer(BaseTopicSerializer):  # pylint: disable=abstract-method
     """
     Serializes a set of topics, adding the team_count field to each topic as a bulk operation.
     Requires that `context` is provided with a valid course_id in order to filter teams within the course.
     """
-    class Meta:
+    class Meta:  # pylint: disable=missing-docstring,old-style-class
         list_serializer_class = BulkTeamCountTopicListSerializer
 
 
