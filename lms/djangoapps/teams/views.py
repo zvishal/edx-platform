@@ -83,36 +83,34 @@ class TeamsDashboardView(GenericAPIView):
                 not has_access(request.user, 'staff', course, course.id):
             raise Http404
 
+        user = request.user
+
         # Even though sorting is done outside of the serializer, sort_order needs to be passed
         # to the serializer so that the paginated results indicate how they were sorted.
         sort_order = 'name'
         topics = get_alphabetical_topics(course)
 
+        # Paginate and serialize topic data
         # BulkTeamCountPaginatedTopicSerializer will add team counts to the topics in a single
         # bulk operation per page.
-        # TODO: update the above comment; check for perf issues
-        topic_paginator = TopicsPagination()
-        topics_page = topic_paginator.paginate_queryset(topics, request)
-        topics_serializer = BulkTeamCountTopicSerializer(
-            topics_page,
-            context={'course_id': course.id, "request": request},
-            many=True,
+        topics_data = self._serialize_and_paginate(
+            TopicsPagination,
+            topics,
+            request,
+            BulkTeamCountTopicSerializer,
+            {'course_id': course.id},
         )
-        topics_data = topic_paginator.get_paginated_response(topics_serializer.data).data
         topics_data["sort_order"] = sort_order
 
-        user = request.user
-
-        # TODO: refactor this nonsense to avoid duplication
-        membership_paginator = MembershipPagination()
-        team_memberships = CourseTeamMembership.get_memberships(request.user.username, [course.id])
-        team_memberships_page = membership_paginator.paginate_queryset(team_memberships, request)
-        team_memberships_serializer = MembershipSerializer(
-            team_memberships_page,
-            context={'expand': ('team',), "request": request},
-            many=True,
+        # Paginate and serialize team membership data.
+        team_memberships = CourseTeamMembership.get_memberships(user.username, [course.id])
+        memberships_data = self._serialize_and_paginate(
+            MembershipPagination,
+            team_memberships,
+            request,
+            MembershipSerializer,
+            {'expand': ('team',)}
         )
-        memberships_data = membership_paginator.get_paginated_response(team_memberships_serializer.data).data
 
         context = {
             "course": course,
@@ -140,6 +138,39 @@ class TeamsDashboardView(GenericAPIView):
             "teams_base_url": reverse('teams_dashboard', request=request, kwargs={'course_id': course_id}),
         }
         return render_to_response("teams/teams.html", context)
+
+    def _serialize_and_paginate(self, pagination_cls, queryset, request, serializer_cls, serializer_ctx):
+        """
+        Serialize and paginate objects in a queryset.
+
+        Arguments:
+            pagination_cls (pagination.Paginator class): Django Rest Framework Paginator subclass.
+            queryset (QuerySet): Django queryset to serialize/paginate.
+            serializer_cls (serializers.Serializer class): Django Rest Framework Serializer subclass.
+            serializer_ctx (dict): Context dictionary to pass to the serializer
+
+        Returns: dict
+
+        """
+        # Django Rest Framework v3 requires that we pass the request
+        # into the serializer's context if the serialize contains
+        # hyperlink fields.
+        serializer_ctx["request"] = request
+
+        # Instantiate the paginator and use it to paginate the queryset
+        paginator = pagination_cls()
+        page = paginator.paginate_queryset(queryset, request)
+
+        # Serialize the page
+        serializer = serializer_cls(page, context=serializer_ctx, many=True)
+
+        # Use the paginator to construct the response data
+        # This will use the pagination subclass for the view to add additional
+        # fields to the response.
+        # For example, if the input data is a list, the output data would
+        # be a dictionary with keys "count", "next", "previous", and "results"
+        # (where "results" is set to the value of the original list)
+        return paginator.get_paginated_response(serializer.data).data
 
 
 def has_team_api_access(user, course_key, access_username=None):
@@ -575,6 +606,11 @@ class TeamsDetailView(ExpandableFieldViewMixin, RetrievePatchAPIView):
         return CourseTeam.objects.all()
 
 
+class TopicListPagination(DefaultPagination):
+    """Pagination for the list of topics. """
+    page_size = TOPICS_PER_PAGE
+
+
 class TopicListView(GenericAPIView):
     """
         **Use Cases**
@@ -635,9 +671,7 @@ class TopicListView(GenericAPIView):
 
     authentication_classes = (OAuth2Authentication, SessionAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
-
-    # TODO: is this still necessary?
-    paginate_by = TOPICS_PER_PAGE
+    pagination_class = TopicListPagination
 
     def get(self, request):
         """GET /api/team/v0/topics/?course_id={course_id}"""
@@ -691,12 +725,7 @@ class TopicListView(GenericAPIView):
         else:
             page = self.paginate_queryset(topics)
             # Use the serializer that adds team_count in a bulk operation per page.
-            # TODO: this used to be a bulk ops serializer.  Will this impact performance?
-            serializer = TopicSerializer(
-                page,
-                context={'course_id': course_id},
-                many=True,
-            )
+            serializer = BulkTeamCountTopicSerializer(page, context={'course_id': course_id}, many=True)
 
         response = self.get_paginated_response(serializer.data)
         response.data['sort_order'] = ordering
