@@ -39,6 +39,7 @@ from .serializers import (
     CourseTeamSerializer,
     CourseTeamCreationSerializer,
     TopicSerializer,
+    BulkTeamCountTopicSerializer,
     MembershipSerializer,
     add_team_count
 )
@@ -92,7 +93,7 @@ class TeamsDashboardView(GenericAPIView):
         # TODO: update the above comment; check for perf issues
         topic_paginator = TopicsPagination()
         topics_page = topic_paginator.paginate_queryset(topics, request)
-        topics_serializer = TopicSerializer(
+        topics_serializer = BulkTeamCountTopicSerializer(
             topics_page,
             context={'course_id': course.id, "request": request},
             many=True,
