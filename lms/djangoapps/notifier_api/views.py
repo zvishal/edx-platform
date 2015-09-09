@@ -9,11 +9,16 @@ from openedx.core.lib.api.permissions import ApiKeyHeaderPermission
 
 
 class NotifierPaginator(pagination.PageNumberPagination):
-    """TODO """
+    """
+    Paginator for the notifier API.
+    """
     page_size = 10
     page_size_query_param = "page_size"
 
     def get_paginated_response(self, data):
+        """
+        Construct a response with pagination information.
+        """
         return Response({
             'next': self.get_next_link(),
             'previous': self.get_previous_link(),

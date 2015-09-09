@@ -32,10 +32,9 @@ class UserPreferenceSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class RawUserPreferenceSerializer(serializers.ModelSerializer):
-    """Serializer that generates a raw representation of a user preference.
     """
-    # TODO: explain that we removed the read-only field
-    # because we need it when passing in data for the user.
+    Serializer that generates a raw representation of a user preference.
+    """
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta(object):  # pylint: disable=missing-docstring
@@ -62,6 +61,8 @@ class ReadOnlyFieldsSerializerMixin(object):
 
     @classmethod
     def get_writeable_fields(cls):
-        """TODO """
+        """
+        Return all fields on this serializer that are writeable.
+        """
         all_fields = getattr(cls.Meta, 'fields', tuple())
         return tuple(set(all_fields) - set(cls.get_read_only_fields()))

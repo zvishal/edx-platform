@@ -8,12 +8,18 @@ from rest_framework import pagination
 
 
 class DefaultPagination(pagination.PageNumberPagination):
-    """TODO """
-    # TODO: do we need to specify the page size?
-    page_size = 20
+    """
+    Default paginator for APIs in edx-platform.
+
+    This is configured in settings to be automatically used
+    by any subclass of Django Rest Framework's generic API views.
+    """
     page_size_query_param = "page_size"
 
     def get_paginated_response(self, data):
+        """
+        Annotate the response with pagination information.
+        """
         return Response({
             'next': self.get_next_link(),
             'previous': self.get_previous_link(),

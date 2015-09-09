@@ -228,7 +228,9 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
         return AccountLegacyProfileSerializer.get_profile_image(user_profile, user_profile.user)
 
     def update(self, instance, validated_data):
-        """TODO """
+        """
+        Update the profile, including nested fields.
+        """
         language_proficiencies = validated_data.pop("language_proficiencies", None)
 
         # Update all fields on the user profile that are writeable,

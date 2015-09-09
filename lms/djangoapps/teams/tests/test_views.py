@@ -540,7 +540,9 @@ class TestListTeamsAPI(TeamAPITestCase):
         CourseTeamIndexer.engine().destroy()
 
         for team in self.test_team_name_id_map.values():
-            # TODO: explain this
+            # Django Rest Framework v3 requires us to pass a request to serializers
+            # that have URL fields.  Since we're invoking this code outside the context
+            # of a request, we need to simulate that there's a request.
             with patch.object(CourseTeamIndexer, "_get_request") as mock_get_request:
                 mock_get_request.returns = RequestFactory().get("/")
                 CourseTeamIndexer.index(team)

@@ -312,7 +312,9 @@ class CommentSerializer(_ContentSerializer):
     def to_representation(self, data):
         data = super(CommentSerializer, self).to_representation(data)
 
-        # TODO: explain
+        # Django Rest Framework v3 no longer includes None values
+        # in the representation.  To maintain the previous behavior,
+        # we do this manually instead.
         if 'parent_id' not in data:
             data["parent_id"] = None
 

@@ -12,6 +12,9 @@ class ExpandableField(Field):
         super(ExpandableField, self).__init__(**kwargs)
 
     def to_representation(self, obj):
+        """
+        Return a representation of the field that is either expanded or collapsed.
+        """
         field = (
             self.expanded
             if self.field_name in self.context.get("expand", [])
