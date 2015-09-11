@@ -6,6 +6,11 @@ from transformer import BlockStructureTransformers
 
 
 def get_blocks(cache, modulestore, user_info, root_block_key, transformers):
+
+    # TODO: Fix version and branch awareness of block_cache api. 
+    # for now make it version and branch agnostic. 
+    root_block_key = root_block_key.version_agnostic().for_branch(None)
+
     unregistered_transformers = BlockStructureTransformers.find_unregistered(transformers)
     if unregistered_transformers:
         raise Exception(

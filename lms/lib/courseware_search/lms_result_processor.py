@@ -11,14 +11,18 @@ from xmodule.modulestore.django import modulestore
 
 from courseware.access import has_access
 
+from lms.djangoapps.course_blocks.api import get_course_blocks
+
 
 class LmsSearchResultProcessor(SearchResultProcessor):
 
     """ SearchResultProcessor for LMS Search """
     _course_key = None
+    _course_usage_key = None
     _course_name = None
     _usage_key = None
     _module_store = None
+    _courses_blocks = {}
     _module_temp_dictionary = {}
 
     def get_course_key(self):
@@ -26,6 +30,12 @@ class LmsSearchResultProcessor(SearchResultProcessor):
         if self._course_key is None:
             self._course_key = SlashSeparatedCourseKey.from_deprecated_string(self._results_fields["course"])
         return self._course_key
+
+    def get_course_usage_key(self):
+        """ fetch usage key for course from string representation - retain result for subsequent uses """
+        if self._course_usage_key is None:
+            self._course_usage_key = self.get_module_store().make_course_usage_key(self.get_course_key())
+        return self._course_usage_key       
 
     def get_usage_key(self):
         """ fetch usage key for component from string representation - retain result for subsequent uses """
@@ -38,6 +48,14 @@ class LmsSearchResultProcessor(SearchResultProcessor):
         if self._module_store is None:
             self._module_store = modulestore()
         return self._module_store
+
+    def course_blocks(self, user):
+        try:
+            course_block = self._courses_blocks[self.get_course_usage_key()]
+        except:
+            self._courses_blocks[self.get_course_usage_key()] = get_course_blocks(user, self.get_course_usage_key())
+            course_block = self._courses_blocks[self.get_course_usage_key()]
+        return course_block
 
     def get_item(self, usage_key):
         """ fetch item from the modulestore - don't refetch if we've already retrieved it beforehand """
@@ -60,10 +78,16 @@ class LmsSearchResultProcessor(SearchResultProcessor):
 
     def should_remove(self, user):
         """ Test to see if this result should be removed due to access restriction """
-        user_has_access = has_access(
-            user,
-            "load",
-            self.get_item(self.get_usage_key()),
-            self.get_course_key()
-        )
-        return not user_has_access
+        course_blocks = self.course_blocks(user)
+        if self.get_usage_key() in course_blocks.get_block_keys(): 
+            return False
+        else: 
+            return True
+        # user_has_access = has_access(
+        #     user,
+        #     "load",
+        #     self.get_item(self.get_usage_key()),
+        #     self.get_course_key()
+        # )
+        # return not user_has_access
+        # # return False

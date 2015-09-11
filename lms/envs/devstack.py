@@ -145,6 +145,24 @@ FEATURES['ENTRANCE_EXAMS'] = True
 ################################ COURSE LICENSES ################################
 FEATURES['LICENSING'] = True
 
+CACHES = {
+    # This is the cache used for most things.
+    # In staging/prod envs, the sessions also live here.
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'edx_loc_mem_cache',
+        'KEY_FUNCTION': 'util.memcache.safe_key',
+    },
+    'course_structure_cache': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'edx_course_structure_mem_cache',
+    },
+    'lms.course_blocks': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'edx_lms_course_blocks_mem_cache',
+    },
+}
+
 
 ########################## Courseware Search #######################
 FEATURES['ENABLE_COURSEWARE_SEARCH'] = True

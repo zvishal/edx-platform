@@ -62,33 +62,33 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
             return partition_group_ids if partition_group_ids else None
 
         filter_dictionary = super(LmsSearchFilterGenerator, self).filter_dictionary(**kwargs)
-        if 'user' in kwargs:
-            user = kwargs['user']
+        # if 'user' in kwargs:
+        #     user = kwargs['user']
 
-            if 'course_id' in kwargs and kwargs['course_id']:
-                try:
-                    course_key = CourseKey.from_string(kwargs['course_id'])
-                except InvalidKeyError:
-                    course_key = SlashSeparatedCourseKey.from_deprecated_string(kwargs['course_id'])
+        #     if 'course_id' in kwargs and kwargs['course_id']:
+        #         try:
+        #             course_key = CourseKey.from_string(kwargs['course_id'])
+        #         except InvalidKeyError:
+        #             course_key = SlashSeparatedCourseKey.from_deprecated_string(kwargs['course_id'])
 
-                # Staff user looking at course as staff user
-                if get_user_role(user, course_key) in ('instructor', 'staff'):
-                    return filter_dictionary
-                # Need to check course exist (if course gets deleted enrollments don't get cleaned up)
-                course = modulestore().get_course(course_key)
-                if course:
-                    filter_dictionary['content_groups'] = get_group_ids_for_user(course, user)
-            else:
-                user_enrollments = self._enrollments_for_user(user)
-                content_groups = []
-                for enrollment in user_enrollments:
-                    course = modulestore().get_course(enrollment.course_id)
-                    if course:
-                        enrollment_group_ids = get_group_ids_for_user(course, user)
-                        if enrollment_group_ids:
-                            content_groups.extend(enrollment_group_ids)
+        #         # Staff user looking at course as staff user
+        #         if get_user_role(user, course_key) in ('instructor', 'staff'):
+        #             return filter_dictionary
+        #         # Need to check course exist (if course gets deleted enrollments don't get cleaned up)
+        #         # course = modulestore().get_course(course_key)
+        #         # if course:
+        #         #     filter_dictionary['content_groups'] = get_group_ids_for_user(course, user)
+        #     else:
+        #         user_enrollments = self._enrollments_for_user(user)
+        #         content_groups = []
+        #         # for enrollment in user_enrollments:
+        #         #     course = modulestore().get_course(enrollment.course_id)
+        #         #     if course:
+        #         #         enrollment_group_ids = get_group_ids_for_user(course, user)
+        #         #         if enrollment_group_ids:
+        #         #             content_groups.extend(enrollment_group_ids)
 
-                filter_dictionary['content_groups'] = content_groups if content_groups else None
+        #         # filter_dictionary['content_groups'] = content_groups if content_groups else None
 
         return filter_dictionary
 
