@@ -20,7 +20,7 @@ from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.xml_importer import import_course_from_xml
 from django.test.utils import override_settings
 from opaque_keys.edx.locations import SlashSeparatedCourseKey, AssetLocation
-from static_replace import replace_static_urls
+from static_replace.util import replace_static_urls
 import mock
 from ddt import ddt
 from ddt import data

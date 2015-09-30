@@ -3,7 +3,7 @@ from edxmako.shortcuts import render_to_string
 from pipeline.conf import settings
 from pipeline.packager import Packager
 from pipeline.utils import guess_type
-from static_replace import try_staticfiles_lookup
+from static_replace.util import try_staticfiles_lookup
 
 
 def compressed_css(package_name, raw=False):

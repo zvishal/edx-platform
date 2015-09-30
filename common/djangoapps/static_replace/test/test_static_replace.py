@@ -1,7 +1,7 @@
 import re
 
 from nose.tools import assert_equals, assert_true, assert_false  # pylint: disable=no-name-in-module
-from static_replace import (
+from static_replace.util import (
     replace_static_urls,
     replace_course_urls,
     _url_replace_regex,

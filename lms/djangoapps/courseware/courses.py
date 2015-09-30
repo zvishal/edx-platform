@@ -13,7 +13,7 @@ from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.django import modulestore
 from xmodule.contentstore.content import StaticContent
 from xmodule.modulestore.exceptions import ItemNotFoundError
-from static_replace import replace_static_urls
+from static_replace.util import replace_static_urls
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.x_module import STUDENT_VIEW
 from microsite_configuration import microsite
