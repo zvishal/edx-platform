@@ -20,6 +20,7 @@ doCheckVars() {
 
     elif [ -n "$JENKINS_HOME" ] ; then
         source scripts/jenkins-common.sh
+        pip install Paver==1.2.4
         SCRIPT_TO_RUN=scripts/generic-ci-tests.sh
     fi
 }
