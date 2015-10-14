@@ -4,6 +4,10 @@ from optparse import make_option
 from django.conf import settings
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.django import modulestore
+import datetime
+
+from django.contrib.auth.models import User
+from student.models import CourseEnrollment
 
 from py2neo import Graph, Node, Relationship, authenticate
 
@@ -45,20 +49,21 @@ class Command(BaseCommand):
 
         if options['dump_all']:
             courses = modulestore().get_courses()
+            node_map = {}
             for course in courses:
                 print u'working on course ' + unicode(course.id)
                 # first pass will create graph nodes and key-node mapping,
                 # which will be used for searching in the second pass
-                node_map = {}
                 items = modulestore().get_items(course.id)
                 for item in items:
                     if 'detached' in item.runtime.load_block_type(item.category)._class_tags:
                         continue
                     # convert all fields to a dict and filter out parent field
                     fields = dict(
-                        [(field, field_value.read_from(item))
-                         for (field, field_value) in item.fields.iteritems()
-                         if field != 'parent' and field != 'children'])
+                        (field, field_value.read_from(item))
+                        for (field, field_value) in item.fields.iteritems()
+                        if field not in ['parent', 'children']
+                    )
                     node = create_node(item.scope_ids.block_type, fields)
                     node_map[unicode(item.location)] = node
                 graph.create(*node_map.values())
@@ -74,6 +79,27 @@ class Command(BaseCommand):
                             relationships.append(relationship)
                 graph.create(*relationships)
 
+            enrollments = []
+            for enrollment in CourseEnrollment.objects.all():
+                user_node = Node(
+                    'student',
+                    id=user.id,
+                    name=user.profile.name,
+                    gender=user.profile.gender,
+                    year_of_birth=user.profile.year_of_birth,
+                    level_of_education=user.profile.level_of_education,
+                    country=user.profile.country
+                )
+                course_key = unicode(enrollment.course_id)
+                course_node = node_map[course_key]
+                enrollments.append(
+                    Relationship(user_node, "ENROLLED_IN", course_node)
+                )
+            graph.create(*enrollments)
+
+
+
+
 
 def create_node(xblock_type, fields):
     for key, value in fields.iteritems():
@@ -81,6 +107,8 @@ def create_node(xblock_type, fields):
             fields[key] = json.dumps(value)
         elif isinstance(value, list):
             fields[key] = unicode(value)
+        elif isinstance(value, datetime.timedelta):
+            fields[key] = value.seconds
     try:
         node = Node('xblock', xblock_type, xblock_type=xblock_type, **fields)
     except:
