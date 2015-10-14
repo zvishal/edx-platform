@@ -55,6 +55,7 @@ class Command(BaseCommand):
                 # first pass will create graph nodes and key-node mapping,
                 # which will be used for searching in the second pass
                 items = modulestore().get_items(course.id)
+                course_node = None
                 for item in items:
                     if 'detached' in item.runtime.load_block_type(item.category)._class_tags:
                         continue
@@ -64,8 +65,11 @@ class Command(BaseCommand):
                         for (field, field_value) in item.fields.iteritems()
                         if field not in ['parent', 'children']
                     )
-                    node = create_node(item.scope_ids.block_type, fields)
+                    block_type = item.scope_ids.block_type
+                    node = create_node(block_type, fields)
                     node_map[unicode(item.location)] = node
+                    if block_type == 'course':
+                        course_node = node
                 graph.create(*node_map.values())
 
                 # second pass
@@ -79,23 +83,24 @@ class Command(BaseCommand):
                             relationships.append(relationship)
                 graph.create(*relationships)
 
-            enrollments = []
-            for enrollment in CourseEnrollment.objects.all():
-                user_node = Node(
-                    'student',
-                    id=user.id,
-                    name=user.profile.name,
-                    gender=user.profile.gender,
-                    year_of_birth=user.profile.year_of_birth,
-                    level_of_education=user.profile.level_of_education,
-                    country=user.profile.country
-                )
-                course_key = unicode(enrollment.course_id)
-                course_node = node_map[course_key]
-                enrollments.append(
-                    Relationship(user_node, "ENROLLED_IN", course_node)
-                )
-            graph.create(*enrollments)
+                # third pass
+                enrollments = []
+                for enrollment in CourseEnrollment.objects.filter(course_id=course.id):
+                    user = enrollment.user
+                    user_node = Node(
+                        'student',
+                        id=user.id,
+                        name=user.profile.name,
+                        gender=user.profile.gender,
+                        year_of_birth=user.profile.year_of_birth,
+                        level_of_education=user.profile.level_of_education,
+                        country=unicode(user.profile.country)
+                    )
+                    if course_node:
+                        enrollments.append(
+                            Relationship(user_node, "ENROLLED_IN", course_node)
+                        )
+                graph.create(*enrollments)
 
 
 
