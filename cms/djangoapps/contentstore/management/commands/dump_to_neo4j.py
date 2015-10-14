@@ -21,14 +21,14 @@ class Command(BaseCommand):
     )
     dump_all = make_option(
         '--all',
-        action='store',
+        action='store_true',
         dest='dump_all',
         default=False,
         help='dump all courses'
     )
     clear_all_first = make_option(
         '--clear-all-first',
-        action='store',
+        action='store_true',
         dest='clear_all_first',
         default=False,
         help='delete graph db before dumping'
