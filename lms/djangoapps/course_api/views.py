@@ -24,6 +24,8 @@ class CourseView(APIView):
 
         return (course_view(request, course_key_string))
 
+
+@view_auth_classes()
 class CourseListView(APIView):
     """
     View class to list courses
