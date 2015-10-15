@@ -10,8 +10,10 @@ from opaque_keys.edx.keys import CourseKey
 from openedx.core.lib.api.view_utils import view_auth_classes
 from xmodule.modulestore.django import modulestore
 
-from .api import list_courses
-from .api import course_view
+from .api import (
+    list_courses,
+    course_view
+)
 
 @view_auth_classes()
 class CourseView(APIView):
@@ -28,6 +30,8 @@ class CourseListView(APIView):
     """
     def get(self, request):
 
-        return (list_courses(request))
+        username = request.query_params.get('user', '')
+
+        return (list_courses(request, username))
 
 
