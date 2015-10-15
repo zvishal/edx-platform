@@ -74,8 +74,8 @@ def list_courses(request, username):
             "start_display": start_display,
             "start_type": start_type,
             "end": course.end,
-            "enrollmentStartDate": course.enrollment_start,
-            "enrollmentEndDate": course.enrollment_end,
+            "enrollment_start": course.enrollment_start,
+            "enrollment_end": course.enrollment_end,
             "course_image": course_image_url(course),
         })
 
