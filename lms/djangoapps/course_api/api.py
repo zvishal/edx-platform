@@ -3,8 +3,11 @@ Course API
 """
 
 from django.contrib.auth.models import User
+from django.template import defaultfilters
 from rest_framework import status
 from rest_framework.response import Response
+
+from xmodule.course_module import DEFAULT_START_DATE
 
 from courseware.courses import (
     get_courses,
@@ -40,7 +43,7 @@ def course_view(request, course_key_string):
 def list_courses(request, username):
 
     if (has_permission(request, username) != True):
-        return Response('Unathorized', status=status.HTTP_403_FORBIDDEN)
+        return Response('Unauthorized', status=status.HTTP_403_FORBIDDEN)
 
     if (username != ''):
         new_user = User.objects.get(username=username)
@@ -51,17 +54,29 @@ def list_courses(request, username):
     courses_json = []
 
     for course in courses:
+        if course.advertised_start is not None:
+            start_type = "string"
+            start_display = course.advertised_start
+        elif course.start != DEFAULT_START_DATE:
+            start_type = "timestamp"
+            start_display = defaultfilters.date(course.start, "DATE_FORMAT")
+        else:
+            start_type = "empty"
+            start_display = None
+
         courses_json.append({
             "id": unicode(course.id),
             "name": course.display_name_with_default,
             "number": course.display_number_with_default,
-            "organization": course.display_org_with_default,
+            "org": course.display_org_with_default,
             "description": get_course_about_section(course, "short_description").strip(),
-            "startDate": course.start,
-            "endDate": course.end,
+            "start": course.start,
+            "start_display": start_display,
+            "start_type": start_type,
+            "end": course.end,
             "enrollmentStartDate": course.enrollment_start,
             "enrollmentEndDate": course.enrollment_end,
-            "image": course_image_url(course),
+            "course_image": course_image_url(course),
         })
 
     return Response(courses_json)
