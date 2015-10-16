@@ -138,3 +138,73 @@ class BlockStructure(object):
         build_block_structure(root_xblock)
 
         return block_structure
+
+
+class BlockStructureFactory(object):
+
+    @classmethod
+    def serialize_to_cache(cls, block_structure, cache):
+        data_to_cache = (
+            block_structure._block_relations,
+            block_structure._transformer_data,
+            block_structure._block_data_map
+        )
+        zp_data_to_cache = zpickle(data_to_cache)
+        cache.set(
+            cls._encode_root_cache_key(block_structure.root_block_key),
+            zp_data_to_cache
+        )
+        logger.debug(
+            "Wrote BlockStructure {} to cache, size: {}".format(
+                block_structure.root_block_key, len(zp_data_to_cache)
+            )
+        )
+
+    @classmethod
+    def create_from_cache(cls, root_block_key, cache):
+        """
+        Returns:
+            BlockStructure, if the block structure is in the cache, and
+            NoneType otherwise.
+        """
+        zp_data_from_cache = cache.get(cls._encode_root_cache_key(root_block_key))
+        if not zp_data_from_cache:
+            return None
+
+        logger.debug(
+            "Read BlockStructure {} from cache, size: {}".format(
+                root_block_key, len(zp_data_from_cache)
+            )
+        )
+
+        block_relations, transformer_data, block_data_map = zunpickle(zp_data_from_cache)
+        block_structure = BlockStructureBlockData(root_block_key)
+        block_structure._block_relations = block_relations
+        block_structure._transformer_data = transformer_data
+        block_structure._block_data_map = block_data_map
+
+        transformer_issues = {}
+        for transformer in BlockStructureTransformers.get_registered_transformers():
+            cached_transformer_version = block_structure.get_transformer_data_version(transformer)
+            if transformer.VERSION != cached_transformer_version:
+                transformer_issues[transformer.name()] = "version: {}, cached: {}".format(
+                    transformer.VERSION,
+                    cached_transformer_version,
+                )
+
+        if transformer_issues:
+            logger.info(
+                "Collected data for the following transformers have issues:\n{}."
+            ).format('\n'.join([t_name + ": " + t_value for t_name, t_value in transformer_issues.iteritems()]))
+            return None
+
+        return block_structure
+
+    @classmethod
+    def remove_from_cache(cls, root_block_key, cache):
+        cache.delete(cls._encode_root_cache_key(root_block_key))
+        # TODO also remove all block data?
+
+    @classmethod
+    def _encode_root_cache_key(cls, root_block_key):
+        return "root.key." + unicode(root_block_key)
