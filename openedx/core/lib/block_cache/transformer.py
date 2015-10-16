@@ -1,5 +1,13 @@
 """
-...
+How many things affect a Transformer's output?
+
+1. Collected Data for this Transform (both its own and any dependent XBlock fields)
+2. Block Structure as it exists at this point in the chain (others could have modified it for their own reasons)
+2. User info
+3. Time
+4. ???
+
+
 """
 from abc import abstractmethod
 from openedx.core.lib.api.plugins import PluginManager

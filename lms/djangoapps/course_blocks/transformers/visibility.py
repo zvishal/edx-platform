@@ -19,6 +19,10 @@ class VisibilityTransformer(BlockStructureTransformer):
         )
 
     @classmethod
+    def collect_2(cls, block_cache_unit):
+        pass
+
+    @classmethod
     def collect(cls, block_structure):
         """
         Collects any information that's necessary to execute this transformer's

@@ -1,8 +1,24 @@
 """
-...
+.
 """
 from block_structure import BlockStructureFactory
 from transformer import BlockStructureTransformers
+
+
+def get_blocks(root_block_key, transformers, user_info):
+    # Load the cached block structure. This will first try to find the exact
+    # block in ephemeral storage, then fall back to the root course block it
+    # belongs to in ephemeral storage, and then fall back to the root course
+    # block stored in permanent storage.
+    bcu = BlockCacheUnit.load(root_block_key, transformers)
+
+    # Note that each transform may mutate the 
+    for transformer in transformers:
+        with bcu.collected_data_for(transformer) as collected_data:
+            transformer.transform(user_info, collected_data)
+
+    return bcu.structure
+
 
 
 def get_blocks(cache, modulestore, user_info, root_block_key, transformers):
