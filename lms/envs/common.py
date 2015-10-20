@@ -1857,7 +1857,7 @@ INSTALLED_APPS = (
 
     # External auth (OpenID, shib)
     'external_auth',
-    'django_openid_auth',
+    # 'django_openid_auth',
 
     # OAuth2 Provider
     'provider',
@@ -1870,7 +1870,7 @@ INSTALLED_APPS = (
     # When a user is deleted, Django queries all tables with a FK to the auth_user table,
     # and since django-rest-framework-oauth imports this, it will try to access tables
     # defined by oauth_provider.  If those tables don't exist, an error can occur.
-    'oauth_provider',
+    # 'oauth_provider',
 
     'auth_exchange',
 
@@ -2647,6 +2647,11 @@ CREDIT_TASK_DEFAULT_RETRY_DELAY = 30
 # Maximum number of retries per task for errors that are not related
 # to throttling.
 CREDIT_TASK_MAX_RETRIES = 5
+
+
+
+# Dummy secret key for dev/test
+SECRET_KEY = '85920908f28904ed733fe576320db18cabd7b6cd'
 
 # Secret keys shared with credit providers.
 # Used to digitally sign credit requests (us --> provider)
