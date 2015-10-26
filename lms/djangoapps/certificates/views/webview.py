@@ -468,11 +468,12 @@ def render_html_view(request, user_id, course_id):
     context.update(course.cert_html_view_overrides)
 
     # FINALLY, generate and send the output the client
+    content_type = "text/html; charset=utf-8"
     if settings.FEATURES.get('CUSTOM_CERTIFICATE_TEMPLATES_ENABLED', False):
         custom_template = get_certificate_template(course_key, user_certificate.mode)
         if custom_template:
             template = Template(custom_template)
             context = RequestContext(request, context)
-            return HttpResponse(template.render(context))
+            return HttpResponse(template.render(context), content_type=content_type)
 
-    return render_to_response("certificates/valid.html", context)
+    return render_to_response("certificates/valid.html", context, content_type=content_type)

@@ -179,6 +179,7 @@ class CertificatesViewsTests(ModuleStoreTestCase, EventTrackingTestCase):
             course_id=unicode(self.course.id)
         )
         response = self.client.get(test_url)
+        self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
         self.assertIn(
             'a course of study offered by test_organization, an online learning initiative of test organization',
             response.content
@@ -207,12 +208,14 @@ class CertificatesViewsTests(ModuleStoreTestCase, EventTrackingTestCase):
         self.cert.mode = 'verified'
         self.cert.save()
         response = self.client.get(test_url)
+        self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
         self.assertIn(str(self.cert.verify_uuid), response.content)
 
         # Hit any 'xseries' mode-specific branches
         self.cert.mode = 'xseries'
         self.cert.save()
         response = self.client.get(test_url)
+        self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
         self.assertIn(str(self.cert.verify_uuid), response.content)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
@@ -538,6 +541,7 @@ class CertificatesViewsTests(ModuleStoreTestCase, EventTrackingTestCase):
                 [{"id": 2, "name": "organization name 2"}],
             ]
             response = self.client.get(test_url)
+            self.assertEqual(response['Content-Type'], 'text/html; charset=utf-8')
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, 'lang: fr')
             self.assertContains(response, 'course name: course_title_0')
