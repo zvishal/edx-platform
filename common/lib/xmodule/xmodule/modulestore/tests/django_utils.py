@@ -16,6 +16,7 @@ from django.test.utils import override_settings
 from request_cache.middleware import RequestCache
 
 from courseware.field_overrides import OverrideFieldData  # pylint: disable=import-error
+from openedx.core.djangoapps.safe_sessions.testing import safe_cookie_test_session_patch
 from openedx.core.lib.tempdir import mkdtemp_clean
 
 from xmodule.contentstore.django import _CONTENTSTORE
@@ -24,6 +25,10 @@ from xmodule.modulestore.django import modulestore, clear_existing_modulestores
 from xmodule.modulestore.tests.mongo_connection import MONGO_PORT_NUM, MONGO_HOST
 from xmodule.modulestore.tests.sample_courses import default_block_info_tree, TOY_BLOCK_INFO_TREE
 from xmodule.modulestore.tests.factories import XMODULE_FACTORY_LOCK
+
+
+# Override the Test Client's session and login to support safe cookies.
+safe_cookie_test_session_patch()
 
 
 class StoreConstructors(object):

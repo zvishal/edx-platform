@@ -5,6 +5,12 @@ from mock import patch
 from django.conf import settings
 from django.core.urlresolvers import clear_url_caches, resolve
 
+from openedx.core.djangoapps.safe_sessions.testing import safe_cookie_test_session_patch
+
+
+# Override the Test Client's session and login to support safe cookies.
+safe_cookie_test_session_patch()
+
 
 class UrlResetMixin(object):
     """Mixin to reset urls.py before and after a test

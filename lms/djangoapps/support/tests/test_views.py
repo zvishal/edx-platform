@@ -9,6 +9,12 @@ from django.core.urlresolvers import reverse
 from student.roles import GlobalStaff, SupportStaffRole
 from student.tests.factories import UserFactory
 
+from openedx.core.djangoapps.safe_sessions.testing import safe_cookie_test_session_patch
+
+
+# Override the Test Client's session and login to support safe cookies.
+safe_cookie_test_session_patch()
+
 
 class SupportViewTestCase(TestCase):
     """
