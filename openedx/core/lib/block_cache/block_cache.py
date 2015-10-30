@@ -7,6 +7,29 @@ from .exceptions import TransformerException
 from .transformer_registry import TransformerRegistry
 
 
+def get_blocks(ccd_cache, user_info, root_block_key, transformers):
+    # Verify that all requested transformers are registered in the
+    # Transformer Registry.
+    unregistered_transformers = TransformerRegistry.find_unregistered(transformers)
+    if unregistered_transformers:
+        raise TransformerException(
+            "The following requested transformers are not registered: {}".format(unregistered_transformers)
+        )
+
+    collector = "ALL"  # We don't break this up yet
+    version = 1
+    root_block_structure = ccd_cache.get(root_block_key, collector, version)
+
+    # Execute requested transforms on block structure.
+    for transformer in transformers:
+        transformer.transform(user_info, root_block_structure)
+
+    # Prune the block structure to remove any unreachable blocks.
+    root_block_structure._prune()  # pylint: disable=protected-access
+
+    return root_block_structure
+
+
 def get_blocks(cache, modulestore, usage_info, root_block_usage_key, transformers):
     """
     Top-level function in the Block Cache framework that manages
