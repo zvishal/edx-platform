@@ -374,8 +374,7 @@ def _grade(student, request, course, keep_raw_scores, field_data_cache, scores_c
             section_name = section_descriptor.display_name_with_default
 
             # some problems have state that is updated independently of interaction
-            # with the LMS, so they need to always be scored. (E.g. foldit.,
-            # combinedopenended)
+            # with the LMS, so they need to always be scored. (e.g. foldit)
             should_grade_section = any(
                 descriptor.always_recalculate_grades for descriptor in section['xmoduledescriptors']
             )
