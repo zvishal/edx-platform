@@ -66,6 +66,8 @@ from hashlib import sha256
 from logging import getLogger
 import json
 
+from student.views import logout_user
+
 
 log = getLogger(__name__)
 
@@ -115,7 +117,7 @@ class SafeCookieData(object):
         Factory method for creating the cryptographically bound
         safe cookie data for the session and the user.
 
-        Raises ValueError if session_id or user_id are None.
+        Raises SafeCookieError if session_id or user_id are None.
         """
         if not session_id or session_id == unicode(None):
             # The session ID should always be valid in the cookie.
@@ -149,7 +151,7 @@ class SafeCookieData(object):
         Factory method that parses the serialized safe cookie data,
         verifies the version, and returns the safe cookie object.
 
-        Raises ValueError if there are any issues parsing the
+        Raises SafeCookieError if there are any issues parsing the
         safe_cookie_string.
         """
         try:
@@ -189,20 +191,17 @@ class SafeCookieData(object):
         Verifies the signature of this safe cookie data.
         Successful verification implies this cookie data is fresh
         (not expired) and bound to the given user.
+
+        Raises SafeCookieError if there are any verification issues.
         """
         try:
             unsigned_data = signing.loads(self.signature, salt=self.key_salt, max_age=settings.SESSION_COOKIE_AGE)
-            if unsigned_data == self._compute_digest(user_id):
-                return True
-            log.error("SafeCookieData '%r' is not bound to user '%s'.", unicode(self), user_id)
+            if unsigned_data != self._compute_digest(user_id):
+                raise SafeCookieError("SafeCookieData '{0!r}' is not bound to user '{1}'.".format(unicode(self), user_id))
         except signing.BadSignature as sig_error:
-            log.exception(
-                "SafeCookieData signature error for cookie data '{0!r}': {1}".format(  # pylint: disable=logging-format-interpolation
-                    unicode(self),
-                    sig_error.message,
-                )
+            raise SafeCookieError(
+                "SafeCookieData signature error for cookie data '{0!r}': {1}".format(unicode(self), sig_error.message)
             )
-        return False
 
     def _compute_digest(self, user_id):
         """
@@ -244,34 +243,26 @@ class SafeSessionMiddleware(SessionMiddleware):
         final verification before sending the response (in
         process_response).
         """
+        should_logout_user = False
 
-        def on_user_authentication_failed(request):
-            """
-            To be called when user authentication fails when processing
-            requests in the middleware. Sets a flag to delete the user's
-            cookie and redirects the user to the login page.
-            """
-            request.need_to_delete_cookie = True
-            return redirect_to_login(request.path)
+        try:
 
-        cookie_data_string = request.COOKIES.get(settings.SESSION_COOKIE_NAME)
-        if cookie_data_string:
+            cookie_data_string = request.COOKIES.get(settings.SESSION_COOKIE_NAME)
+            if cookie_data_string:
 
-            try:
                 # Step 1. Parse the safe cookie data.
                 safe_cookie_data = SafeCookieData.parse(cookie_data_string)
 
-            except SafeCookieError:
-                # For security reasons, we don't support requests with
-                # older or invalid session cookie models.
-                return on_user_authentication_failed(request)
-
-            else:
                 # Step 2. Replace the cookie value in the request with
                 # the bare session_id for use by Django's
                 # SessionMiddleware (in the super call to the parent
                 # class).
                 request.COOKIES[settings.SESSION_COOKIE_NAME] = safe_cookie_data.session_id
+
+        except SafeCookieError:
+            # For security reasons, we don't support requests with
+            # older or invalid session cookie models.
+            should_logout_user = True
 
         # Step 3. Call the super class to find/set the session for the
         # request.
@@ -281,20 +272,26 @@ class SafeSessionMiddleware(SessionMiddleware):
             # return the response.
             return process_request_response
 
-        if cookie_data_string and request.session.get(SESSION_KEY):
-
-            # Step 4. Verify that the user found in the session
-            # corresponds to the user bound to the cookie data.
-            user_id = request.session[SESSION_KEY]
-
-            if safe_cookie_data.verify(user_id):
+        if (cookie_data_string and request.session.get(SESSION_KEY)):
+            try:
+                # Step 4. Verify that the user found in the session
+                # corresponds to the user bound to the cookie data.
+                user_id = request.session[SESSION_KEY]
+                safe_cookie_data.verify(user_id)
 
                 # Step 5. Store the verified user_id in the request
                 # object for another final verification before sending
                 # response in SafeSessionMiddleware.process_response.
                 request.safe_cookie_verified_user_id = user_id
-            else:
-                return on_user_authentication_failed(request)
+
+            except SafeCookieError:
+                should_logout_user = True
+
+        if should_logout_user:
+            # Note: The logout_user method assumes the session is
+            # stored in the request object so call it only after
+            # the super class's process_request was successful.
+            return logout_user(request)
 
     def process_response(self, request, response):
         """
@@ -329,64 +326,49 @@ class SafeSessionMiddleware(SessionMiddleware):
         # the basic cookie for the response.
         response = super(SafeSessionMiddleware, self).process_response(request, response)
 
-        # Step 2. Check whether cookie is marked for deletion.
-        delete_cookie = False
-        if getattr(request, 'need_to_delete_cookie', False):
-
-            # The cookie was earlier designated to be deleted.
-            delete_cookie = True
-
-        # Check whether a cookie is even present
+        # Check whether a cookie is present
         if (
                 response.cookies.get(settings.SESSION_COOKIE_NAME) and  # cookie in response
                 response.cookies[settings.SESSION_COOKIE_NAME].value  # cookie is not empty
         ):
-            if not delete_cookie:
-                try:
-                    # Step 3. Verify user designated at request time
-                    # matches the user at this response time.
-                    if (
-                            hasattr(request, 'safe_cookie_verified_user_id') and
-                            request.safe_cookie_verified_user_id != request.user.id
-                    ):
-                        # Theoretically, this should not happen.
-                        # However, there may be an implementation issue
-                        # that overrides the user in the request object.
-                        # So we catch it and fail by deleting the
-                        # cookie.
-                        raise SafeCookieError(
-                            "SafeCookieData user at request '{}' does not match user at response: '{}'".format(
-                                request.safe_cookie_verified_user_id,
-                                request.user.id,
-                            ))
+            try:
+                # Step 2. Verify user designated at request time
+                # matches the user at this response time.
+                if (
+                        hasattr(request, 'safe_cookie_verified_user_id') and
+                        request.safe_cookie_verified_user_id != request.user.id
+                ):
+                    # Theoretically, this should not happen.
+                    # However, there may be an implementation issue
+                    # that overrides the user in the request object.
+                    # So we catch it and fail by deleting the
+                    # cookie.
+                    raise SafeCookieError(
+                        "SafeCookieData user at request '{}' does not match user at response: '{}'".format(
+                            request.safe_cookie_verified_user_id,
+                            request.user.id,
+                        ))
 
-                    # Step 4. Since a cookie is being sent, update the
-                    # cookie by replacing the session_id with a freshly
-                    # computed safe_cookie_data.
-                    self.update_with_safe_session_cookie(response.cookies, request.user.id)
+                # Step 3. Since a cookie is being sent, update the
+                # cookie by replacing the session_id with a freshly
+                # computed safe_cookie_data.
+                self.update_with_safe_session_cookie(response.cookies, request.user.id)
 
-                except SafeCookieError:
-                    # There was an error creating the safe_cookie_data
-                    # so delete the existing cookie.
-                    delete_cookie = True
-
-        # Step 5. Delete the cookie, if marked for deletion.
-        # Note: delete_cookie is called even if there are no cookies set
-        # in the response in order to force clearing out the client's
-        # cookies.
-        if delete_cookie:
-
-            # Delete the cookie by setting the expiration to a date in
-            # the past, while maintaining the domain, secure, and
-            # httponly settings.
-            response.set_cookie(
-                settings.SESSION_COOKIE_NAME,
-                max_age=0,
-                expires='Thu, 01-Jan-1970 00:00:00 GMT',
-                domain=settings.SESSION_COOKIE_DOMAIN,
-                secure=settings.SESSION_COOKIE_SECURE or None,
-                httponly=settings.SESSION_COOKIE_HTTPONLY or None,
-            )
+            except SafeCookieError:
+                # There was an error creating the safe_cookie_data
+                # so delete the existing cookie.
+                #
+                # Delete the cookie by setting the expiration to a date in
+                # the past, while maintaining the domain, secure, and
+                # httponly settings.
+                response.set_cookie(
+                    settings.SESSION_COOKIE_NAME,
+                    max_age=0,
+                    expires='Thu, 01-Jan-1970 00:00:00 GMT',
+                    domain=settings.SESSION_COOKIE_DOMAIN,
+                    secure=settings.SESSION_COOKIE_SECURE or None,
+                    httponly=settings.SESSION_COOKIE_HTTPONLY or None,
+                )
 
         # Return the updated response with the updated cookie, if
         # applicable.
