@@ -271,12 +271,15 @@
       </div>
       %endif
 
-      %if libraries_enabled:
       <ul id="course-index-tabs">
         <li class="courses-tab active"><a>${_("Courses")}</a></li>
+        %if libraries_enabled:
         <li class="libraries-tab"><a>${_("Libraries")}</a></li>
+        %endif
+        %if xblocks_repository_enabled:
+        <li class="xblocks-tab"><a>${_("XBlocks")}</a></li>
+        %endif
       </ul>
-      %endif
 
       %if len(courses) > 0:
       <div class="courses courses-tab active">
@@ -482,6 +485,77 @@
         </ul>
         </div>
         % endif
+      </div>
+      %endif
+
+      %if len(xblocks_list) > 0:
+      <div class="xblocks xblocks-tab">
+      <div style="float:right;margin-top:-45px;">
+        <label>Filter: </label>
+        <input class="xblocks-filter-input" type="text" style="border-radius: 4px;"/>
+      </div>
+        <ul class="list-courses">
+          %for xblock_info in xblocks_list:
+          <li class="course-item">
+            %if xblock_info['installed']:
+            <a class="button install-button" data-xaction="remove" data-xblockname="${xblock_info['name']}" data-githublink="${xblock_info['githublink']}" href="#">Remove</a>  
+            %else:
+            <a class="button install-button" data-xaction="install" data-xblockname="${xblock_info['name']}" data-githublink="${xblock_info['githublink']}" href="#">Install</a>
+            %endif
+            <a class="xblock-link">
+              <h3 class="course-title">
+              %if xblock_info['installed']:
+                <i class="icon fa fa-square icon-inline installed-icon"></i>
+              %else:
+                <i class="icon fa fa-square-o icon-inline installed-icon"></i>
+              %endif
+                <span class="xblock-title">${xblock_info['display_name'] | h} </span>
+                <span class="rating-icon" style="display:none;">${xblock_info['rating']}</span>
+              </h3>
+            </a>
+
+            <div class="course-metadata">
+              <span class="course-org metadata-item">
+                <span class="label">${_("Organization:")}</span> <span class="value">${xblock_info['organization']}</span>
+              </span>
+              <span class="course-num metadata-item">
+                <span class="label">${_("Current version:")}</span>
+                <span class="value">${xblock_info['version']}</span>
+              </span>
+              % if xblock_info["accessible"]:
+                <span class="metadata-item">${_("accessible")}</span>
+              % endif
+              % if xblock_info["i18n"]:
+                <span class="metadata-item">${_("i18n")}</span>
+              % endif
+              <ul class="item-actions course-actions" style="float:right;">
+                <li class="action action-view">
+                  <a class="button view-button" href="${xblock_info['githublink']}" target="_blank"> Open on GitHub </a>
+                </li>
+              </ul>
+            </div>
+            <div class="details-block" style="display:none;">
+              <h4>Description: </h4>
+              <p>${xblock_info['description']}</p>
+              <h4>Author: </h4>
+              <p>${xblock_info['author']}</p>
+              <h4>Supported Versions: </h4>
+              <p>
+              %for version in xblock_info['edxversion']:
+                <span class="metadata-item">${version}</span>
+              %endfor
+              </p>
+              <h4>Screenshots: </h4>
+              <div class="screenshot-list" style="display:block;clear:both;">
+              %for screenshot in xblock_info['screenshots']:
+                <img class="screenshot-thumb" alt="screenshot" src="${screenshot}" style="max-width:150px;max-height:150px;display:inline-block;;padding-left:10px;"/>
+              %endfor
+              </div>
+            </div>
+            <i class="icon fa fa-chevron-down details-icon" style="position: relative;top: 10px;color: #7f7f7f;opacity: 0.75;cursor:pointer;"></i>
+          </li>
+          %endfor
+        </ul>
       </div>
       %endif
 

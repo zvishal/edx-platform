@@ -318,7 +318,7 @@
   }
 
   // ELEM: course listings
-  .courses-tab, .libraries-tab {
+  .courses-tab, .libraries-tab, .xblocks-tab {
     display: none;
 
     &.active {
@@ -511,6 +511,37 @@
 
       .extra-metadata {
         margin-left: ($baseline/10);
+      }
+    }
+
+    // install xblock button
+    .install-button {
+      margin-right:10px;
+      float:right;
+      padding: 5px 10px 6.66667px;
+      border-radius: 4px; box-sizing: border-box;
+      cursor: pointer;
+      display: inline-block;
+      transition: color 0.25s ease-in-out 0s, border-color 0.25s ease-in-out 0s, background 0.25s ease-in-out 0s, box-shadow 0.25s ease-in-out 0s;    
+      background: #009fe6 none repeat scroll 0 0;
+      border-color: #009fe6;
+      color: #fff;
+
+      &.disabled {
+        opacity: 0.7;
+      }
+    }
+
+    // xblocks list details block
+    .details-block {
+      color: $gray;
+      border-top: 1px solid $gray;
+      margin-top:15px;
+      padding-top:15px;
+
+      h4 {
+        color: $gray;
+        font-weight: 600;
       }
     }
 

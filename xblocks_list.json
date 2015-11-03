@@ -1,0 +1,109 @@
+[
+  {
+    "name": "pdf-xblock",
+    "display_name": "PDF",
+    "packages": [
+      "pdf"
+    ],
+    "description": "XBlock to visualize pdf files in edX",
+    "version": "v1",
+    "author": "openedx_admin",
+    "rating": 9,
+    "screenshots": [
+      "http://wallpoper.com/images/00/29/43/86/lolcat_00294386.jpg",
+      "https://bighugelabs.com/img/lolcat-sample.jpg"
+    ],
+    "organization": "openedx",
+    "accessible": true,
+    "i18n": true,
+    "edxversion": [
+      "aspen", 
+      "birch",
+      "cypress"
+    ],
+    "type": "teachingelem",
+    "githublink": "https://github.com/polimediaupv/pdfXBlock",
+    "id": "560158ef07eb1dca0f4c1007",
+    "readme": "pdfXblock =========  Xblock to visualice pdf files in edX  ## Installation ## See paellaxblock installation  ## TO-DO ##     #.add a default file to resources and change the current one       "
+  },
+    {
+    "name": "animation-xblock",
+    "display_name": "AnimationXBlock",
+    "packages": [
+      "animation"
+    ],
+    "description": "This XBlock shows students an animation they can go through. There is a set of images with corresponding text, and a slider for going through these images",
+    "version": "v1",
+    "author": "pmitros",
+    "rating": 10,
+    "screenshots": [
+      "https://github.com/pmitros/AnimationXBlock/raw/master/animation_xblock.png"
+    ],
+    "organization": "edx",
+    "accessible": true,
+    "i18n": true,
+    "edxversion": [
+      "aspen", 
+      "birch",
+      "cypress"
+    ],
+    "type": "teachingelem",
+    "githublink": "https://github.com/pmitros/AnimationXBlock",
+    "id": "560158ef07eb1dca0f4c1007",
+    "readme": "pdfXblock =========  Xblock to visualice pdf files in edX  ## Installation ## See paellaxblock installation  ## TO-DO ##     #.add a default file to resources and change the current one       "
+  },
+    {
+    "name": "recommender-xblock",
+    "display_name": "RecommenderXBlock",
+    "packages": [
+      "recommender"
+    ],
+    "description": "This XBlock shows students a list of recommended resources for a given problem. The resources are recommended, edited, and voted by students. For each resource, we show its title, link, short summary, preview screenshot, and votes",
+    "version": "v1",
+    "author": "pmitros",
+    "rating": 10,
+    "screenshots": [
+      "https://github.com/pmitros/RecommenderXBlock/blob/master/recommender_xblock.png"
+    ],
+    "organization": "edx",
+    "accessible": true,
+    "i18n": true,
+    "edxversion": [
+      "aspen", 
+      "birch",
+      "cypress"
+    ],
+    "type": "teachingelem",
+    "githublink": "https://github.com/pmitros/RecommenderXBlock",
+    "id": "560158ef07eb1dca0f4c1007",
+    "readme": "pdfXblock =========  Xblock to visualice pdf files in edX  ## Installation ## See paellaxblock installation  ## TO-DO ##     #.add a default file to resources and change the current one       "
+  },
+    {
+    "name": "xblock-filestorage",
+    "display_name": "File Storage XBlock",
+    "packages": [
+      "filestorage"
+    ],
+    "description": "The “File Storage XBlock” allows course content authors to add files stored in various internet file storage services to the course. The files can be added either as embedded content or as links to the files in their original location.",
+    "version": "v1",
+    "author": "MSOpenTech",
+    "rating": 10,
+    "screenshots": [
+      "https://github.com/MSOpenTech/xblock-filestorage/raw/master/docs/img/advanced.png",
+      "https://github.com/MSOpenTech/xblock-filestorage/raw/master/docs/img/component_list.png",
+      "https://github.com/MSOpenTech/xblock-filestorage/raw/master/docs/img/editme.png"
+    ],
+    "organization": "Microsoft",
+    "accessible": true,
+    "i18n": true,
+    "edxversion": [
+      "aspen", 
+      "birch",
+      "cypress"
+    ],
+    "type": "teachingelem",
+    "githublink": "https://github.com/MSOpenTech/xblock-filestorage",
+    "id": "560158ef07eb1dca0f4c1007",
+    "readme": "pdfXblock =========  Xblock to visualice pdf files in edX  ## Installation ## See paellaxblock installation  ## TO-DO ##     #.add a default file to resources and change the current one       "
+  }
+]

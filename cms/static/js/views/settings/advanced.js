@@ -9,11 +9,13 @@ var AdvancedView = ValidatingView.extend({
     // Model class is CMS.Models.Settings.Advanced
     events : {
         'focus :input' : "focusInput",
-        'blur :input' : "blurInput"
+        'blur :input' : "blurInput", 
+        'click .add-advanced-module': "addAdvancedModule"
         // TODO enable/disable save based on validation (currently enabled whenever there are changes)
     },
     initialize : function() {
         this.template = _.template($("#advanced_entry-tpl").text());
+        this.selectTemplate = _.template($("#advanced_select-tpl").text());
         this.listenTo(this.model, 'invalid', this.handleValidationError);
         this.render();
     },
@@ -34,6 +36,11 @@ var AdvancedView = ValidatingView.extend({
             function(key) {
                 if (self.render_deprecated || !self.model.get(key).deprecated) {
                     listEle$.append(self.renderTemplate(key, self.model.get(key)));
+                    if(key === 'advanced_modules') {
+                        var selector = self.selectTemplate({ key: key, 
+                            value : advancedModulesList});
+                        listEle$.find('li').append(selector);
+                    } 
                 }
             });
 
@@ -41,7 +48,7 @@ var AdvancedView = ValidatingView.extend({
         _.each(policyValues, this.attachJSONEditor, this);
         return this;
     },
-    attachJSONEditor : function (textarea) {
+    attachJSONEditor : function (textarea, flag) {
         // Since we are allowing duplicate keys at the moment, it is possible that we will try to attach
         // JSON Editor to a value that already has one. Therefore only attach if no CodeMirror peer exists.
         if ( $(textarea).siblings().hasClass('CodeMirror')) {
@@ -50,6 +57,7 @@ var AdvancedView = ValidatingView.extend({
 
         var self = this;
         var oldValue = $(textarea).val();
+
         var cm = CodeMirror.fromTextArea(textarea, {
             mode: "application/json",
             lineNumbers: false,
@@ -58,10 +66,7 @@ var AdvancedView = ValidatingView.extend({
                 instance.save();
                 // this event's being called even when there's no change :-(
                 if (instance.getValue() !== oldValue) {
-                    var message = gettext("Your changes will not take effect until you save your progress. Take care with key and value formatting, as validation is not implemented.");
-                    self.showNotificationBar(message,
-                                             _.bind(self.saveView, self),
-                                             _.bind(self.revertView, self));
+                    self.showSaveNotification();
                 }
             });
         cm.on('focus', function(mirror) {
@@ -147,16 +152,35 @@ var AdvancedView = ValidatingView.extend({
         newEle = this.template({ key: key, display_name : model.display_name, help: model.help,
             value : JSON.stringify(model.value, null, 4), deprecated: model.deprecated,
             keyUniqueId: newKeyId, valueUniqueId: _.uniqueId('policy_value_')});
-
         this.fieldToSelectorMap[key] = newKeyId;
         this.selectorToField[newKeyId] = key;
         return newEle;
+    },
+    addAdvancedModule: function(event) {
+        event.preventDefault();
+        var $elem = $(event.target);
+        var $parent = $elem.parents('li');
+        var $textarea = $parent.find('textarea.json');
+        var module = $parent.find('select').find(":selected").text();
+        var advancedTextBox = $textarea.val();
+        var list = $.parseJSON(advancedTextBox);
+        list.push(module);
+        $textarea.html(JSON.stringify(list, null, 4)).show();
+        $parent.find('.CodeMirror.cm-s-default').off().remove();
+        this.attachJSONEditor($textarea[0], true);
+        this.showSaveNotification();
     },
     focusInput : function(event) {
         $(event.target).prev().addClass("is-focused");
     },
     blurInput : function(event) {
         $(event.target).prev().removeClass("is-focused");
+    }, 
+    showSaveNotification: function() {
+        var message = gettext("Your changes will not take effect until you save your progress. Take care with key and value formatting, as validation is not implemented.");
+        this.showNotificationBar(message,
+                                 _.bind(this.saveView, this),
+                                 _.bind(this.revertView, this));
     }
 });
 

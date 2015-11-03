@@ -1,0 +1,9 @@
+<div>
+	<label>Add Advanced Module from list: </label>
+	<select>
+		<% _.each(value, function(val, key) { %>
+			<option><%= val %></option>
+		<% }); %>
+	</select>
+	<a href="#"><i class="icon fa fa-plus-square icon-inline add-advanced-module" style="font-size:24px;vertical-align: top;"></i></a>
+</div>

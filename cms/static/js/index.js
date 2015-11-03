@@ -141,9 +141,79 @@ define(["domReady", "jquery", "underscore", "js/utils/cancel_on_escape", "js/vie
             e.preventDefault();
             $('.courses-tab').toggleClass('active', tab === 'courses');
             $('.libraries-tab').toggleClass('active', tab === 'libraries');
+            $('.xblocks-tab').toggleClass('active', tab === 'xblocks');
             // Also toggle this course-related notice shown below the course tab, if it is present:
             $('.wrapper-creationrights').toggleClass('is-hidden', tab === 'libraries');
           };
+        };
+
+        var toggleXBlockDetails = function(e) {
+            e.preventDefault();
+            $(this).siblings('.details-block').toggle(500);
+            $(this).toggleClass('fa-chevron-down').toggleClass('fa-chevron-up');
+        };
+
+        var ratingsToStars = function() {
+            var $ratingElem = $(this);
+            var rating = $ratingElem.text() / 2.00;
+            $ratingElem.html('');
+            for (var i = 0; i < Math.floor(rating); i++) {
+                $ratingElem.append('<span class="icon fa fa-star"></span>');
+            }
+            if ((rating%1) > 0) {
+               $ratingElem.append('<span class="icon fa fa-star-half"></span>'); 
+            }
+            $ratingElem.show();
+        };
+
+        var installXblock = function(e) {
+            e.preventDefault();
+            var $self = $(this);
+            var $buttons = $('.xblocks-tab .install-button');
+            var githublink = $self.data('githublink');
+            var name = $self.data('xblockname');
+            var action = $self.data('xaction');
+            if(!$self.hasClass('disabled')) {
+                $buttons.addClass('disabled');
+                $.ajax({
+                    url: window.location.href, 
+                    type: 'POST', 
+                    cache: false, 
+                    data: {
+                        xblockname: name,
+                        githublink: githublink, 
+                        xaction: action
+                    },
+                    success: function(data) {
+                        var installedIcon = $self.parents('.course-item').find('.installed-icon');
+                        installedIcon.toggleClass('fa-square-o').toggleClass('fa-square');
+                        if(action === 'install') {
+                            $self.text('Remove');
+                            $self.data('xaction', 'remove');
+                        }
+                        else {
+                            $self.text('Install');
+                            $self.data('xaction', 'install');                        
+                        }
+                    }, 
+                    complete: function() {
+                        $buttons.removeClass('disabled');
+                    }
+                });
+            }
+        };
+
+        var filterXblocksList = function () {
+            var searchTerm = $(this).val().toLowerCase();
+            $('.xblocks-tab .xblock-title').each(function () {
+                var xblockName = $(this).text().toLowerCase();
+                if (xblockName.indexOf(searchTerm) >= 0) {
+                    $(this).parents('.course-item').show();
+                }
+                else {
+                    $(this).parents('.course-item').hide();
+                }
+            });
         };
 
         var onReady = function () {
@@ -155,6 +225,11 @@ define(["domReady", "jquery", "underscore", "js/utils/cancel_on_escape", "js/vie
             $('.action-reload').bind('click', ViewUtils.reload);
             $('#course-index-tabs .courses-tab').bind('click', showTab('courses'));
             $('#course-index-tabs .libraries-tab').bind('click', showTab('libraries'));
+            $('#course-index-tabs .xblocks-tab').bind('click', showTab('xblocks'));
+            $('.xblocks-tab .details-icon').bind('click', toggleXBlockDetails);
+            $('.xblocks-tab .rating-icon').each(ratingsToStars);
+            $('.xblocks-tab .install-button').bind('click', installXblock);
+            $('.xblocks-filter-input').bind('keyup', filterXblocksList);
         };
 
         domReady(onReady);

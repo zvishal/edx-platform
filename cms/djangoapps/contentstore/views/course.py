@@ -7,6 +7,9 @@ import json
 import random
 import logging
 import string  # pylint: disable=deprecated-module
+import pip
+import sys
+import subprocess
 from django.utils.translation import ugettext as _
 import django.utils
 from django.contrib.auth.decorators import login_required
@@ -71,6 +74,8 @@ from contentstore.views.entrance_exam import (
     delete_entrance_exam
 )
 
+from contentstore.views.component import _advanced_component_types
+
 from .library import LIBRARIES_ENABLED
 from .item import create_xblock_info
 from contentstore.push_notification import push_notification_enabled
@@ -112,6 +117,64 @@ class AccessListFallback(Exception):
     available to a user, rather than using a shorter method (i.e. fetching by group)
     """
     pass
+
+
+def delete_imported_module(modname, paranoid=None):
+    """
+    This is a helper method that goes through modules in sys and removes references of modname module. 
+
+    Arguments:
+            modname (string) - name of a module that should be removed
+            paranoid (list) - mentioned/imported references of package
+    """
+    from sys import modules
+    try:
+        thismod = modules[modname]
+    except KeyError:
+        raise ValueError(modname)
+    these_symbols = dir(thismod)
+    if paranoid:
+        try:
+            paranoid[:]  # sequence support
+        except:
+            raise ValueError('must supply a finite list for paranoid')
+        else:
+            these_symbols = paranoid[:]
+    del modules[modname]
+    for mod in modules.values():
+        try:
+            delattr(mod, modname)
+        except AttributeError:
+            pass
+        if paranoid:
+            for symbol in these_symbols:
+                if symbol[:2] == '__':  # ignore special symbols
+                    continue
+                try:
+                    delattr(mod, symbol)
+                except AttributeError:
+                    pass
+
+def get_available_xblocks_list():
+    """
+    Basic mock implementation of get function to retrieve list of 
+    xblocks from xblock repository.
+    """
+    def byteify(input):
+        if isinstance(input, dict):
+            return {byteify(key):byteify(value) for key,value in input.iteritems()}
+        elif isinstance(input, list):
+            return [byteify(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+    if settings.FEATURES.get('USE_XBLOCKS_REPOSITORY', False): 
+        pass
+    else:
+        with open('xblocks_list.json') as xblock_json:    
+            data = json.load(xblock_json)
+    return byteify(data)
 
 
 def get_course_and_check_access(course_key, user, depth=0):
@@ -419,6 +482,75 @@ def course_listing(request):
     """
     List all courses available to the logged in user
     """
+    xblocks_list = get_available_xblocks_list()
+    if request.method == 'POST':
+        if request.user.is_staff and request.user.is_superuser:
+            githublink = request.POST['githublink']
+            xblockname = request.POST['xblockname']
+            xaction = request.POST['xaction']
+
+            def get_package_location(xblockname):
+                """
+                Get installation path/location of xblock. 
+                Uses pip.
+                """
+                args = ["pip", "show", xblockname]
+                output,error = subprocess.Popen(args,stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+                output_dict = output.splitlines()
+                location = filter(lambda x: x.startswith("Location: "), output_dict)
+                if len(location) > 0:
+                    location = location[0].replace('Location: ', '', 1)
+                else:
+                    location = None
+                return location
+
+            def try_package(check_function, xblockname, xblocks_list):
+                """
+                Tries to run a function sent as an argument on an xblock packages. 
+                Used to check/validate import and deletes.
+                """
+                try:
+                    xblock = filter(lambda x: x['name'] == xblockname, xblocks_list)[0]
+                    packages = xblock['packages']
+                    try:
+                        for package in packages:
+                            check_function(package)
+                            
+                    except ImportError as err:
+                        log.exception(err.message)
+                        return_code = 1
+                except Exception as ex:
+                    log.exception(ex.message)
+
+            if xaction == 'install':
+                # Uses pip as install/uninstall method. 
+                # Has to be called through subprocess because pip has a bug when called directly by pip.main() 
+                # Checked in versions 6.0.8 and 7.1.2
+                return_code = subprocess.call(["pip", "install", "-e", "git+{0}#egg={1}".format(githublink, xblockname)])
+                location = get_package_location(xblockname)
+                sys.path.append(location)
+                try_package(__import__, xblockname, xblocks_list)
+
+            elif xaction == 'remove': 
+                location = get_package_location(xblockname)
+                return_code = subprocess.call(["pip", "uninstall", "-y", xblockname])
+                sys.path.remove(location)
+                try_package(delete_imported_module, xblockname, xblocks_list)
+                
+            if return_code == 0:
+                return HttpResponse(status=200)
+            else:
+                return HttpResponse(return_code, status=500)
+
+    for xblock in xblocks_list:
+        packages = xblock['packages']
+        try:
+            for package in packages:
+                __import__(package)
+            xblock['installed'] = True
+        except ImportError:
+            xblock['installed'] = False
+
     courses, in_process_course_actions = get_courses_accessible_to_user(request)
     libraries = _accessible_libraries_list(request.user) if LIBRARIES_ENABLED else []
 
@@ -463,7 +595,9 @@ def course_listing(request):
         'courses': courses,
         'in_process_course_actions': in_process_course_actions,
         'libraries_enabled': LIBRARIES_ENABLED,
+        'xblocks_repository_enabled': True, 
         'libraries': [format_library_for_view(lib) for lib in libraries],
+        'xblocks_list': xblocks_list,
         'show_new_library_button': LIBRARIES_ENABLED and request.user.is_active,
         'user': request.user,
         'request_course_creator_url': reverse('contentstore.views.request_course_creator'),
@@ -1141,7 +1275,8 @@ def advanced_settings_handler(request, course_key_string):
             return render_to_response('settings_advanced.html', {
                 'context_course': course_module,
                 'advanced_dict': json.dumps(CourseMetadata.fetch(course_module)),
-                'advanced_settings_url': reverse_course_url('advanced_settings_handler', course_key)
+                'advanced_settings_url': reverse_course_url('advanced_settings_handler', course_key),
+                'advanced_modules_list': _advanced_component_types()
             })
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
             if request.method == 'GET':
