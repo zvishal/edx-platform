@@ -417,7 +417,7 @@ class CourseFields(object):
     )
     advanced_modules = List(
         display_name=_("Advanced Module List"),
-        help=_("Enter the names of the advanced components to use in your course."),
+        help=_("Select the names of the advanced components to use in your course."),
         scope=Scope.settings
     )
     has_children = True

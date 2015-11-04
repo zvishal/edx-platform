@@ -9,13 +9,12 @@ var AdvancedView = ValidatingView.extend({
     // Model class is CMS.Models.Settings.Advanced
     events : {
         'focus :input' : "focusInput",
-        'blur :input' : "blurInput", 
-        'click .add-advanced-module': "addAdvancedModule"
+        'blur :input' : "blurInput"
         // TODO enable/disable save based on validation (currently enabled whenever there are changes)
     },
     initialize : function() {
         this.template = _.template($("#advanced_entry-tpl").text());
-        this.selectTemplate = _.template($("#advanced_select-tpl").text());
+        this.advancedTemplate = _.template($("#advanced_modules_entry-tpl").text());
         this.listenTo(this.model, 'invalid', this.handleValidationError);
         this.render();
     },
@@ -35,16 +34,33 @@ var AdvancedView = ValidatingView.extend({
         _.each(_.sortBy(_.keys(this.model.attributes), function(key) { return self.model.get(key).display_name; }),
             function(key) {
                 if (self.render_deprecated || !self.model.get(key).deprecated) {
-                    listEle$.append(self.renderTemplate(key, self.model.get(key)));
                     if(key === 'advanced_modules') {
-                        var selector = self.selectTemplate({ key: key, 
-                            value : advancedModulesList});
-                        listEle$.find('li').append(selector);
+                        listEle$.append(self.renderAdvancedModuleTemplate(key, self.model.get(key)));
+                        $( "li.advanced_modules_selector .selectable").selectable({
+                            stop: function() {
+                                var result = $( ".advanced_module_textbox" ).empty();
+                                var moduleArray = [];
+                                $( ".ui-selected", this ).each(function() {
+                                    moduleArray.push($(this).text());
+                                });
+                                result.text(JSON.stringify(moduleArray, null, 4));
+                                var modelVal = self.model.get('advanced_modules');
+                                modelVal.value = moduleArray;
+                                self.model.set('advanced_modules', modelVal);
+                                self.showSaveNotification();
+                            }
+                        });
+                        $( "li.advanced_modules_selector .selectable").on("selectablestart", function (event, ui) {
+                            event.originalEvent.ctrlKey = true;
+                        });
                     } 
+                    else {
+                        listEle$.append(self.renderTemplate(key, self.model.get(key)));
+                    }
                 }
             });
 
-        var policyValues = listEle$.find('.json');
+        var policyValues = listEle$.find('li:not(.advanced_modules_selector) .json');
         _.each(policyValues, this.attachJSONEditor, this);
         return this;
     },
@@ -147,6 +163,24 @@ var AdvancedView = ValidatingView.extend({
             reset: true
         });
     },
+    renderAdvancedModuleTemplate: function (key, model) { 
+        var valuesList = [];
+        $(advancedModulesList).each(function(key, value) {
+            if ($.inArray(value, model.value) > -1) {
+                valuesList.push({value: value, selected: true});
+            }
+            else {
+                valuesList.push({value: value, selected: false});
+            }
+        });
+        var newKeyId = _.uniqueId('policy_key_'),
+        newEle = this.advancedTemplate({ key: key, display_name : model.display_name, help: model.help,
+            value : valuesList, valueString : JSON.stringify(model.value, null, 4), deprecated: model.deprecated,
+            keyUniqueId: newKeyId, valueUniqueId: _.uniqueId('policy_value_')});
+        this.fieldToSelectorMap[key] = newKeyId;
+        this.selectorToField[newKeyId] = key;
+        return newEle;
+    },
     renderTemplate: function (key, model) {
         var newKeyId = _.uniqueId('policy_key_'),
         newEle = this.template({ key: key, display_name : model.display_name, help: model.help,
@@ -155,20 +189,6 @@ var AdvancedView = ValidatingView.extend({
         this.fieldToSelectorMap[key] = newKeyId;
         this.selectorToField[newKeyId] = key;
         return newEle;
-    },
-    addAdvancedModule: function(event) {
-        event.preventDefault();
-        var $elem = $(event.target);
-        var $parent = $elem.parents('li');
-        var $textarea = $parent.find('textarea.json');
-        var module = $parent.find('select').find(":selected").text();
-        var advancedTextBox = $textarea.val();
-        var list = $.parseJSON(advancedTextBox);
-        list.push(module);
-        $textarea.html(JSON.stringify(list, null, 4)).show();
-        $parent.find('.CodeMirror.cm-s-default').off().remove();
-        this.attachJSONEditor($textarea[0], true);
-        this.showSaveNotification();
     },
     focusInput : function(event) {
         $(event.target).prev().addClass("is-focused");
