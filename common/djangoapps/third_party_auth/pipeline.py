@@ -67,7 +67,7 @@ from eventtracking import tracker
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from social.apps.django_app.default import models
@@ -531,8 +531,13 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
             # Send them another activation email:
             student.views.reactivation_email_for_user(user)
 
-            raise NotActivatedException(backend, user.email)
-        # else: The user must have just successfully registered their account, so we proceed.
+            # raise NotActivatedException(backend, user.email)
+            msg = 'This account has not yet been activated. An activation email has been re-sent to %s.'
+            logger.warning(msg, user.email)
+            msg = _(msg) % user.email
+            return HttpResponse(msg, status=500)
+
+            # else: The user must have just successfully registered their account, so we proceed.
         # We know they did not just login, because the login process rejects unverified users.
 
 
