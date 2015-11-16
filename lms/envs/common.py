@@ -2004,6 +2004,9 @@ INSTALLED_APPS = (
     'openedx.core.djangoapps.self_paced',
 
     'sorl.thumbnail',
+
+    # Block Transforms long term storage
+    'course_api.blocks',
 )
 
 # Migrations which are not in the standard module "migrations"

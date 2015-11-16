@@ -1,5 +1,5 @@
 """
-The models here 
+The models here
 """
 from django.test import TestCase
 
@@ -13,11 +13,12 @@ class TestCollectedCourseData(TestCase):
     COURSE_ID = CourseLocator(org="edX", course="Blocks101", run= "2015")
     COLLECTOR = "test.transform.collector"
 
+
     def test_removing_old_data(self):
         # Set three versions of the data and make sure they read out correctly.
-        for collector_version in [1, 2, 3]:    
+        for collector_version in [1, 2, 3]:
             CollectedCourseData.set_data_for_course(
-                course_id=self.COURSE_ID,
+                course_key=self.COURSE_ID,
                 content_version="abcde-make-no-order-assumptions",
                 collector=self.COLLECTOR,
                 collector_version=collector_version,

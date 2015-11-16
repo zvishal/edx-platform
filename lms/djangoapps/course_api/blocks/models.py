@@ -30,7 +30,7 @@ class CollectedCourseDataCache(object):
 
     def get(self, root_block_key, collector, version):
         """
-        Return 
+        Return
 
         """
         # Just for now. Eventually, we'll understand other things.
@@ -211,7 +211,7 @@ class CollectedCourseData(TimeStampedModel):
               collectors.
         """
         # See docstring above for why we're deleting just these entries.
-        old_entries = cls.objects.filter(course_id=course_id, collector=collector)
+        old_entries = cls.objects.filter(course_id=course_key, collector=collector)
         old_entries.filter(collector_version__lt=(collector_version - 1)).delete()
 
         # Add or update our new row of course data -- an update could mean a
@@ -220,7 +220,7 @@ class CollectedCourseData(TimeStampedModel):
             # This kills me, but binary fields don't exist until Django 1.6
             encoded_data = zpickle(data).encode('base64')
             collector_data, _created = cls.objects.get_or_create(
-                course_id=course_id,
+                course_id=course_key,
                 content_version=content_version,
                 collector=collector,
                 collector_version=collector_version,
@@ -235,6 +235,6 @@ class CollectedCourseData(TimeStampedModel):
             # the same, we're okay with that. Log, but move on.
             msg = (
                 "IntegrityErrow when updating CollectedCourseData for "
-                "course_id=%s, content_version=%s, collector=%s, collector_version=%s"
+                "course_key=%s, content_version=%s, collector=%s, collector_version=%s"
             )
-            logger.warning(msg, course_id, content_version, collector, collector_version)
+            logger.warning(msg, course_key, content_version, collector, collector_version)
