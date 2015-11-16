@@ -105,12 +105,7 @@ def prereq_cache(cache_name, paths, install_func):
         # Update the cache with the new hash
         # If the code executed within the context fails (throws an exception),
         # then this step won't get executed.
-        try:
-            os.makedirs(PREREQS_STATE_DIR)
-        except OSError:
-            if not os.path.isdir(PREREQS_STATE_DIR):
-                raise
-
+        make_prereqs_state_dir()
         with open(cache_file_path, "w") as cache_file:
             # Since the pip requirement files are modified during the install
             # process, we need to store the hash generated AFTER the installation
@@ -118,6 +113,15 @@ def prereq_cache(cache_name, paths, install_func):
             cache_file.write(post_install_hash)
     else:
         print '{cache} unchanged, skipping...'.format(cache=cache_name)
+
+
+def make_prereqs_state_dir():
+    """Make the PREREQS_STATE_DIR if needed."""
+    try:
+        os.makedirs(PREREQS_STATE_DIR)
+    except OSError:
+        if not os.path.isdir(PREREQS_STATE_DIR):
+            raise
 
 
 def ruby_prereqs_installation():
@@ -220,6 +224,7 @@ def uninstall_python_packages():
         return
 
     # Write our version.
+    make_prereqs_state_dir()
     with open(state_file_path, "w") as state_file:
         state_file.write(str(expected_version))
 
