@@ -15,15 +15,17 @@ from xmodule_django.models import CourseKeyField
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
-class CollectedCourseDataCache(object):
+class CollectedContentDataCache(object):
     """
     This class presents a basic get/set cache interface for use by the block
     cache library. It has two layers, short term caching via memcached, and long
     term data storage using CollectedCourseData. If you are reading this
     information, you should generally do so from this class, and not
     CollectedCourseData.
-    """
 
+    Because it is intended to eventually allow more granular access, this class
+    thinks in term of usage block keys, not course keys.
+    """
     def __init__(self, store=None, cache=None):
         self._store = store or modulestore()
         self._cache = cache or django.core.cache.cache  # short term cache
@@ -31,12 +33,11 @@ class CollectedCourseDataCache(object):
     def get(self, root_block_key, collector, version):
         """
         Return
-
         """
         # Just for now. Eventually, we'll understand other things.
         if root_block_key.block_type not in ['course', 'library']:
             raise KeyError(
-                "We only support root blocks: {}".format(root_block_key)
+                "We currently only support root blocks: {}".format(root_block_key)
             )
 
         # Now see if we've already pushed this into our ephemeral cache.
