@@ -32,6 +32,10 @@ class Command(BaseCommand):
             help='initialize the migration by creating the lock table, then exit. Run this before starting the migration.')
         make_option('-c' '--cleanup', action='store_true', default=False, dest='cleanup',
             help='delete the lock table, then exit. Run this after the migration is complete.')
+        make_option('-m' '--min-id', type='int', dest='min_id',
+            help='first (smallest) ID to migrate')
+        make_option('-M', '--max-id', type='int', dest='max_id',
+            help='last (greatest) id to migrate')
     )
 
     def handle(self, *arguments, **options):
@@ -40,6 +44,9 @@ class Command(BaseCommand):
         except IndexError:
             self.stdout.write("No entries found in StudentModuleHistoryArchive, aborting migration.\n")
             exit(1)
+
+        self.min_id = options['min_id']
+        self.max_id = options['max_id']
 
         initialized = self._check_initialized()
 
@@ -77,8 +84,8 @@ class Command(BaseCommand):
                     )
                     '''), [LOCK_TABLE_NAME]
                 )
-                cursor.execute("INSERT INTO %s (id) SELECT id FROM courseware_studentmodulehistory",
-                    [LOCK_TABLE_NAME])
+                cursor.execute("INSERT INTO %s (id) SELECT id FROM courseware_studentmodulehistory WHERE id BETWEEN %d AND %d",
+                    [LOCK_TABLE_NAME, self.min_id, self.max_id])
             except:
                 transaction.rollback()
             else:
@@ -101,18 +108,22 @@ class Command(BaseCommand):
         '''Is the lock table initialized?'''
         try:
             with closing(connection.cursor()):
-                cursor.execute("SELECT id FROM %s ORDER BY id DESC LIMIT 1",
-                    [LOCK_TABLE_NAME])
+                #Get the greatest ID in the range
+                cursor.execute("SELECT id FROM %s WHERE id BETWEEN %d AND %d ORDER BY id DESC LIMIT 1",
+                    [LOCK_TABLE_NAME, self.min_id, self.max_id])
                 max_lock_id = cursor.fetchall()[0][0]
 
-                cursor.execute("SELECT id FROM %S ORDER BY id LIMIT 1",
-                    [LOCK_TABLE_NAME])
+                #Get the smallest ID in the range
+                cursor.execute("SELECT id FROM %s WHERE id BETWEEN %d AND %d ORDER BY id LIMIT 1",
+                    [LOCK_TABLE_NAME, self.min_id, self.max_id])
                 min_lock_id = cursor.fetchall()[0][0]
 
-                cursor.execute("SELECT id FROM courseware_studentmodulehistory ORDER BY id DESC LIMIT 1")
+                cursor.execute("SELECT id FROM courseware_studentmodulehistory WHERE id BETWEEN %d AND %d ORDER BY id DESC LIMIT 1",
+                    [self.min_id, self.max_id])
                 max_id = cursor.fetchall[0][0]
 
-                cursor.execute("SELECT id FROM courseware_studentmodulehistory ORDER BY id LIMIT 1")
+                cursor.execute("SELECT id FROM courseware_studentmodulehistory WHERE id BETWEEN %d AND %d ORDER BY id LIMIT 1",
+                    [self.min_id, self.max_id])
                 min_id = cursor.fetchall[0][0]
 
         except DatabaseError as e:
