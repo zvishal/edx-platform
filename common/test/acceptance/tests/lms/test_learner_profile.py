@@ -345,93 +345,93 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         self.assertEqual(profile_page.get_non_editable_mode_value(field_id), displayed_value)
         self.assertTrue(profile_page.mode_for_field(field_id), mode)
 
-    def test_country_field(self):
-        """
-        Test behaviour of `Country` field.
-
-        Given that I am a registered user.
-        And I visit my Profile page.
-        And I set the profile visibility to public and set default values for public fields.
-        Then I set country value to `Pakistan`.
-        Then displayed country should be `Pakistan` and country field mode should be `display`
-        And I reload the page.
-        Then displayed country should be `Pakistan` and country field mode should be `display`
-        And I make `country` field editable
-        Then `country` field mode should be `edit`
-        And `country` field icon should be visible.
-        """
-        username, user_id = self.log_in_as_unique_user()
-        profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
-        self._test_dropdown_field(profile_page, 'country', 'Pakistan', 'Pakistan', 'display')
-
-        profile_page.make_field_editable('country')
-        self.assertEqual(profile_page.mode_for_field('country'), 'edit')
-
-        self.assertTrue(profile_page.field_icon_present('country'))
-
-    def test_language_field(self):
-        """
-        Test behaviour of `Language` field.
-
-        Given that I am a registered user.
-        And I visit my Profile page.
-        And I set the profile visibility to public and set default values for public fields.
-        Then I set language value to `Urdu`.
-        Then displayed language should be `Urdu` and language field mode should be `display`
-        And I reload the page.
-        Then displayed language should be `Urdu` and language field mode should be `display`
-        Then I set empty value for language.
-        Then displayed language should be `Add language` and language field mode should be `placeholder`
-        And I reload the page.
-        Then displayed language should be `Add language` and language field mode should be `placeholder`
-        And I make `language` field editable
-        Then `language` field mode should be `edit`
-        And `language` field icon should be visible.
-        """
-        username, user_id = self.log_in_as_unique_user()
-        profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
-        self._test_dropdown_field(profile_page, 'language_proficiencies', 'Urdu', 'Urdu', 'display')
-        self._test_dropdown_field(profile_page, 'language_proficiencies', '', 'Add language', 'placeholder')
-
-        profile_page.make_field_editable('language_proficiencies')
-        self.assertTrue(profile_page.mode_for_field('language_proficiencies'), 'edit')
-
-        self.assertTrue(profile_page.field_icon_present('language_proficiencies'))
-
-    def test_about_me_field(self):
-        """
-        Test behaviour of `About Me` field.
-
-        Given that I am a registered user.
-        And I visit my Profile page.
-        And I set the profile visibility to public and set default values for public fields.
-        Then I set about me value to `ThisIsIt`.
-        Then displayed about me should be `ThisIsIt` and about me field mode should be `display`
-        And I reload the page.
-        Then displayed about me should be `ThisIsIt` and about me field mode should be `display`
-        Then I set empty value for about me.
-        Then displayed about me should be `Tell other edX learners a little about yourself: where you live,
-        what your interests are, why you're taking courses on edX, or what you hope to learn.` and about me
-        field mode should be `placeholder`
-        And I reload the page.
-        Then displayed about me should be `Tell other edX learners a little about yourself: where you live,
-        what your interests are, why you're taking courses on edX, or what you hope to learn.` and about me
-        field mode should be `placeholder`
-        And I make `about me` field editable
-        Then `about me` field mode should be `edit`
-        """
-        placeholder_value = (
-            "Tell other learners a little about yourself: where you live, what your interests are, "
-            "why you're taking courses, or what you hope to learn."
-        )
-
-        username, user_id = self.log_in_as_unique_user()
-        profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
-        self._test_textarea_field(profile_page, 'bio', 'ThisIsIt', 'ThisIsIt', 'display')
-        self._test_textarea_field(profile_page, 'bio', '', placeholder_value, 'placeholder')
-
-        profile_page.make_field_editable('bio')
-        self.assertTrue(profile_page.mode_for_field('bio'), 'edit')
+    # # # def test_country_field(self):
+    # # #     """
+    # # #     Test behaviour of `Country` field.
+    # # #
+    # # #     Given that I am a registered user.
+    # # #     And I visit my Profile page.
+    # # #     And I set the profile visibility to public and set default values for public fields.
+    # # #     Then I set country value to `Pakistan`.
+    # # #     Then displayed country should be `Pakistan` and country field mode should be `display`
+    # # #     And I reload the page.
+    # # #     Then displayed country should be `Pakistan` and country field mode should be `display`
+    # # #     And I make `country` field editable
+    # # #     Then `country` field mode should be `edit`
+    # # #     And `country` field icon should be visible.
+    # # #     """
+    # # #     username, user_id = self.log_in_as_unique_user()
+    # # #     profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
+    # # #     self._test_dropdown_field(profile_page, 'country', 'Pakistan', 'Pakistan', 'display')
+    # # #
+    # # #     profile_page.make_field_editable('country')
+    # # #     self.assertEqual(profile_page.mode_for_field('country'), 'edit')
+    # # #
+    # # #     self.assertTrue(profile_page.field_icon_present('country'))
+    # #
+    # # def test_language_field(self):
+    # #     """
+    # #     Test behaviour of `Language` field.
+    # #
+    # #     Given that I am a registered user.
+    # #     And I visit my Profile page.
+    # #     And I set the profile visibility to public and set default values for public fields.
+    # #     Then I set language value to `Urdu`.
+    # #     Then displayed language should be `Urdu` and language field mode should be `display`
+    # #     And I reload the page.
+    # #     Then displayed language should be `Urdu` and language field mode should be `display`
+    # #     Then I set empty value for language.
+    # #     Then displayed language should be `Add language` and language field mode should be `placeholder`
+    # #     And I reload the page.
+    # #     Then displayed language should be `Add language` and language field mode should be `placeholder`
+    # #     And I make `language` field editable
+    # #     Then `language` field mode should be `edit`
+    # #     And `language` field icon should be visible.
+    # #     """
+    # #     username, user_id = self.log_in_as_unique_user()
+    # #     profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
+    # #     self._test_dropdown_field(profile_page, 'language_proficiencies', 'Urdu', 'Urdu', 'display')
+    # #     self._test_dropdown_field(profile_page, 'language_proficiencies', '', 'Add language', 'placeholder')
+    # #
+    # #     profile_page.make_field_editable('language_proficiencies')
+    # #     self.assertTrue(profile_page.mode_for_field('language_proficiencies'), 'edit')
+    # #
+    # #     self.assertTrue(profile_page.field_icon_present('language_proficiencies'))
+    #
+    # def test_about_me_field(self):
+    #     """
+    #     Test behaviour of `About Me` field.
+    #
+    #     Given that I am a registered user.
+    #     And I visit my Profile page.
+    #     And I set the profile visibility to public and set default values for public fields.
+    #     Then I set about me value to `ThisIsIt`.
+    #     Then displayed about me should be `ThisIsIt` and about me field mode should be `display`
+    #     And I reload the page.
+    #     Then displayed about me should be `ThisIsIt` and about me field mode should be `display`
+    #     Then I set empty value for about me.
+    #     Then displayed about me should be `Tell other edX learners a little about yourself: where you live,
+    #     what your interests are, why you're taking courses on edX, or what you hope to learn.` and about me
+    #     field mode should be `placeholder`
+    #     And I reload the page.
+    #     Then displayed about me should be `Tell other edX learners a little about yourself: where you live,
+    #     what your interests are, why you're taking courses on edX, or what you hope to learn.` and about me
+    #     field mode should be `placeholder`
+    #     And I make `about me` field editable
+    #     Then `about me` field mode should be `edit`
+    #     """
+    #     placeholder_value = (
+    #         "Tell other learners a little about yourself: where you live, what your interests are, "
+    #         "why you're taking courses, or what you hope to learn."
+    #     )
+    #
+    #     username, user_id = self.log_in_as_unique_user()
+    #     profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
+    #     self._test_textarea_field(profile_page, 'bio', 'ThisIsIt', 'ThisIsIt', 'display')
+    #     self._test_textarea_field(profile_page, 'bio', '', placeholder_value, 'placeholder')
+    #
+    #     profile_page.make_field_editable('bio')
+    #     self.assertTrue(profile_page.mode_for_field('bio'), 'edit')
 
     def test_birth_year_not_set(self):
         """
@@ -465,42 +465,42 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         )
         self.verify_profile_page_view_event(username, user_id, visibility=self.PRIVACY_PRIVATE)
 
-    def test_user_can_only_see_default_image_for_private_profile(self):
-        """
-        Scenario: Default profile image behaves correctly for under age user.
-
-        Given that I am on my profile page with private access
-        And I can see default image
-        When I move my cursor to the image
-        Then i cannot see the upload/remove image text
-        And i cannot upload/remove the image.
-        """
-        year_of_birth = datetime.now().year - 5
-        username, user_id = self.log_in_as_unique_user()
-        profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PRIVATE)
-
-        self.verify_profile_forced_private_message(
-            username,
-            year_of_birth,
-            message='You must be over 13 to share a full profile.'
-        )
-        self.assertTrue(profile_page.profile_has_default_image)
-        self.assertFalse(profile_page.profile_has_image_with_private_access())
-
-    def test_user_can_see_default_image_for_public_profile(self):
-        """
-        Scenario: Default profile image behaves correctly for public profile.
-
-        Given that I am on my profile page with public access
-        And I can see default image
-        When I move my cursor to the image
-        Then i can see the upload/remove image text
-        And i am able to upload new image
-        """
-        username, user_id = self.log_in_as_unique_user()
-        profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
-
-        self.assert_default_image_has_public_access(profile_page)
+    # def test_user_can_only_see_default_image_for_private_profile(self):
+    #     """
+    #     Scenario: Default profile image behaves correctly for under age user.
+    #
+    #     Given that I am on my profile page with private access
+    #     And I can see default image
+    #     When I move my cursor to the image
+    #     Then i cannot see the upload/remove image text
+    #     And i cannot upload/remove the image.
+    #     """
+    #     year_of_birth = datetime.now().year - 5
+    #     username, user_id = self.log_in_as_unique_user()
+    #     profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PRIVATE)
+    #
+    #     self.verify_profile_forced_private_message(
+    #         username,
+    #         year_of_birth,
+    #         message='You must be over 13 to share a full profile.'
+    #     )
+    #     self.assertTrue(profile_page.profile_has_default_image)
+    #     self.assertFalse(profile_page.profile_has_image_with_private_access())
+    #
+    # def test_user_can_see_default_image_for_public_profile(self):
+    #     """
+    #     Scenario: Default profile image behaves correctly for public profile.
+    #
+    #     Given that I am on my profile page with public access
+    #     And I can see default image
+    #     When I move my cursor to the image
+    #     Then i can see the upload/remove image text
+    #     And i am able to upload new image
+    #     """
+    #     username, user_id = self.log_in_as_unique_user()
+    #     profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
+    #
+    #     self.assert_default_image_has_public_access(profile_page)
 
     def test_user_can_upload_the_profile_image_with_success(self):
         """
@@ -652,21 +652,21 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         profile_page.visit()
         self.assertTrue(profile_page.profile_has_default_image)
 
-    def test_user_cannot_remove_default_image(self):
-        """
-        Scenario: Remove profile image does not works for default images.
-
-        Given that I am on my profile page with public access
-        And I can see default image
-        When I move my cursor to the image
-        Then i can see only the upload image text
-        And i cannot see the remove image text
-        """
-        username, user_id = self.log_in_as_unique_user()
-        profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
-
-        self.assert_default_image_has_public_access(profile_page)
-        self.assertFalse(profile_page.remove_link_present)
+    # def test_user_cannot_remove_default_image(self):
+    #     """
+    #     Scenario: Remove profile image does not works for default images.
+    #
+    #     Given that I am on my profile page with public access
+    #     And I can see default image
+    #     When I move my cursor to the image
+    #     Then i can see only the upload image text
+    #     And i cannot see the remove image text
+    #     """
+    #     username, user_id = self.log_in_as_unique_user()
+    #     profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)
+    #
+    #     self.assert_default_image_has_public_access(profile_page)
+    #     self.assertFalse(profile_page.remove_link_present)
 
     def test_eventing_after_multiple_uploads(self):
         """
