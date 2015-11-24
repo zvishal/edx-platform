@@ -25,7 +25,7 @@ from xmodule.x_module import STUDENT_VIEW
 from microsite_configuration import microsite
 
 from courseware.access import has_access
-from courseware.date_summary import (
+from lms.djangoapps.courseware.date_summary import (
     CourseEndDate,
     CourseStartDate,
     TodaysDate,
