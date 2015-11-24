@@ -16,7 +16,7 @@ from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.instructor_dashboard import InstructorDashboardPage, DataDownloadPage
 from ...pages.studio.settings_group_configurations import GroupConfigurationsPage
 
-import csv
+import unicodecsv
 import os
 import uuid
 
@@ -323,16 +323,18 @@ class CohortConfigurationTest(EventsTestMixin, UniqueCourseTest, CohortTestMixin
         """
         filename = self.instructor_dashboard_page.get_asset_path(filename)
         with open(filename, 'w+') as csv_file:
-            writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
+            writer = unicodecsv.writer(csv_file)
             for line in csv_text_as_lists:
                 writer.writerow(line)
         self.addCleanup(os.remove, filename)
 
     def _generate_unique_user_data(self):
+        """
+        Produce unique username and e-mail.
+        """
         unique_username = 'user' + str(uuid.uuid4().hex)[:12]
         unique_email = unique_username + "@example.com"
         return unique_username, unique_email
-
 
     def test_add_new_cohort(self):
         """
