@@ -478,7 +478,7 @@ def course_listing(request):
         'rerun_creator_status': GlobalStaff().has_user(request.user),
         'allow_unicode_course_id': settings.FEATURES.get('ALLOW_UNICODE_COURSE_ID', False),
         'allow_course_reruns': settings.FEATURES.get('ALLOW_COURSE_RERUNS', True),
-        'is_programs_enabled': programs_config.is_studio_tab_enabled,
+        'is_programs_enabled': programs_config.is_studio_tab_enabled and request.user.is_staff,
         'programs': programs,
     })
 
