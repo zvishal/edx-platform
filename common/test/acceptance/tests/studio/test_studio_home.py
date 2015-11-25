@@ -145,4 +145,3 @@ class DashboardProgramsTabTest(WebAppTest):
         self.dashboard_page.visit()
         self.assertFalse(self.dashboard_page.is_programs_tab_present())
         self.assertFalse(self.dashboard_page.is_new_program_button_present())
-
