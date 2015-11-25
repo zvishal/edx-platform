@@ -17,7 +17,7 @@ class TestProgramListing(ProgramsApiConfigMixin, ProgramsDataMixin, ModuleStoreT
 
         ClientFactory(name=ProgramsApiConfig.OAUTH2_CLIENT_NAME, client_type=CONFIDENTIAL)
 
-        self.user = UserFactory()
+        self.user = UserFactory(is_staff=True)
         self.client.login(username=self.user.username, password='test')
 
         self.studio_home = reverse('home')
@@ -34,6 +34,18 @@ class TestProgramListing(ProgramsApiConfigMixin, ProgramsDataMixin, ModuleStoreT
 
         for program_name in self.PROGRAM_NAMES:
             self.assertNotIn(program_name, response.content)
+
+    @httpretty.activate
+    def test_programs_requires_staff(self):
+        """Verify that the programs tab and creation button aren't rendered unless the user has global staff."""
+        self.user = UserFactory(is_staff=False)
+        self.client.login(username=self.user.username, password='test')
+
+        self.create_config()
+        self.mock_programs_api()
+
+        response = self.client.get(self.studio_home)
+        self.assertNotIn("You haven't created any programs yet.", response.content)
 
     @httpretty.activate
     def test_programs_displayed(self):
