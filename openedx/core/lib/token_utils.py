@@ -24,6 +24,7 @@ def get_id_token(user, client_name):
         iat (int): Registered claim. Identifies the time at which the JWT was issued.
         aud (str): Registered claim. Identifies the recipients that the JWT is intended for. This implementation
             uses the named client's ID.
+        sub (int): Registered claim.  Identifies the user.  This implementation uses the raw user id.
 
     Arguments:
         user (User): User for which to generate the JWT.
@@ -42,7 +43,7 @@ def get_id_token(user, client_name):
 
     user_profile = UserProfile.objects.get(user=user)
     now = datetime.datetime.utcnow()
-    expires_in = getattr(settings, 'OAUTH_ID_TOKEN_EXPIRATION', 1)
+    expires_in = getattr(settings, 'OAUTH_ID_TOKEN_EXPIRATION', 30)
 
     payload = {
         'preferred_username': user.username,
@@ -53,6 +54,7 @@ def get_id_token(user, client_name):
         'exp': now + datetime.timedelta(seconds=expires_in),
         'iat': now,
         'aud': client.client_id,
+        'sub': user.id,
     }
 
     return jwt.encode(payload, client.client_secret)

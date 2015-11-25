@@ -53,6 +53,7 @@ class TestIdTokenGeneration(TestCase):
             'exp': calendar.timegm(expiration.utctimetuple()),
             'iat': calendar.timegm(now.utctimetuple()),
             'aud': self.oauth2_client.client_id,
+            'sub': self.user.id,
         }
 
         self.assertEqual(payload, expected_payload)
