@@ -7,13 +7,9 @@ import urlparse
 from .http import StubHttpRequestHandler, StubHttpService
 
 
-class StubProgramsServiceHandler(StubHttpRequestHandler):
+class StubProgramsServiceHandler(StubHttpRequestHandler):  # pylint: disable=missing-docstring
 
-    @property
-    def _params(self):
-        return urlparse.parse_qs(urlparse.urlparse(self.path).query)
-
-    def do_GET(self):
+    def do_GET(self):  # pylint: disable=invalid-name, missing-docstring
         pattern_handlers = {
             "/api/v1/programs/$": self.get_programs_list,
         }
@@ -22,6 +18,9 @@ class StubProgramsServiceHandler(StubHttpRequestHandler):
         self.send_response(404, content="404 Not Found")
 
     def match_pattern(self, pattern_handlers):
+        """
+        Find the correct handler method given the path info from the HTTP request.
+        """
         path = urlparse.urlparse(self.path).path
         for pattern in pattern_handlers:
             match = re.match(pattern, path)
@@ -31,9 +30,12 @@ class StubProgramsServiceHandler(StubHttpRequestHandler):
         return None
 
     def get_programs_list(self):
+        """
+        Stubs the programs list endpoint.
+        """
         programs = self.server.config.get('programs', [])
         self.send_json_response(programs)
 
 
-class StubProgramsService(StubHttpService):
+class StubProgramsService(StubHttpService):  # pylint: disable=missing-docstring
     HANDLER_CLASS = StubProgramsServiceHandler

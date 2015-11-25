@@ -10,10 +10,13 @@ from . import PROGRAMS_STUB_URL
 
 
 class Program(factory.Factory):
+    """
+    Factory for stubbing program resources from the Programs API (v1).
+    """
     class Meta(object):
         model = dict
 
-    id = factory.Sequence(lambda n: n)
+    id = factory.Sequence(lambda n: n)  # pylint: disable=invalid-name
     name = "dummy-program-name"
     subtitle = "dummy-program-subtitle"
     category = "xseries"
@@ -23,6 +26,9 @@ class Program(factory.Factory):
 
 
 class Organization(factory.Factory):
+    """
+    Factory for stubbing nested organization resources from the Programs API (v1).
+    """
     class Meta(object):
         model = dict
 

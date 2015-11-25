@@ -72,14 +72,8 @@ class DashboardProgramsTabTest(WebAppTest):
         self.dashboard_page = DashboardPageWithPrograms(self.browser)
         self.auth_page.visit()
 
-    def set_programs_api_configuration(
-        self,
-        is_enabled=False,
-        api_version=1,
-        api_url=PROGRAMS_STUB_URL,
-        js_path='/js',
-        css_path='/css'
-    ):
+    def set_programs_api_configuration(self, is_enabled=False, api_version=1, api_url=PROGRAMS_STUB_URL,
+                                       js_path='/js', css_path='/css'):
         """
         Dynamically adjusts the programs API config model during tests.
         """
