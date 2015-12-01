@@ -179,7 +179,6 @@ class CollectedCourseData(TimeStampedModel):
 
 
     @classmethod
-    @transaction.commit_on_success
     def set_data_for_course(cls, course_key, content_version, collector, collector_version, data):
         """
         Set data for a particular collector for this course.
