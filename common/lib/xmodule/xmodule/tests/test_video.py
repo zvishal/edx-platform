@@ -769,9 +769,16 @@ class VideoCdnTest(unittest.TestCase):
 
     def test_none_args(self):
         """
-        Ensure None args returns None
+        Ensure None args return None
         """
         self.assertIsNone(rewrite_video_url(None, None))
+
+    def test_emptystring_args(self):
+        """
+        Ensure emptyrstring args return None
+        """
+
+        self.assertIsNone(rewrite_video_url("", ""))
 
 
 class VideoDescriptorIndexingTestCase(unittest.TestCase):

@@ -57,20 +57,24 @@ def rewrite_video_url(cdn_base_url, original_video_url):
     :return: The re-written URL
     """
 
-    if cdn_base_url is None or original_video_url is None:
+    if (not cdn_base_url) or (not original_video_url):
         return None
 
     parsed = urlparse(original_video_url)
+    # Contruction of the rewrite url is intentionally very flexible of input.
+    # For example, https://www.edx.org/ + /foo.html will be rewritten to
+    # https://www.edx.org/foo.html.
     rewritten_url = cdn_base_url.rstrip("/") + "/" + parsed.path.lstrip("/")
     validator = URLValidator()
+
     try:
         validator(rewritten_url)
         return rewritten_url
     except ValidationError:
         log.warn("Invalid CDN rewrite URL encountered, %s", rewritten_url)
 
-    # Mimic the behavior of removed get_video_from_cdn in this regard and return None
-    # causing the caller to use the original URL.
+    # Mimic the behavior of removed get_video_from_cdn in this regard and
+    # return None causing the caller to use the original URL.
     return None
 
 
