@@ -777,7 +777,6 @@ class VideoCdnTest(unittest.TestCase):
         """
         Ensure emptyrstring args return None
         """
-
         self.assertIsNone(rewrite_video_url("", ""))
 
 
