@@ -743,20 +743,37 @@ class VideoExportTestCase(VideoDescriptorTestBase):
 
 
 @patch.dict("django.conf.settings.CDN_VIDEO_URLS",
-            {"CN": "https://chinacdn.cn/"})
+            {"CN": "https://chinacdn.cn/",
+            })
 class VideoCdnTest(unittest.TestCase):
     """
     Tests for Video CDN.
     """
+
+    def setUp(self, *args, **kwargs):
+        super(VideoCdnTest, self).setUp(*args, **kwargs)
+        self.original_video_file = "original_video.mp4"
+        self.original_video_url = "http://www.originalvideo.com/" + self.original_video_file
+
     def test_rewrite_video_url_success(self):
         """
         Test successful CDN request.
         """
-        original_video_url = "http://www.originalvideo.com/original_video.mp4"
+        cdn_response_video_url = settings.CDN_VIDEO_URLS["CN"] + self.original_video_file
+
+        self.assertEqual(
+            rewrite_video_url(settings.CDN_VIDEO_URLS["CN"], self.original_video_url),
+            cdn_response_video_url
+        )
+
+    def test_rewrite_url_concat(self):
+        """
+        Test that written URLs are returned clean despite input
+        """
         cdn_response_video_url = settings.CDN_VIDEO_URLS["CN"] + "original_video.mp4"
 
         self.assertEqual(
-            rewrite_video_url(settings.CDN_VIDEO_URLS["CN"], original_video_url),
+            rewrite_video_url(settings.CDN_VIDEO_URLS["CN"] + "///", self.original_video_url),
             cdn_response_video_url
         )
 
@@ -764,9 +781,8 @@ class VideoCdnTest(unittest.TestCase):
         """
         Test if no alternative video in CDN exists.
         """
-        original_video_url = "http://www.originalvideo.com/original_video.mp4"
-        fake_cdn_url = 'http://http://fakecdn.com/'
-        self.assertIsNone(rewrite_video_url(fake_cdn_url, original_video_url))
+        invalid_cdn_url = 'http://http://fakecdn.com/'
+        self.assertIsNone(rewrite_video_url(invalid_cdn_url, self.original_video_url))
 
     def test_none_args(self):
         """
