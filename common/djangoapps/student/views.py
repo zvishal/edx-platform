@@ -33,6 +33,7 @@ from django.utils.http import base36_to_int, urlsafe_base64_encode
 from django.utils.translation import ugettext as _, get_language
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST, require_GET
+from django.views.generic import TemplateView
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.response import TemplateResponse
@@ -700,7 +701,7 @@ def dashboard(request):
         'denied_banner': denied_banner,
         'billing_email': settings.PAYMENT_SUPPORT_EMAIL,
         'user': user,
-        'logout_url': reverse(logout_user),
+        'logout_url': reverse('logout'),
         'platform_name': platform_name,
         'enrolled_courses_either_paid': enrolled_courses_either_paid,
         'provider_states': [],
@@ -1284,6 +1285,25 @@ def login_oauth_token(request, backend):
             return JsonResponse({"error": "invalid_request"}, status=400)
     raise Http404
 
+
+class LogoutView(TemplateView):
+    """
+    Logs out user and redirects.
+
+    The template should load iframes to log the user out of OIDC services.
+    See http://openid.net/specs/openid-connect-logout-1_0.html.
+    """
+    template_name = 'logout.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        logout(request)
+        return super(LogoutView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(LogoutView, self).get_context_data(**kwargs)
+        # TODO Compile list of logout URLs from Clients in DB.
+        context['target'] = reverse('cas-logout') if settings.FEATURES.get('AUTH_USE_CAS') else '/'
+        return context
 
 @ensure_csrf_cookie
 def logout_user(request):
