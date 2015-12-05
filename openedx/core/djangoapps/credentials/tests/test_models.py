@@ -6,7 +6,7 @@ from openedx.core.djangoapps.credentials.tests.mixins import CredentialsApiConfi
 
 class TestCredentialsApiConfig(CredentialsApiConfigMixin, TestCase):
     """Tests covering the CredentialsApiConfig model."""
-    def test_url_construction(self, _mock_cache):
+    def test_url_construction(self):
         """Verify that URLs returned by the model are constructed correctly."""
         credentials_config = self.create_config()
 
