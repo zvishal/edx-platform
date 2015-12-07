@@ -7,13 +7,28 @@ from collections import defaultdict
 
 class Command(BaseCommand):
     """
+    Generates CSVs to be used with neo4j's csv import tool (this is much
+    faster for bulk importing than using py2neo, which updates neo4j over
+    a REST api)
     """
     help = '''
+    Here's an example neo4j-import command:
+
+    ./bin/neo4j-import --id-type string --nodes:chapter chapter.csv \
+    --nodes:discussion discussion.csv --nodes:html html.csv \
+    --nodes:openassessment openassessment.csv
+    --nodes:problem problem.csv \
+    --nodes:sequential sequential.csv --nodes:vertical vertical.csv \
+    --nodes:video video.csv --nodes:course course.csv \
+    --relationships:PARENT_OF relationships.csv \
+    --into data/coursegraph-demo \
+    --multiline-fields=true
+
+    (This could be refactored to automatically generate which nodes files
+    to use based off of csv files present in a directory)
     '''
 
     def handle(self, *args, **options):
-
-
 
         blocks_by_type = defaultdict(list)
 
@@ -39,11 +54,17 @@ class Command(BaseCommand):
                     fields['course'] = item.course_id.course
                     fields['run'] = item.course_id.run
                     fields['course_id'] = unicode(item.course_id)
-                fields['location'] = unicode(item.location)
+
+                fields['location:ID'] = unicode(item.location)
+                if "location" in fields:
+                    del fields['location']
 
                 block_type = item.scope_ids.block_type
 
                 fields['type'] = block_type
+
+                fields['type:LABEL'] = fields['type']
+                del fields['type']
 
                 location_fields_map[item.location] = fields
 
@@ -63,7 +84,7 @@ class Command(BaseCommand):
 
         self.make_relationship_csv(relationships)
 
-        return
+        print "DONE"
 
 
     def make_relationship_csv(self, relationships):
@@ -76,11 +97,9 @@ class Command(BaseCommand):
 
         for block_type, fields_list in blocks_by_type.iteritems():
             field_names = fields_list[0].keys()
-            field_names.remove('location')
-            rows = ["location:ID"] + field_names
+            rows = [field_names]
             for fields in fields_list:
-                row = [fields['location']]
-                row.extend([unicode(fields[field_name]) for field_name in field_names])
+                row = [unicode(fields[field_name]) for field_name in field_names]
                 rows.append(row)
 
             with open('/tmp/{}.csv'.format(block_type), 'w') as csvfile:
