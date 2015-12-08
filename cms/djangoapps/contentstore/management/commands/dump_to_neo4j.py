@@ -36,18 +36,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        relationships = [[':START_ID', ':END_ID']]
+        all_courses = modulestore().get_courses()
+        number_of_courses = len(all_courses)
 
-        all_course_ids = [c.id for c in modulestore().get_courses()]
-        number_of_courses = len(all_course_ids)
-
-        for index, course in enumerate(all_course_ids):
+        for index, course in enumerate(all_courses):
             # {<block_type>: [<block>]}
             blocks_by_type = defaultdict(list)
 
-            items = modulestore().get_items(course)
+            relationships = []
+
+            items = modulestore().get_items(course.id)
             print u"dumping {} (course {}/{}) ({} items)".format(
-                course, index + 1, number_of_courses, len(items)
+                course.id, index + 1, number_of_courses, len(items)
             )
 
 
@@ -93,17 +93,20 @@ class Command(BaseCommand):
 
             self.add_to_csvs_from_blocks(blocks_by_type)
 
-        self.add_to_relationship_csv(relationships)
+            self.add_to_relationship_csv(relationships, index==0)
 
         print self.field_names_by_type.keys()
 
         print "DONE"
 
 
-    def add_to_relationship_csv(self, relationships):
-        with open('/tmp/relationships.csv', 'w') as csvfile:
+    def add_to_relationship_csv(self, relationships, create=False):
+        rows = [[':START_ID', ':END_ID']] if create else []
+        rows.extend(relationships)
+        mode = 'w' if create else 'a'
+        with open('/tmp/relationships.csv', mode) as csvfile:
             writer = UnicodeWriter(csvfile)
-            writer.writerows(relationships)
+            writer.writerows(rows)
 
 
     def add_to_csvs_from_blocks(self, blocks_by_type):
@@ -126,7 +129,6 @@ class Command(BaseCommand):
 
             mode = 'w' if create else 'a'
             with open('/tmp/{}.csv'.format(block_type), mode) as csvfile:
-                print block_type, mode
                 writer = UnicodeWriter(csvfile)
                 writer.writerows(rows)
 
