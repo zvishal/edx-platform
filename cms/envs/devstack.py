@@ -102,6 +102,11 @@ XBLOCK_SETTINGS = {
     }
 }
 
+################################ XBLOCK INSTALLER ##############################
+ENABLE_XBLOCKS_INSTALLER = True
+FEATURES['USE_XBLOCKS_REPOSITORY']= True
+XBLOCKS_REPOSITORY = "http://localhost:3000/api/xblocks"
+
 ################################ SEARCH INDEX ################################
 FEATURES['ENABLE_COURSEWARE_INDEX'] = True
 FEATURES['ENABLE_LIBRARY_INDEX'] = True

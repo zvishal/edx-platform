@@ -10,6 +10,8 @@ import string  # pylint: disable=deprecated-module
 import pip
 import sys
 import subprocess
+import requests
+import re
 from django.utils.translation import ugettext as _
 import django.utils
 from django.contrib.auth.decorators import login_required
@@ -169,8 +171,10 @@ def get_available_xblocks_list():
             return input.encode('utf-8')
         else:
             return input
-    if settings.FEATURES.get('USE_XBLOCKS_REPOSITORY', False): 
-        pass
+    if settings.FEATURES.get('USE_XBLOCKS_REPOSITORY', False):  
+        link = settings.XBLOCKS_REPOSITORY
+        response = requests.get(link, allow_redirects=True, params={'format': 'json'})
+        data = response.json()
     else:
         with open('xblocks_list.json') as xblock_json:    
             data = json.load(xblock_json)
@@ -482,74 +486,99 @@ def course_listing(request):
     """
     List all courses available to the logged in user
     """
-    xblocks_list = get_available_xblocks_list()
-    if request.method == 'POST':
-        if request.user.is_staff and request.user.is_superuser:
-            githublink = request.POST['githublink']
-            xblockname = request.POST['xblockname']
-            xaction = request.POST['xaction']
+    xblocks_list = []
+    if settings.ENABLE_XBLOCKS_INSTALLER:
+        xblocks_list = get_available_xblocks_list()
 
-            def get_package_location(xblockname):
-                """
-                Get installation path/location of xblock. 
-                Uses pip.
-                """
-                args = ["pip", "show", xblockname]
-                output,error = subprocess.Popen(args,stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
-                output_dict = output.splitlines()
-                location = filter(lambda x: x.startswith("Location: "), output_dict)
-                if len(location) > 0:
-                    location = location[0].replace('Location: ', '', 1)
-                else:
-                    location = None
-                return location
+        def get_installed_packages():
+            """ 
+            Get installed packages list (returned by pip list).
+            """
+            args = ["pip", "list"]
+            installed_packages = []
+            output,error = subprocess.Popen(args,stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+            output_dict = output.splitlines()
+            for package_string in output_dict:
+                package_regex = re.compile("(.*?)\s*\(")
+                package = package_regex.match(package_string)
+                if package:
+                    installed_packages.append(package.group(1))
+            return installed_packages
 
-            def try_package(check_function, xblockname, xblocks_list):
-                """
-                Tries to run a function sent as an argument on an xblock packages. 
-                Used to check/validate import and deletes.
-                """
-                try:
-                    xblock = filter(lambda x: x['name'] == xblockname, xblocks_list)[0]
-                    packages = xblock['packages']
+        if request.method == 'POST':
+            if not request.user.is_staff:
+                raise PermissionDenied()
+            elif not request.user.is_superuser:
+                raise PermissionDenied()
+            else:
+                githublink = request.POST['githublink']
+                xblockname = request.POST['xblockname']
+                xaction = request.POST['xaction']
+
+                def get_package_location(install_name):
+                    """
+                    Get installation path/location of xblock. 
+                    Uses pip.
+                    """
+                    args = ["pip", "show", install_name]
+                    output,error = subprocess.Popen(args,stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+                    output_dict = output.splitlines()
+                    location = filter(lambda x: x.startswith("Location: "), output_dict)
+                    if len(location) > 0:
+                        location = location[0].replace('Location: ', '', 1)
+                    else:
+                        location = None
+                    return location
+
+                def try_package(check_function, package):
+                    """
+                    Tries to run a function sent as an argument on an xblock packages. 
+                    Used to check/validate import and deletes.
+                    """
                     try:
-                        for package in packages:
-                            check_function(package)
-                            
+                        check_function(package)                           
                     except ImportError as err:
                         log.exception(err.message)
                         return_code = 1
-                except Exception as ex:
-                    log.exception(ex.message)
 
-            if xaction == 'install':
-                # Uses pip as install/uninstall method. 
-                # Has to be called through subprocess because pip has a bug when called directly by pip.main() 
-                # Checked in versions 6.0.8 and 7.1.2
-                return_code = subprocess.call(["pip", "install", "-e", "git+{0}#egg={1}".format(githublink, xblockname)])
-                location = get_package_location(xblockname)
-                sys.path.append(location)
-                try_package(__import__, xblockname, xblocks_list)
+                if xaction == 'install':
+                    # Uses pip as install/uninstall method. 
+                    # Has to be called through subprocess because pip has a bug when called directly by pip.main() 
+                    # Checked in versions 6.0.8 and 7.1.2
+                    xblock = filter(lambda x: x['name'] == xblockname, xblocks_list)[0]
+                    install_name = xblock['install_name']
+                    package = xblock['packages']
+                    return_code = subprocess.call(["pip", "install", "-e", "git+{0}#egg={1}".format(githublink, install_name)])
+                    location = get_package_location(install_name)
+                    sys.path.append(location)
+                    try_package(__import__, package)
 
-            elif xaction == 'remove': 
-                location = get_package_location(xblockname)
-                return_code = subprocess.call(["pip", "uninstall", "-y", xblockname])
-                sys.path.remove(location)
-                try_package(delete_imported_module, xblockname, xblocks_list)
-                
-            if return_code == 0:
-                return HttpResponse(status=200)
-            else:
-                return HttpResponse(return_code, status=500)
+                elif xaction == 'remove': 
+                    xblock = filter(lambda x: x['name'] == xblockname, xblocks_list)[0]
+                    install_name = xblock['install_name']
+                    package = xblock['packages']
+                    location = get_package_location(install_name)
+                    return_code = subprocess.call(["pip", "uninstall", "-y", install_name])
+                    sys.path.remove(location)
+                    try_package(delete_imported_module, package)
+                    
+                if return_code == 0:
+                    return HttpResponse(status=200)
+                else:
+                    return HttpResponse(return_code, status=500)
 
-    for xblock in xblocks_list:
-        packages = xblock['packages']
-        try:
-            for package in packages:
-                __import__(package)
-            xblock['installed'] = True
-        except ImportError:
-            xblock['installed'] = False
+        installed_packages = get_installed_packages()
+        for xblock in xblocks_list:
+            packages = xblock['packages']
+            if not xblock.has_key('edxversion'):
+                xblock['edxversion'] = []
+            if not xblock.has_key('screenshots'):
+                xblock['screenshots'] = []
+
+            if xblock['install_name'] in installed_packages:
+                xblock['installed'] = True
+            else: 
+                xblock['installed'] = False    
 
     courses, in_process_course_actions = get_courses_accessible_to_user(request)
     libraries = _accessible_libraries_list(request.user) if LIBRARIES_ENABLED else []
@@ -595,7 +624,7 @@ def course_listing(request):
         'courses': courses,
         'in_process_course_actions': in_process_course_actions,
         'libraries_enabled': LIBRARIES_ENABLED,
-        'xblocks_repository_enabled': True, 
+        'xblocks_repository_enabled': settings.ENABLE_XBLOCKS_INSTALLER, 
         'libraries': [format_library_for_view(lib) for lib in libraries],
         'xblocks_list': xblocks_list,
         'show_new_library_button': LIBRARIES_ENABLED and request.user.is_active,

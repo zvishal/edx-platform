@@ -498,9 +498,9 @@
           %for xblock_info in xblocks_list:
           <li class="course-item">
             %if xblock_info['installed']:
-            <a class="button install-button" data-xaction="remove" data-xblockname="${xblock_info['name']}" data-githublink="${xblock_info['githublink']}" href="#">Remove</a>  
+            <a class="button install-button" data-xaction="remove" data-xblockname="${xblock_info['name']}" data-githublink="${xblock_info['github_link']}" href="#">Remove</a>  
             %else:
-            <a class="button install-button" data-xaction="install" data-xblockname="${xblock_info['name']}" data-githublink="${xblock_info['githublink']}" href="#">Install</a>
+            <a class="button install-button" data-xaction="install" data-xblockname="${xblock_info['name']}" data-githublink="${xblock_info['github_link']}" href="#">Install</a>
             %endif
             <a class="xblock-link">
               <h3 class="course-title">
@@ -530,7 +530,7 @@
               % endif
               <ul class="item-actions course-actions" style="float:right;">
                 <li class="action action-view">
-                  <a class="button view-button" href="${xblock_info['githublink']}" target="_blank"> Open on GitHub </a>
+                  <a class="button view-button" href="${xblock_info['github_link']}" target="_blank"> Open on GitHub </a>
                 </li>
               </ul>
             </div>

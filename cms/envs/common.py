@@ -1052,6 +1052,10 @@ FILES_AND_UPLOAD_TYPE_FILTERS = {
     ],
 }
 
+# XBLOCK INSTALLER 
+ENABLE_XBLOCKS_INSTALLER = False
+XBLOCKS_REPOSITORY = "http://xblocks.org/api/xblocks"
+
 # Default to no Search Engine
 SEARCH_ENGINE = None
 ELASTIC_FIELD_MAPPINGS = {
