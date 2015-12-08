@@ -3,6 +3,8 @@ import csv
 from django.core.management.base import BaseCommand
 from xmodule.modulestore.django import modulestore
 from collections import defaultdict
+import gc
+import os
 
 
 class Command(BaseCommand):
@@ -28,16 +30,27 @@ class Command(BaseCommand):
     to use based off of csv files present in a directory)
     '''
 
+    # {<block_type>: [<field_name>]}
+    field_names_by_type = {}
+
+
     def handle(self, *args, **options):
-
-        blocks_by_type = defaultdict(list)
-
-        location_fields_map = {}
 
         relationships = [[':START_ID', ':END_ID']]
 
-        for course in modulestore().get_courses():
-            items = modulestore().get_items(course.id)
+        all_course_ids = [c.id for c in modulestore().get_courses()]
+        number_of_courses = len(all_course_ids)
+
+        for index, course in enumerate(all_course_ids):
+            # {<block_type>: [<block>]}
+            blocks_by_type = defaultdict(list)
+
+            items = modulestore().get_items(course)
+            print u"dumping {} (course {}/{}) ({} items)".format(
+                course, index + 1, number_of_courses, len(items)
+            )
+
+
             for item in items:
 
                 # convert all fields to a dict and filter out parent field
@@ -66,8 +79,6 @@ class Command(BaseCommand):
                 fields['type:LABEL'] = fields['type']
                 del fields['type']
 
-                location_fields_map[item.location] = fields
-
                 blocks_by_type[block_type].append(fields)
 
 
@@ -80,29 +91,42 @@ class Command(BaseCommand):
                         relationships.append([parent_loc, child_loc])
 
 
-        self.make_csvs_from_blocks(blocks_by_type)
+            self.add_to_csvs_from_blocks(blocks_by_type)
 
-        self.make_relationship_csv(relationships)
+        self.add_to_relationship_csv(relationships)
+
+        print self.field_names_by_type.keys()
 
         print "DONE"
 
 
-    def make_relationship_csv(self, relationships):
+    def add_to_relationship_csv(self, relationships):
         with open('/tmp/relationships.csv', 'w') as csvfile:
             writer = UnicodeWriter(csvfile)
             writer.writerows(relationships)
 
 
-    def make_csvs_from_blocks(self, blocks_by_type):
+    def add_to_csvs_from_blocks(self, blocks_by_type):
 
         for block_type, fields_list in blocks_by_type.iteritems():
-            field_names = fields_list[0].keys()
-            rows = [field_names]
+            create = False
+            field_names = self.field_names_by_type.get(block_type)
+            if field_names is None:
+                field_names = fields_list[0].keys()
+                field_names.remove('type:LABEL')
+                field_names = ['type:LABEL'] + field_names
+                self.field_names_by_type[block_type] = field_names
+                create = True
+
+            rows = [field_names] if create else []
+
             for fields in fields_list:
                 row = [unicode(fields[field_name]) for field_name in field_names]
                 rows.append(row)
 
-            with open('/tmp/{}.csv'.format(block_type), 'w') as csvfile:
+            mode = 'w' if create else 'a'
+            with open('/tmp/{}.csv'.format(block_type), mode) as csvfile:
+                print block_type, mode
                 writer = UnicodeWriter(csvfile)
                 writer.writerows(rows)
 
