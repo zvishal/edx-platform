@@ -11,7 +11,7 @@ import httpretty
 import mock
 from pytz import UTC
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import Http404
 from django.test.client import RequestFactory
 
@@ -109,7 +109,7 @@ class GetCourseTest(UrlResetMixin, SharedModuleStoreTestCase):
             get_course(self.request, self.course.id)
 
     def test_discussions_disabled(self):
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             get_course(self.request, _discussion_disabled_course_for(self.user).id)
 
     def test_basic(self):
@@ -237,7 +237,7 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
 
     def test_discussions_disabled(self):
         _remove_discussion_tab(self.course, self.user.id)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             self.get_course_topics()
 
     def test_without_courseware(self):
@@ -532,7 +532,7 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, SharedModuleSto
             self.get_thread_list([])
 
     def test_discussions_disabled(self):
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             self.get_thread_list([], course=_discussion_disabled_course_for(self.user))
 
     def test_empty(self):
@@ -752,7 +752,7 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, SharedModuleSto
 
         # Test page past the last one
         self.register_get_threads_response([], page=3, num_pages=3)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             get_thread_list(self.request, self.course.id, page=4, page_size=10)
 
     @ddt.data(None, "rewritten search string")
@@ -952,7 +952,7 @@ class GetCommentListTest(CommentsServiceMockMixin, SharedModuleStoreTestCase):
     def test_nonexistent_thread(self):
         thread_id = "nonexistent_thread"
         self.register_get_thread_error_response(thread_id, 404)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             get_comment_list(self.request, thread_id, endorsed=False, page=1, page_size=1)
 
     def test_nonexistent_course(self):
@@ -966,7 +966,7 @@ class GetCommentListTest(CommentsServiceMockMixin, SharedModuleStoreTestCase):
 
     def test_discussions_disabled(self):
         disabled_course = _discussion_disabled_course_for(self.user)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             self.get_comment_list(
                 self.make_minimal_cs_thread(
                     overrides={"course_id": unicode(disabled_course.id)}
@@ -1023,7 +1023,7 @@ class GetCommentListTest(CommentsServiceMockMixin, SharedModuleStoreTestCase):
         try:
             self.get_comment_list(thread)
             self.assertFalse(expected_error)
-        except Http404:
+        except ObjectDoesNotExist:
             self.assertTrue(expected_error)
 
     @ddt.data(True, False)
@@ -1255,7 +1255,7 @@ class GetCommentListTest(CommentsServiceMockMixin, SharedModuleStoreTestCase):
             response_field: [],
             response_total_field: 5
         })
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             self.get_comment_list(thread, endorsed=endorsed_arg, page=2, page_size=5)
 
     def test_question_endorsed_pagination(self):
@@ -1327,7 +1327,7 @@ class GetCommentListTest(CommentsServiceMockMixin, SharedModuleStoreTestCase):
         )
 
         # Page past the end
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             self.get_comment_list(thread, endorsed=True, page=2, page_size=10)
 
 
@@ -1974,7 +1974,7 @@ class UpdateThreadTest(
 
     def test_nonexistent_thread(self):
         self.register_get_thread_error_response("test_thread", 404)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             update_thread(self.request, "test_thread", {})
 
     def test_nonexistent_course(self):
@@ -1991,7 +1991,7 @@ class UpdateThreadTest(
     def test_discussions_disabled(self):
         disabled_course = _discussion_disabled_course_for(self.user)
         self.register_thread(overrides={"course_id": unicode(disabled_course.id)})
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             update_thread(self.request, "test_thread", {})
 
     @ddt.data(
@@ -2029,7 +2029,7 @@ class UpdateThreadTest(
         try:
             update_thread(self.request, "test_thread", {})
             self.assertFalse(expected_error)
-        except Http404:
+        except ObjectDoesNotExist:
             self.assertTrue(expected_error)
 
     @ddt.data(
@@ -2357,7 +2357,7 @@ class UpdateCommentTest(
 
     def test_nonexistent_comment(self):
         self.register_get_comment_error_response("test_comment", 404)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             update_comment(self.request, "test_comment", {})
 
     def test_nonexistent_course(self):
@@ -2373,7 +2373,7 @@ class UpdateCommentTest(
 
     def test_discussions_disabled(self):
         self.register_comment(course=_discussion_disabled_course_for(self.user))
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             update_comment(self.request, "test_comment", {})
 
     @ddt.data(
@@ -2416,7 +2416,7 @@ class UpdateCommentTest(
         try:
             update_comment(self.request, "test_comment", {})
             self.assertFalse(expected_error)
-        except Http404:
+        except ObjectDoesNotExist:
             self.assertTrue(expected_error)
 
     @ddt.data(*itertools.product(
@@ -2690,7 +2690,7 @@ class DeleteThreadTest(
 
     def test_thread_id_not_found(self):
         self.register_get_thread_error_response("missing_thread", 404)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             delete_thread(self.request, "missing_thread")
 
     def test_nonexistent_course(self):
@@ -2707,7 +2707,7 @@ class DeleteThreadTest(
     def test_discussions_disabled(self):
         disabled_course = _discussion_disabled_course_for(self.user)
         self.register_thread(overrides={"course_id": unicode(disabled_course.id)})
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             delete_thread(self.request, self.thread_id)
 
     @ddt.data(
@@ -2770,7 +2770,7 @@ class DeleteThreadTest(
         try:
             delete_thread(self.request, self.thread_id)
             self.assertFalse(expected_error)
-        except Http404:
+        except ObjectDoesNotExist:
             self.assertTrue(expected_error)
 
 
@@ -2838,7 +2838,7 @@ class DeleteCommentTest(
 
     def test_comment_id_not_found(self):
         self.register_get_comment_error_response("missing_comment", 404)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             delete_comment(self.request, "missing_comment")
 
     def test_nonexistent_course(self):
@@ -2860,7 +2860,7 @@ class DeleteCommentTest(
             thread_overrides={"course_id": unicode(disabled_course.id)},
             overrides={"course_id": unicode(disabled_course.id)}
         )
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             delete_comment(self.request, self.comment_id)
 
     @ddt.data(
@@ -2928,7 +2928,7 @@ class DeleteCommentTest(
         try:
             delete_comment(self.request, self.comment_id)
             self.assertFalse(expected_error)
-        except Http404:
+        except ObjectDoesNotExist:
             self.assertTrue(expected_error)
 
 
@@ -3017,7 +3017,7 @@ class RetrieveThreadTest(
 
     def test_thread_id_not_found(self):
         self.register_get_thread_error_response("missing_thread", 404)
-        with self.assertRaises(Http404):
+        with self.assertRaises(ObjectDoesNotExist):
             get_thread(self.request, "missing_thread")
 
     def test_nonauthor_enrolled_in_course(self):
@@ -3108,5 +3108,5 @@ class RetrieveThreadTest(
         try:
             get_thread(self.request, self.thread_id)
             self.assertFalse(expected_error)
-        except Http404:
+        except ObjectDoesNotExist:
             self.assertTrue(expected_error)
