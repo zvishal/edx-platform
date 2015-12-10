@@ -68,6 +68,7 @@
                     this.$el.html(_.template(this.tpl, data));
 
                     this.postRender();
+                    this.validateCountry();
 
                     return this;
                 },
@@ -101,6 +102,21 @@
 
                 setExtraData: function(data) {
                     return _.extend(data, this.user_details);
+                },
+
+                validateCountry: function() {
+                    if( !this.model.get('country') ){
+                        var $submissionContainer = $('.submission-error'),
+                            $errorMessageContainer = $submissionContainer.find('.message-copy'),
+                            $countryLabel = $('#user-country-title');
+
+                        $countryLabel.addClass('error');
+                        $errorMessageContainer.append(
+                            "<li>Please go to your <a href='/account/settings'>profile page</a> and provide your country of residence.</li>"
+                        );
+                        this.toggleDisableButton(true);
+                        $submissionContainer.removeClass('hidden');
+                    }
                 }
             });
         }
