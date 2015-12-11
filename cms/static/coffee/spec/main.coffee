@@ -254,7 +254,6 @@ define([
     "js/spec/views/xblock_validation_spec",
     "js/spec/views/license_spec",
     "js/spec/views/paging_spec",
-    "js/spec/views/utils/view_utils_spec",
     "js/spec/views/pages/container_spec",
     "js/spec/views/pages/container_subviews_spec",
     "js/spec/views/pages/group_configurations_spec",
