@@ -104,7 +104,7 @@ class Command(BaseCommand):
         rows = [[':START_ID', ':END_ID']] if create else []
         rows.extend(relationships)
         mode = 'w' if create else 'a'
-        with open('relationships.tsv', mode) as csvfile:
+        with open('/tmp/relationships.tsv', mode) as csvfile:
             self._write_results_to_tsv(rows, csvfile)
 
 
@@ -148,7 +148,7 @@ class Command(BaseCommand):
                 rows.append(row)
 
             mode = 'w' if create else 'a'
-            with open('{}.tsv'.format(block_type), mode) as csvfile:
+            with open('/tmp/{}.tsv'.format(block_type), mode) as csvfile:
                 self._write_results_to_tsv(rows, csvfile)
 
 
