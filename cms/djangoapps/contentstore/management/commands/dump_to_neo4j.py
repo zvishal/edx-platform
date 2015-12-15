@@ -126,7 +126,11 @@ class Command(BaseCommand):
 
     def _normalize_value(self, value):
         if value is None: value='NULL'
-        return unicode(value).encode('utf-8').replace('\\', '\\\\').replace('\r', '\\r').replace('\t','\\t').replace('\n', '\\n')
+        value = unicode(value).encode('utf-8').replace('\\', '\\\\').replace('\r', '\\r').replace('\t','\\t').replace('\n', '\\n')
+        value = value.strip('"')
+        value = value.strip("'")
+
+        return value
 
 
     def add_to_csvs_from_blocks(self, blocks_by_type):
