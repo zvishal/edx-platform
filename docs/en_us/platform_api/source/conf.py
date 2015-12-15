@@ -52,7 +52,7 @@ MOCK_MODULES = [
     'xmodule.modulestore',
     'xmodule.modulestore.exceptions',
     'xmodule.modulestore.django',
-    'xmodule.fields',
+    # 'xmodule.fields',
     'courseware.models',
     'milestones',
     'milestones.api',
