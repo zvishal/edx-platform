@@ -196,6 +196,11 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
         branding_info = None
         youtube_streams = ""
 
+        # Determine if there is an alternative source for this video
+        # based on user locale.  This exists to support cases where
+        # we leverage a geography specific CDN, like China.
+        cdn_url = getattr(settings, 'VIDEO_CDN_URL', {}).get(self.system.user_location)
+
         # If we have an edx_video_id, we prefer its values over what we store
         # internally for download links (source, html5_sources) and the youtube
         # stream.
@@ -215,7 +220,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
                         if url not in sources:
                             sources.append(url)
                         if self.download_video:
-                            download_video_link = url
+                            download_video_link = rewrite_video_url(cdn_url, url)
 
                 # set the youtube url
                 if val_video_urls["youtube"]:
@@ -231,7 +236,6 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
         # 'CN' is China ISO 3166-1 country code.
         # Video caching is disabled for Studio. User_location is always None in Studio.
         # CountryMiddleware disabled for Studio.
-        cdn_url = getattr(settings, 'VIDEO_CDN_URL', {}).get(self.system.user_location)
         if getattr(self, 'video_speed_optimizations', True) and cdn_url:
             branding_info = BrandingInfoConfig.get_config().get(self.system.user_location)
 
