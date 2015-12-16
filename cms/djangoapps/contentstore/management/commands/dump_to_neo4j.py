@@ -60,6 +60,7 @@ class Command(BaseCommand):
                     if field not in ['parent', 'children']
                 )
 
+                fields['edited_on'] = unicode(getattr(item, 'edited_on', u''))
                 fields['display_name'] = item.display_name_with_default
 
                 fields['location:ID'] = unicode(item.location)
@@ -127,8 +128,9 @@ class Command(BaseCommand):
     def _normalize_value(self, value):
         if value is None: value='NULL'
         value = unicode(value).encode('utf-8').replace('\\', '\\\\').replace('\r', '\\r').replace('\t','\\t').replace('\n', '\\n')
-        value = value.strip('"')
-        value = value.strip("'")
+        while value.startswith('"') or value.startswith("'"):
+            value = value.strip('"')
+            value = value.strip("'")
 
         return value
 
