@@ -33,10 +33,10 @@
                     var template = this.loadTemplate('certificate-white-list');
                     this.$el.html(template({certificates: this.collection.models}));
                     if (this.collection.isEmpty()) {
-                        this.$("#generate-exception-certificates").addClass("is-disabled");
+                        this.$("#generate-exception-certificates").addClass("disabled");
                     }
                     else {
-                        this.$("#generate-exception-certificates").removeClass("is-disabled");
+                        this.$("#generate-exception-certificates").removeClass("disabled");
                     }
                 },
 

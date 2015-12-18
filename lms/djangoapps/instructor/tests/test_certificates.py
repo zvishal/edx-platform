@@ -183,7 +183,7 @@ class CertificatesInstructorDashTest(SharedModuleStoreTestCase):
     def _assert_enable_certs_button_is_disabled(self):
         """Check that the "enable student-generated certificates" button is disabled. """
         response = self.client.get(self.url)
-        expected_html = '<button class="is-disabled" disabled>Enable Student-Generated Certificates</button>'
+        expected_html = '<button class="btn-blue disabled" disabled>Enable Student-Generated Certificates</button>'
         self.assertContains(response, expected_html)
 
     def _assert_enable_certs_button(self, is_enabled):

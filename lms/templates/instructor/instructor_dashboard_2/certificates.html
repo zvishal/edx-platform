@@ -63,7 +63,7 @@ import json
             </form>
         % else:
             <p>${_("You must successfully generate example certificates before you enable student-generated certificates.")}</p>
-            <button class="is-disabled" disabled>${_('Enable Student-Generated Certificates')}</button>
+            <button class="btn-blue disabled" disabled>${_('Enable Student-Generated Certificates')}</button>
         % endif
     </div>
 
@@ -75,7 +75,7 @@ import json
             <form id="certificates-generating-form" method="post" action="${section_data['urls']['start_certificate_generation']}">
                 % if section_data['html_cert_enabled'] and section_data['active_certificate'] is None:
                     <p>${_("Course certificate generation requires an activated web certificate configuration.")}</p>
-                    <input type="button" id="disabled-btn-start-generating-certificates" class="is-disabled" aria-disabled="true" value="${_('Generate Certificates')}"/>
+                    <input type="button" id="disabled-btn-start-generating-certificates" class="btn-blue disabled" aria-disabled="true" value="${_('Generate Certificates')}"/>
                 % else:
                     <p class="under-heading">
                         ${_("When you are ready to generate certificates for your course, click Generate Certificates. You do not need to do this<br/>if you have set the certificate mode to on-demand generation.")}
