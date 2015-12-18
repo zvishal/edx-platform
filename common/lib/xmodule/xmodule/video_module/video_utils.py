@@ -64,7 +64,13 @@ def rewrite_video_url(cdn_base_url, original_video_url):
     # Contruction of the rewrite url is intentionally very flexible of input.
     # For example, https://www.edx.org/ + /foo.html will be rewritten to
     # https://www.edx.org/foo.html.
-    rewritten_url = cdn_base_url.rstrip("/") + "/" + parsed.path.lstrip("/")
+
+    path = parsed.path
+    
+    if settings.VIDEO_CDN_PATH_TO_ELIDE:
+        path = path.replace(elide_path_part,"")
+    
+    rewritten_url = cdn_base_url.rstrip("/") + "/" + path.lstrip("/")
     validator = URLValidator()
 
     try:
