@@ -34,7 +34,9 @@ from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.xml_importer import import_course_from_xml
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_TOY_MODULESTORE
-from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory, check_mongo_calls
+from xmodule.modulestore.tests.factories import (
+    CourseFactory, ItemFactory, ToyCourseFactory, check_mongo_calls
+)
 from xmodule.tests.xml import factories as xml
 from xmodule.tests.xml import XModuleXmlImportTest
 
@@ -284,7 +286,12 @@ class XmlCoursesRenderTest(ModuleStoreTestCase):
     """Test methods related to rendering courses content for an XML course."""
     MODULESTORE = TEST_DATA_MIXED_TOY_MODULESTORE
 
-    toy_course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+    def setUp(self):
+        """
+        Make sure that course is reloaded every time--clear out the modulestore.
+        """
+        super(XmlCoursesRenderTest, self).setUp()
+        self.toy_course_key = ToyCourseFactory.create().id
 
     def test_get_course_info_section_render(self):
         course = get_course_by_id(self.toy_course_key)
@@ -292,7 +299,7 @@ class XmlCoursesRenderTest(ModuleStoreTestCase):
 
         # Test render works okay. Note the href is different in XML courses.
         course_info = get_course_info_section(request, course, 'handouts')
-        self.assertEqual(course_info, "<a href='/static/toy/handouts/sample_handout.txt'>Sample</a>")
+        self.assertEqual(course_info, "<a href='/c4x/edX/toy/asset/handouts_sample_handout.txt'>Sample</a>")
 
         # Test when render raises an exception
         with mock.patch('courseware.courses.get_module') as mock_module_render:
