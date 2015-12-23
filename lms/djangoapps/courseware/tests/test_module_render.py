@@ -41,7 +41,7 @@ from lms.djangoapps.lms_xblock.runtime import quote_slashes
 from lms.djangoapps.lms_xblock.field_data import LmsFieldData
 from openedx.core.lib.courses import course_image_url
 from student.models import anonymous_id_for_user
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_TOY_MODULESTORE
+from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_MODULESTORE
 from xmodule.lti_module import LTIDescriptor
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.django import modulestore
@@ -1304,7 +1304,7 @@ class MongoViewInStudioTest(ViewInStudioTest):
 class MixedViewInStudioTest(ViewInStudioTest):
     """Test the 'View in Studio' link visibility in a mixed mongo backed course."""
 
-    MODULESTORE = TEST_DATA_MIXED_TOY_MODULESTORE
+    MODULESTORE = TEST_DATA_MIXED_MODULESTORE
 
     def test_view_in_studio_link_mongo_backed(self):
         """Mixed mongo courses that are mongo backed should see 'View in Studio' links."""
