@@ -311,6 +311,7 @@ class MongoConnection(object):
         else:
             raise HeartbeatFailure("Can't connect to {}".format(self.database.name), 'mongo')
 
+    @autoretry_read()
     def get_structure(self, key, course_context=None):
         """
         Get the structure from the persistence mechanism whose id is the given key.
@@ -406,6 +407,7 @@ class MongoConnection(object):
             tagger.measure("blocks", len(structure["blocks"]))
             self.structures.insert(structure_to_mongo(structure, course_context))
 
+    @autoretry_read()
     def get_course_index(self, key, ignore_case=False):
         """
         Get the course_index from the persistence mechanism whose id is the given key
@@ -423,6 +425,7 @@ class MongoConnection(object):
                 }
             return self.course_index.find_one(query)
 
+    @autoretry_read()
     def find_matching_course_indexes(self, branch=None, search_targets=None, org_target=None, course_context=None):
         """
         Find the course_index matching particular conditions.
@@ -490,6 +493,7 @@ class MongoConnection(object):
             }
             return self.course_index.remove(query)
 
+    @autoretry_read()
     def get_definition(self, key, course_context=None):
         """
         Get the definition from the persistence mechanism whose id is the given key
@@ -500,6 +504,7 @@ class MongoConnection(object):
             tagger.tag(block_type=definition['block_type'])
             return definition
 
+    @autoretry_read()
     def get_definitions(self, definitions, course_context=None):
         """
         Retrieve all definitions listed in `definitions`.
