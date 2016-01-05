@@ -42,11 +42,11 @@ from xmodule.modulestore.draft_and_published import UnsupportedRevisionError, DI
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateCourseError, ReferentialIntegrityError, NoPathToItem
 from xmodule.modulestore.mixed import MixedModuleStore
 from xmodule.modulestore.search import path_to_location, navigation_index
+from xmodule.modulestore.store_utilities import DETACHED_CATEGORIES
 from xmodule.modulestore.tests.factories import check_mongo_calls, check_exact_number_of_calls, \
     mongo_uses_error_check
 from xmodule.modulestore.tests.utils import create_modulestore_instance, LocationMixin, mock_tab_from_json
 from xmodule.modulestore.tests.mongo_connection import MONGO_PORT_NUM, MONGO_HOST
-from xmodule.modulestore.mongo.base import _DETACHED_CATEGORIES
 from xmodule.tests import DATA_DIR, CourseComparisonTest
 
 log = logging.getLogger(__name__)
@@ -468,7 +468,7 @@ class TestMixedModuleStore(CommonMixedModuleStoreSetup):
         # Assert that about is a detached category found in get_items
         self.assertIn(
             [item.location.block_type for item in items if item.location.block_type == 'about'][0],
-            _DETACHED_CATEGORIES
+            DETACHED_CATEGORIES
         )
         self.assertEqual(len(items), 2)
 
