@@ -81,7 +81,7 @@ class Bookmark(TimeStampedModel):
 
             xblock_cache = XBlockCache.create({
                 'usage_key': usage_key,
-                'display_name': block.display_name,
+                'display_name': block.display_name or '',
             })
             data['_path'] = prepare_path_for_serialization(Bookmark.updated_path(usage_key, xblock_cache))
 

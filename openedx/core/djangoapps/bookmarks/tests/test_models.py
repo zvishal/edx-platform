@@ -80,6 +80,9 @@ class BookmarksTestsBase(ModuleStoreTestCase):
                 self.vertical_3 = ItemFactory.create(
                     parent_location=self.sequential_2.location, category='vertical', display_name='Subsection 3'
                 )
+                self.vertical_4 = ItemFactory.create(
+                    parent_location=self.sequential_2.location, category='vertical', display_name=None
+                )
 
                 self.html_1 = ItemFactory.create(
                     parent_location=self.vertical_2.location, category='html', display_name='Details 1'
@@ -296,6 +299,15 @@ class BookmarkModelTests(BookmarksTestsBase):
         bookmark3, __ = Bookmark.create(bookmark_data_different_user)
         self.assertNotEqual(bookmark, bookmark3)
         self.assert_bookmark_model_is_valid(bookmark3, bookmark_data_different_user)
+
+    def test_create_bookmark_successfully_with_display_name_none(self):
+        """
+        Tests creation of bookmark with display_name None.
+        """
+        bookmark_data = self.get_bookmark_data(self.vertical_4)
+        bookmark, __ = Bookmark.create(bookmark_data)
+        bookmark_data['display_name'] = ''
+        self.assert_bookmark_model_is_valid(bookmark, bookmark_data)
 
     @ddt.data(
         (-30, [[PathItem(EXAMPLE_USAGE_KEY_1, '1')]], 1),
