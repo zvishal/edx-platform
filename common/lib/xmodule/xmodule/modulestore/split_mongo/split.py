@@ -83,7 +83,7 @@ from ..exceptions import ItemNotFoundError
 from .caching_descriptor_system import CachingDescriptorSystem
 from xmodule.modulestore.split_mongo.mongo_connection import MongoConnection, DuplicateKeyError
 from xmodule.modulestore.split_mongo import BlockKey, CourseEnvelope
-from xmodule.modulestore.store_utilities import DETACHED_CATEGORIES
+from xmodule.modulestore.store_utilities import DETACHED_XBLOCK_TYPES
 from xmodule.error_module import ErrorDescriptor
 from collections import defaultdict
 from types import NoneType
@@ -1204,7 +1204,7 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
         for block_id, value in course.structure['blocks'].iteritems():
             if _block_matches_all(value):
                 if not include_orphans:
-                    if block_id.type in DETACHED_CATEGORIES or self.has_path_to_root(block_id, course):
+                    if block_id.type in DETACHED_XBLOCK_TYPES or self.has_path_to_root(block_id, course):
                         items.append(block_id)
                 else:
                     items.append(block_id)

@@ -51,7 +51,7 @@ from xmodule.modulestore.edit_info import EditInfoRuntimeMixin
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateCourseError, ReferentialIntegrityError
 from xmodule.modulestore.inheritance import InheritanceMixin, inherit_metadata, InheritanceKeyValueStore
 from xmodule.modulestore.xml import CourseLocationManager
-from xmodule.modulestore.store_utilities import DETACHED_CATEGORIES
+from xmodule.modulestore.store_utilities import DETACHED_XBLOCK_TYPES
 from xmodule.services import SettingsService
 
 log = logging.getLogger(__name__)
@@ -268,7 +268,7 @@ class CachingDescriptorSystem(MakoDescriptorSystem, EditInfoRuntimeMixin):
                     )
                     if parent_url:
                         parent = self._convert_reference_to_key(parent_url)
-                if not parent and category not in DETACHED_CATEGORIES + ['course']:
+                if not parent and category not in DETACHED_XBLOCK_TYPES + ['course']:
                     # try looking it up just-in-time (but not if we're working with a detached block).
                     parent = self.modulestore.get_parent_location(
                         as_published(location),
@@ -964,7 +964,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         of inherited metadata onto the item
         """
         category = item['location']['category']
-        apply_cached_metadata = category not in DETACHED_CATEGORIES and \
+        apply_cached_metadata = category not in DETACHED_XBLOCK_TYPES and \
             not (category == 'course' and depth == 0)
         return apply_cached_metadata
 

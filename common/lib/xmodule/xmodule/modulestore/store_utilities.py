@@ -5,7 +5,7 @@ from collections import namedtuple
 import uuid
 from xblock.core import XBlock
 
-DETACHED_CATEGORIES = [name for name, __ in XBlock.load_tagged_classes("detached")]
+DETACHED_XBLOCK_TYPES = [name for name, __ in XBlock.load_tagged_classes("detached")]
 
 
 def _prefix_only_url_replace_regex(pattern):
