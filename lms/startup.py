@@ -122,39 +122,39 @@ def enable_microsites():
     for subdomains for the edX platform, e.g. foo.edx.org
     """
 
-    microsites_root = settings.MICROSITE_ROOT_DIR
-    microsite_config_dict = settings.MICROSITE_CONFIGURATION
-
-    for ms_name, ms_config in microsite_config_dict.items():
-        # Calculate the location of the microsite's files
-        ms_root = microsites_root / ms_name
-        ms_config = microsite_config_dict[ms_name]
-
-        # pull in configuration information from each
-        # microsite root
-
-        if ms_root.isdir():
-            # store the path on disk for later use
-            ms_config['microsite_root'] = ms_root
-
-            template_dir = ms_root / 'templates'
-            ms_config['template_dir'] = template_dir
-
-            ms_config['microsite_name'] = ms_name
-            log.info('Loading microsite %s', ms_root)
-        else:
-            # not sure if we have application logging at this stage of
-            # startup
-            log.error('Error loading microsite %s. Directory does not exist', ms_root)
-            # remove from our configuration as it is not valid
-            del microsite_config_dict[ms_name]
-
-    # if we have any valid microsites defined, let's wire in the Mako and STATIC_FILES search paths
-    if microsite_config_dict:
-        settings.DEFAULT_TEMPLATE_ENGINE['DIRS'].append(microsites_root)
-        edxmako.paths.add_lookup('main', microsites_root)
-
-        settings.STATICFILES_DIRS.insert(0, microsites_root)
+    # microsites_root = settings.MICROSITE_ROOT_DIR
+    # microsite_config_dict = settings.MICROSITE_CONFIGURATION
+    #
+    # for ms_name, ms_config in microsite_config_dict.items():
+    #     # Calculate the location of the microsite's files
+    #     ms_root = microsites_root / ms_name
+    #     ms_config = microsite_config_dict[ms_name]
+    #
+    #     # pull in configuration information from each
+    #     # microsite root
+    #
+    #     if ms_root.isdir():
+    #         # store the path on disk for later use
+    #         ms_config['microsite_root'] = ms_root
+    #
+    #         template_dir = ms_root / 'templates'
+    #         ms_config['template_dir'] = template_dir
+    #
+    #         ms_config['microsite_name'] = ms_name
+    #         log.info('Loading microsite %s', ms_root)
+    #     else:
+    #         # not sure if we have application logging at this stage of
+    #         # startup
+    #         log.error('Error loading microsite %s. Directory does not exist', ms_root)
+    #         # remove from our configuration as it is not valid
+    #         del microsite_config_dict[ms_name]
+    #
+    # # if we have any valid microsites defined, let's wire in the Mako and STATIC_FILES search paths
+    # if microsite_config_dict:
+    #     settings.DEFAULT_TEMPLATE_ENGINE['DIRS'].append(microsites_root)
+    #     edxmako.paths.add_lookup('main', microsites_root)
+    #
+    #     settings.STATICFILES_DIRS.insert(0, microsites_root)
 
 
 def enable_third_party_auth():

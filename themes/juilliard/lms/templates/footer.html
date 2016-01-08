@@ -1,0 +1,59 @@
+<%namespace name='static' file='static_content.html'/>
+<%!
+from datetime import datetime
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+from microsite_configuration.templatetags.microsite import platform_name
+%>
+
+<div class="wrapper wrapper-footer juilliard">
+  <footer id="footer-openedx">
+    <div class="colophon">
+    <nav class="nav-colophon">
+      <ol>
+          <li class="nav-colophon-01">
+          <a href="${reverse('about')}">
+              ${_("About Us")}
+          </a>
+          </li>
+          <li class="nav-colophon-04">
+          <a href="${reverse('press')}">
+              ${_("Press")}
+          </a>
+          </li>
+          <li class="nav-colophon-04">
+          <a href="/faq">
+              ${_("FAQ")}
+          </a>
+          </li>
+          <li class="nav-colophon-05">
+          <a id="contact" href="${reverse('contact')}">
+              ${_("Contact")}
+          </a>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <div class="references">
+
+      <p class='copyright'>
+        &copy; ${datetime.now().year} ${platform_name()}zia
+      </p>
+
+      <nav class="nav-legal">
+        <ul>
+          <li class="nav-legal-01">
+            <a href="${marketing_link('TOS')}" target="_blank">${_("TOS")}</a>
+          </li>
+          <li class="nav-legal-01">
+            <a href="${marketing_link('HONOR')}" target="_blank">${_("Honor Code")}</a>
+          </li>
+          <li class="nav-legal-03">
+            <a href="${marketing_link('PRIVACY')}" target="_blank">${_("Privacy Policy")}</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+</div>

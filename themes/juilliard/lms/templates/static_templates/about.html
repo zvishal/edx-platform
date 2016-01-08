@@ -1,0 +1,26 @@
+<%namespace name='static' file='../../../static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from microsite_configuration.templatetags.microsite import platform_name
+%>
+
+
+<%inherit file="../../../main.html" />
+
+<%block name="pagetitle">${_("About {platform_name}").format(platform_name=platform_name())}</%block>
+
+<section class="container about">
+  <%include file="navigation.html" />
+
+  <section class="vision">
+    <section class="message left">
+      <article>
+      <h2>${_("About {platform_name}").format(platform_name=platform_name())}</h2>
+      <p>
+        ${_("The School was named for Augustus Juilliard, a wealthy textile merchant whose bequest was used to establish the Juilliard Graduate School in 1924. In 1926, it merged with the Institute for Musical Art to become the Juilliard School of Music. With the additions of a Dance Division in 1951 and Drama Division in 1968, the name was shortened to The Juilliard School.")}
+      </p>
+      </article>
+    </section>
+  </section>
+</section>
+

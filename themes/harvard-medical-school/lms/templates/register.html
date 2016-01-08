@@ -1,0 +1,122 @@
+<%!
+from django.utils.translation import ugettext as _
+from django_countries import countries
+from student.models import UserProfile
+import third_party_auth
+%>
+
+<%inherit file="register.html"/>
+
+<%block name="register_form">
+  <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }">
+
+  <!-- status messages -->
+  <div role="alert" class="status message">
+    <h3 class="message-title">${_("We're sorry, but this version of your browser is not supported. Try again using a different browser or a newer version of your browser.")}</h3>
+  </div>
+
+  <div role="alert" class="status message submission-error" tabindex="-1">
+    <h3 class="message-title">${_("The following errors occurred while processing your registration:")} </h3>
+    <ul class="message-copy"> </ul>
+  </div>
+
+  <p class="instructions">
+    ${_("Please complete the following fields to register for an account. ")}<br />
+    ${_('Required fields are noted by <strong class="indicator">bold text and an asterisk (*)</strong>.')}
+  </p>
+
+  <div class="group group-form group-form-requiredinformation">
+    <h2 class="sr">${_('Required Information')}</h2>
+    <ol class="list-input">
+      <li class="field required text" id="field-email">
+        <label for="email">${_('Email Address')}</label>
+        <input class="" id="email" type="email" name="email" value="${email}" placeholder="${_('example: username@domain.com')}" required aria-required="true" />
+      </li>
+      <li class="field required password" id="field-password">
+        <label for="password">${_('Password')}</label>
+        <input id="password" type="password" name="password" value="" required aria-required="true" />
+      </li>
+      <li class="field required text" id="field-username">
+        <label for="username">${_('Public Username')}</label>
+        <input id="username" type="text" name="username" value="${username}" placeholder="${_('example: JaneDoe')}" required aria-required="true" aria-describedby="username-tip"/>
+        <span class="tip tip-input" id="username-tip">${_('Will be shown in any discussions or forums you participate in')} <strong>(${_('cannot be changed later')})</strong></span>
+      </li>
+      <li class="field required text" id="field-name">
+        <label for="name">${_('Certificate Display Name')}</label>
+        <input id="name" type="text" name="name" value="${name}" placeholder="${_('example: Jane Doe')}" required aria-required="true" aria-describedby="name-tip" />
+        <span class="tip tip-input" id="name-tip">${_("Your legal name, used for any certificates you earn.")}</span>
+      </li>
+
+    </ol>
+  </div>
+
+  <div class="group group-form group-form-secondary group-form-personalinformation">
+    <h2 class="sr">${_("Additional Personal Information")}</h2>
+
+    <ol class="list-input">
+      <li class="field-group">
+      <div class="field required select" id="field-country">
+          <label for="country">${_("Country")}</label>
+          <select id="country" name="country" required aria-required="true">
+            <option value="">--</option>
+            %for code, country_name in countries:
+            <option value="${code}">${ unicode(country_name) }</option>
+            %endfor
+          </select>
+        </div>
+      </li>
+      <li class="field-group field-gender">
+        <div class="field required select" id="field-gender">
+          <label for="gender">${_("Gender")}</label>
+          <select id="gender" name="gender" required aria-required="true">
+            <option value="">--</option>
+            %for code, gender in UserProfile.GENDER_CHOICES:
+            <option value="${code}">${_(gender)}</option>
+            %endfor
+          </select>
+        </div>
+      </li>
+      <li class="field-group field-education-level">
+      <div class="field required select" id="field-education-level">
+          <label for="education-level">${_("Highest Level of Education Completed")}</label>
+          <select id="education-level" name="level_of_education" required aria-required="true">
+            <option value="">--</option>
+            %for code, ed_level in UserProfile.LEVEL_OF_EDUCATION_CHOICES:
+            <option value="${code}">${_(ed_level)}</option>
+            %endfor
+          </select>
+        </div>
+      </li>
+
+      </li>
+    </ol>
+  </div>
+
+  <div class="group group-form group-form-accountacknowledgements">
+    <h2 class="sr">${_("Account Acknowledgements")}</h2>
+
+    <ol class="list-input">
+      <li class="field-group">
+        <div class="field required checkbox" id="field-tos">
+          <input id="tos-yes" type="checkbox" name="terms_of_service" value="true" required aria-required="true" />
+          <label for="tos-yes">${_('I agree to the {link_start}Terms of Service{link_end}').format(
+            link_start='<a href="{url}" class="new-vp" tabindex="-1">'.format(url=marketing_link('TOS')),
+            link_end='</a>')}</label>
+        </div>
+        <div class="field ${settings.REGISTRATION_EXTRA_FIELDS['honor_code']} checkbox" id="field-honorcode">
+          <input id="honorcode-yes" type="checkbox" name="honor_code" value="true" />
+          <%
+              honor_code_path = marketing_link('HONOR')
+          %>
+          <label for="honorcode-yes">${_('I agree to the {link_start}Honor Code{link_end}').format(
+            link_start='<a href="{url}" class="new-vp" tabindex="-1">'.format(url=honor_code_path),
+            link_end='</a>')}</label>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="form-actions">
+    <button name="submit" type="submit" id="submit" class="action action-primary action-update register-button">${_('Register')} <span class="orn-plus">+</span> ${_('Create My Account')}</button>
+  </div>
+</%block>

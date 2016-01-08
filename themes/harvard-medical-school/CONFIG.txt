@@ -1,0 +1,33 @@
+
+"MICROSITE_CONFIGURATION": {
+    "harvard-medical-school": {
+        "domain_prefix": "harvard-medical-school",
+        "university": "harvard-medical-school",
+        "platform_name": "HMS Global Academy",
+        "SITE_NAME": "harvard-medical-school.localhost",
+        "course_org_filter": "HarvardMedicalSchoolX",
+        "ENABLE_MKTG_SITE":  false,
+        "ENABLE_THIRD_PARTY_AUTH": false,
+        "logo_image_url": "harvard-medical-school/images/hms-logo-footer.jpeg",
+        "show_homepage_promo_video": false,
+        "homepage_promo_video_youtube_id": "IB5iWKNvxuY",
+        "favicon_path": "harvard-medical-school/images/HMS_favicon.png",
+        "css_overrides_file": "harvard-medical-school/css/harvard-medical-school.css",
+        "REGISTRATION_EXTRA_FIELDS" : {
+            "level_of_education": "required",
+            "gender": "required",
+            "year_of_birth": "hidden",
+            "mailing_address": "hidden",
+            "goals": "hidden",
+            "honor_code": "hidden",
+            "city": "hidden",
+            "state": "hidden",
+            "country": "required",
+            "company": "hidden",
+            "title": "hidden",
+            "first-name": "hidden",
+            "last-name": "hidden"
+        }
+    }
+}
+

@@ -1,0 +1,19 @@
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<header>
+  <h2 class="sr">${_("Helpful Information")}</h2>
+</header>
+
+<div class="cta cta-help">
+  <h3>${_("Not Registered for HMS Global Academy?")}</h3>
+  <p><a href="${reverse('register_user')}">${_("Sign up for HMS Global Academy today!").format(platform_name=platform_name)}</a></p>
+
+  <h3>${_("Need Help?")}</h3>
+  <p>
+${_("Looking for help logging in with your HMS Global Academy account? View our <a href='/faq'>FAQ</a> section for answers to commonly asked scare questions.")}
+</a>
+  </p>
+</div>

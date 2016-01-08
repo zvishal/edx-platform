@@ -1,0 +1,26 @@
+<%namespace name='static' file='../../../static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from microsite_configuration.templatetags.microsite import platform_name
+%>
+
+
+<%inherit file="../../../main.html" />
+
+<%block name="pagetitle">${_("FAQs about {platform_name}").format(platform_name=platform_name())}</%block>
+
+<section class="container contact">
+  <%include file="navigation.html" />
+
+  <section class="vision">
+    <section class="message left">
+      <article>
+      <h2>${_("FAQs")}</h2>
+      <p>
+        ${_("FAQs goes here.")}
+      </p>
+      </article>
+    </section>
+  </section>
+</section>
+

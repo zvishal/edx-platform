@@ -395,6 +395,7 @@ DATA_DIR = COURSES_ROOT
 
 # comprehensive theming system
 COMPREHENSIVE_THEME_DIR = ""
+COMPREHENSIVE_THEME_DIRS = [REPO_ROOT / "themes" / "juilliard", REPO_ROOT / "themes" / "harvard-medical-school"]
 
 # TODO: Remove the rest of the sys.path modification here and in cms/envs/common.py
 sys.path.append(REPO_ROOT)

@@ -1,0 +1,23 @@
+"MICROSITE_CONFIGURATION": {
+    "juilliard": {
+        "ENABLE_COURSE_SORTING_BY_START_DATE": true,
+        "ENABLE_MKTG_SITE": false,
+        "ENABLE_PAID_COURSE_REGISTRATION": true,
+        "ENABLE_SHOPPING_CART": true,
+        "SESSION_COOKIE_DOMAIN": "juilliardglobal.juilliard.edu",
+        "SITE_NAME": "juilliardglobal.juilliard.edu",
+        "course_about_show_social_links": false,
+        "course_email_from_addr": "juilliardglobal@juilliard.edu",
+        "domain_prefix": "juilliard.edu.localhost",
+        "course_org_filter": "JuilliardGlobal",
+        "course_email_template_name": "juilliard",
+        "cybersource_config_key": "juilliard",
+        "email_from_address": "juilliardglobal@juilliard.edu",
+        "favicon_path": "juilliard/images/favicon.ico",
+        "logo_image_url": "juilliard/images/juilliardlogo.png",
+        "payment_support_email": "juilliardglobal@juilliard.edu",
+        "platform_name": "Juilliard Global Education",
+        "css_overrides_file": "juilliard/css/juilliard.css",
+        "homepage_overlay_html": "<div class='juilliard-overlay'></div>"
+    }
+}

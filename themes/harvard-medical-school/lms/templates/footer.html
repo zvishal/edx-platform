@@ -1,0 +1,114 @@
+## mako
+<%! from datetime import datetime %>
+<%! from django.core.urlresolvers import reverse %>
+<%! from django.utils.translation import ugettext as _ %>
+
+<%namespace name='static' file='../../static_content.html'/>
+
+<div class="wrapper wrapper-footer">
+  <footer id="footer-openedx">
+
+    <div class="footer-container">
+      <div class="max-container">
+      <div class="footer-logo">
+          <img src="${static.url('harvard-medical-school/images/hms-logo-footer.jpeg')}">
+      </div>
+      <div style="" class="footer-links">
+        <div>
+          <nav class="nav-colophon">
+            <ol>
+                <li>
+                  <a href="#">
+                      ${_("Terms of Service")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                      ${_("Privacy Policy")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                      ${_("Copyright")}
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                      ${_("Contact Us")}
+                  </a>
+                </li>
+              </ol>
+            </nav>
+
+        </div>
+    </div>
+        <div class="footer-social-links">
+
+          <div class="social-media-links">
+            <a href="https://www.facebook.com/HarvardMed" class="sm-link">
+              <span class="icon fa fa-facebook-square" aria-hidden="true"></span>
+              <span class="sr">Like HMS on Facebook</span>
+            </a>
+            <a href="https://twitter.com/harvardmed" class="sm-link">
+              <span class="icon fa fa-twitter" aria-hidden="true"></span>
+              <span class="sr">Follow HMS on Twitter</span>
+            </a>
+            </a>
+            <a href="https://www.linkedin.com/edu/harvard-medical-school-18482" class="sm-link">
+              <span class="icon fa fa-linkedin-square" aria-hidden="true"></span>
+              <span class="sr">Follow HMS on LinkedIn</span>
+            </a>
+            <a href="https://instagram.com/harvardmed/?hl=en" class="sm-link">
+              <span class="icon fa fa-instagram" aria-hidden="true"></span>
+              <span class="sr">Follow HMS on Instagram</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+    <div class="clearfix"></div>
+    <div class="footer-branding-bar">
+      <div class="max-container">
+        <div class="footer-branding-bar-container">
+          <a href="https://hms.harvard.edu/departments/oge" target="_blank">
+          ${_("HMS Global Education")}
+            </a>
+        </div>
+
+        <div class="footer-branding-bar-links">
+            <nav class="nav-colophon">
+              <ol>
+                  <li class="nav-colophon-01">
+                  <a href="https://hms.harvard.edu/about-hms">
+                      ${_("About HMS")}
+                  </a>
+                  </li>
+                  <li class="nav-colophon-04">
+                  <a href="https://hms.harvard.edu/education">
+                      ${_("Education")}
+                  </a>
+                  </li>
+                  <li class="nav-colophon-04">
+                  <a href="https://hms.harvard.edu/research">
+                      ${_("Research")}
+                  </a>
+                  </li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="edx-logo-container">
+          <div class="edx-logo">
+            <a href="#">
+                <img src="${static.url('harvard-medical-school/images/powered_by_open_edX_logo.png')}"/>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+</div>
+

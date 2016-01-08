@@ -1,0 +1,39 @@
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+<%namespace file='main.html' import="login_query"/>
+<%namespace name='static' file='static_content.html'/>
+
+
+<header>
+  <h3 class="sr">${_("Registration Help")}</h3>
+</header>
+
+<div class="cta">
+  <h3>${_("Already registered with {platform_name}?").format(platform_name=platform_name)}</h3>
+  <p class="instructions">
+    <a href="${reverse('signin_user')}${login_query()}">
+      ${_("Click here to log in.")}
+    </a>
+  </p>
+</div>
+
+  <div class="cta cta-welcome">
+    <h3>${_("Welcome to {platform_name}").format(platform_name=platform_name)}</h3>
+    <p>${_("Registering for a course through {platform_name} gives you access to HMS faculty and all course materials. It also allow you to enroll in any course on the HMSGA site.").format(platform_name=platform_name)}</p>
+    <p>${_("Registering also puts you on our mailing list and we'll update you as new courses are added.")}</p>
+  </div>
+
+<div class="cta cta-nextsteps">
+  <h3>${_("Next Steps")}</h3>
+  <p>${_("Activate your account! You will receive an activation email from {platform_name}. You must click on the activation link to complete the registration process.").format(platform_name=platform_name)}</p>
+  <p>${_("If you don't receive your activation email, please check your spam folder and mark {platform_name} email as 'not spam'.").format(platform_name=platform_name)}</p>
+</div>
+
+<div class="cta cta-help">
+  <h3>${_("NEED HELP?")}</h3>
+  <p>
+${_("View our <a href='/faq'>FAQ</a> section for answers  to commonly asked questions, or submit a question to our Support team through the Help tab on the left side of the page.")}
+  </p>
+</div>

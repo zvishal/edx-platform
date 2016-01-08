@@ -1,0 +1,49 @@
+<%! from django.utils.translation import ugettext as _ %>
+<%! from django.core.urlresolvers import reverse %>
+<%namespace name='static' file='../../../static_content.html'/>
+
+<%inherit file="../../../main.html" />
+
+<%block name="title">
+<title>About</title>
+</%block>
+
+<section class="container about">
+  <nav>
+    <a href="${reverse('about')}" class="active">${_("About Us")}</a>
+    <a href="${reverse('press')}">${_("Press")}</a>
+    <a href="/faq">${_("FAQ")}</a>
+    <a href="${reverse('contact')}">${_("Contact")}</a>
+  </nav>
+
+  <section class="vision">
+    <section class="message left">
+      <div class="photo">
+        <img src="${static.url('monsters-university-academy/images/monsters-u-logo.jpeg')}">
+      </div>
+      <article>
+      <h2>About MUA</h2>
+      <p>
+Monsters University begins each year the same way it has for hundreds: dedicated to the highest ideals of leadership and excellence.
+</p><p>
+In the early years, few could have dreamed that someday the best students in the world would come to the beautiful Monsters University campus to seek their futures.
+</p><p>
+Over the centuries, generations of legends have stomped, slid, and slimed through the Quad. Today, Monsters University continues a tradition of academic excellence, ground-breaking research, development of the next generation of leadership, and the relentless pursuit of monster potential.
+</p>
+<h2>University History</h2>
+<h3>
+THE OPENING ACT
+</h3>
+<p>
+Established in 1313 following a land grant from the city of Monstropolis, Monsters University has grown from a small local center of learning to a leading global institution of higher education. Upon this hallowed ground, some of the most fabled academic buildings in the world have been built, serving the hundreds of thousands of alumni that have walked the halls and grounds of MU.
+</p>
+<h3>
+FOUNDER'S VISION
+</h3>
+<p>
+University founder Arthur Clawson's words ring as true today as they did that blustery day in 1313: "Knowledge must never be feared, wisdom must always be pursued, and excellence must be at the center of everything."
+</p>
+      </article>
+    </section>
+  </section>
+</section>
