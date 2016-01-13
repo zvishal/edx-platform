@@ -158,3 +158,21 @@ class Command(BaseCommand):
                 self._write_results_to_tsv(rows, csvfile)
 
 
+
+    def is_tag(self, tag):
+        return tag.endswith('response')
+
+    def is_input(self, tag):
+        if tag.endswith('input') or tag.endswith('group'):
+            return True
+
+        if tag in [
+            "textline",
+            'crystallography',
+            'filesubmission',
+            'textbox',
+            'schematic',
+        ]:
+            return True
+
+        return False
