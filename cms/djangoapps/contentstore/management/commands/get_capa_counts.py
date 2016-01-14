@@ -33,7 +33,7 @@ class Command(BaseCommand):
                         print unicode(error)
 
                     for element in tree.getiterator():
-                        if self.is_input(element.tag):
+                        if self.is_input(str(element.tag)):
                             inputtypes[element.tag]['courses'].add(
                                 course.id
                             )
@@ -64,8 +64,11 @@ class Command(BaseCommand):
         return tag.endswith('response')
 
     def is_input(self, tag):
-        if tag.endswith('input') or tag.endswith('group'):
-            return True
+        try:
+            if tag.endswith('input') or tag.endswith('group'):
+                return True
+        except AttributeError:
+            print tag
 
         if tag in [
             "textline",
