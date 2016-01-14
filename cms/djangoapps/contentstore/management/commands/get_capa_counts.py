@@ -19,10 +19,12 @@ class Command(BaseCommand):
 
         inputtypes = defaultdict(lambda: defaultdict(set))
 
+        amount_of_courses = len(courses)
 
-
-        for course in courses:
+        for index, course in enumerate(courses):
+            print "doing course \t{} / {}".format(index, amount_of_courses)
             if self.course_is_closed(course):
+                print "{} is closed".format(course.id)
                 continue
 
             for item in ms.get_items(course.id, include_orphans=False):
@@ -56,8 +58,7 @@ class Command(BaseCommand):
         if course.end is not None:
             return timezone.now() > course.end
         else:
-            print "{} has no end date, starts:".format(course.id, course.start)
-            return (timezone.now() - course.start).days > 365 * 2
+            return False
 
 
     def is_tag(self, tag):
