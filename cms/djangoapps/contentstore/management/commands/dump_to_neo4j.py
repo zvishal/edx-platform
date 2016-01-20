@@ -33,6 +33,40 @@ class Command(BaseCommand):
     # {<block_type>: [<field_name>]}
     field_names_by_type = {}
 
+    def serialize_item(self, item, blocks_by_type):
+
+        fields = dict(
+            (field, field_value.read_from(item))
+            for (field, field_value) in item.fields.iteritems()
+            if field not in ['parent', 'children']
+        )
+
+        fields['edited_on'] = unicode(getattr(item, 'edited_on', u''))
+        fields['display_name'] = item.display_name_with_default
+
+        fields['location:ID'] = unicode(item.location)
+        if "location" in fields:
+            del fields['location']
+
+        block_type = item.scope_ids.block_type
+
+        fields['type'] = block_type
+
+        fields['type:LABEL'] = fields['type']
+        del fields['type']
+
+        if 'checklists' in fields:
+            del fields['checklists']
+
+        fields['org'] = course.id.org
+        fields['course'] = course.id.course
+        fields['run'] = course.id.run
+        fields['course_key'] = unicode(course.id)
+
+        blocks_by_type[block_type].append(fields)
+
+
+
 
     def handle(self, *args, **options):
 
@@ -45,6 +79,7 @@ class Command(BaseCommand):
 
             relationships = []
 
+            gc.collect()
             items = modulestore().get_items(course.id)
             print u"dumping {} (course {}/{}) ({} items)".format(
                 course.id, index + 1, number_of_courses, len(items)
@@ -52,37 +87,7 @@ class Command(BaseCommand):
 
 
             for item in items:
-
-                # convert all fields to a dict and filter out parent field
-                fields = dict(
-                    (field, field_value.read_from(item))
-                    for (field, field_value) in item.fields.iteritems()
-                    if field not in ['parent', 'children']
-                )
-
-                fields['edited_on'] = unicode(getattr(item, 'edited_on', u''))
-                fields['display_name'] = item.display_name_with_default
-
-                fields['location:ID'] = unicode(item.location)
-                if "location" in fields:
-                    del fields['location']
-
-                block_type = item.scope_ids.block_type
-
-                fields['type'] = block_type
-
-                fields['type:LABEL'] = fields['type']
-                del fields['type']
-
-                if 'checklists' in fields:
-                    del fields['checklists']
-
-                fields['org'] = course.id.org
-                fields['course'] = course.id.course
-                fields['run'] = course.id.run
-                fields['course_key'] = unicode(course.id)
-
-                blocks_by_type[block_type].append(fields)
+                self.serialize_item(item, blocks_by_type)
 
             for item in items:
                 if item.has_children:
