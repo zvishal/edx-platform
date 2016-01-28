@@ -1205,13 +1205,32 @@ class LMSVideoModuleA11yTest(VideoBaseTest):
             super(LMSVideoModuleA11yTest, self).setUp()
 
     def test_video_player_a11y(self):
-        self.navigate_to_video()
+        # load transcripts so we can test skipping to
+        self.assets.extend(['chinese_transcripts.srt', 'subs_3_yD_cEKoCk.srt.sjson'])
+        data = {'transcripts': {"zh": "chinese_transcripts.srt"}, 'sub': '3_yD_cEKoCk'}
+        self.metadata = self.metadata_for_mode('youtube', additional_data=data)
 
-        # Limit the scope of the audit to the video player only.
-        self.video.a11y_audit.config.set_scope(include=["div.video"])
+        # go to video
+        self.navigate_to_video()
+        self.video.show_captions()
+
+        # ensure that the skip-to containers are present and visible
+        # import ipdb; ipdb.set_trace()
+        # self.assertTrue(self.video.is_transcript_skip_visible)
+        # self.assertIn("sr-is-focusable transcript-start", self.video.captions_container)
+        # EmptyPromise(
+        #     lambda: self._find_within(".transcript-start").present,
+        #     "Transcript skip links are present"
+        # ).fulfill()
+
+        # limit the scope of the audit to the video player only.
+        self.video.a11y_audit.config.set_scope(
+            include=["div.video"],
+            exclude=["a.ui-slider-handle"]
+        )
         self.video.a11y_audit.config.set_rules({
             "ignore": [
-                'link-href',  # TODO: AC-223
+                # 'link-href',  # TODO: AC-223
             ],
         })
         self.video.a11y_audit.check_for_accessibility_errors()

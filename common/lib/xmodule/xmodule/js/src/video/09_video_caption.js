@@ -43,49 +43,6 @@
         };
 
         VideoCaption.prototype = {
-            langTemplate: [
-                '<div class="grouped-controls">',
-                    '<button class="control toggle-captions" aria-disabled="false">',
-                        '<span class="icon-fallback-img">',
-                            '<span class="icon fa fa-cc" aria-hidden="true"></span>',
-                            '<span class="sr control-text">',
-                                gettext('Turn on closed captioning'),
-                            '</span>',
-                        '</span>',
-                    '</button>',
-                    '<button class="control toggle-transcript" aria-disabled="false">',
-                        '<span class="icon-fallback-img">',
-                            '<span class="icon fa fa-quote-left" aria-hidden="true"></span>',
-                            '<span class="sr control-text">',
-                                gettext('Turn off transcript'),
-                            '</span>',
-                        '</span>',
-                    '</button>',
-                    '<div class="lang menu-container" role="application">',
-                        '<button class="control language-menu" aria-label="',
-                            /* jshint maxlen:250 */
-                            gettext('Language: Press the UP arrow key to enter the language menu, then use UP and DOWN arrow keys to navigate language options. Press ENTER to change to the selected language.'),
-                            '" aria-disabled="false">',
-                            '<span class="icon-fallback-img">',
-                                '<span class="icon fa fa-caret-left" aria-hidden="true"></span>',
-                                '<span class="sr control-text">',
-                                    gettext('Open language menu'),
-                                '</span>',
-                            '</span>',
-                        '</button>',
-                    '</div>',
-                '</div>'
-            ].join(''),
-
-            template: [
-                '<div class="subtitles" role="region" aria-label="',
-                    /* jshint maxlen:200 */
-                    gettext('Activating an item in this group will spool the video to the corresponding time point. To skip transcript, go to previous item.'),
-                    '">',
-                    '<ol id="transcript-captions" class="subtitles-menu">',
-                    '</ol>',
-                '</div>'
-            ].join(''),
 
             destroy: function () {
                 this.state.el
@@ -117,10 +74,62 @@
             renderElements: function () {
                 var languages = this.state.config.transcriptLanguages;
 
+                var langTemplate = [
+                    '<div class="grouped-controls">',
+                        '<button class="control toggle-captions" aria-disabled="false">',
+                            '<span class="icon-fallback-img">',
+                                '<span class="icon fa fa-cc" aria-hidden="true"></span>',
+                                '<span class="sr control-text">',
+                                    gettext('Turn on closed captioning'),
+                                '</span>',
+                            '</span>',
+                        '</button>',
+                        '<button class="control toggle-transcript" aria-disabled="false">',
+                            '<span class="icon-fallback-img">',
+                                '<span class="icon fa fa-quote-left" aria-hidden="true"></span>',
+                                '<span class="sr control-text">',
+                                    gettext('Turn off transcript'),
+                                '</span>',
+                            '</span>',
+                        '</button>',
+                        '<div class="lang menu-container" role="application">',
+                            '<button class="control language-menu" aria-label="',
+                                /* jshint maxlen:300 */
+                                gettext('Language: Press the UP arrow key to enter the language ',
+                                'menu then use UP and DOWN arrow keys to navigate language options. ',
+                                'Press ENTER to change to the selected language.'),
+                                '" aria-disabled="false">',
+                                '<span class="icon-fallback-img">',
+                                    '<span class="icon fa fa-caret-left" aria-hidden="true"></span>',
+                                    '<span class="sr control-text">',
+                                        gettext('Open language menu'),
+                                    '</span>',
+                                '</span>',
+                            '</button>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+                var template = [
+                    '<div class="subtitles" role="region" aria-label="',
+                        /* jshint maxlen:300 */
+                        gettext('Video transcript: activating an item in this group will spool the video to the ',
+                        'corresponding time point.'),
+                    '" id="transcript-' + this.state.id + '" tabindex="-1">',
+                        '<a href="#transcript-end-' + this.state.id + '">Skip to end of transcript</a>',
+                        '<h3 id="transcript-label-' + this.state.id + '" class="sr">',
+                            gettext('Video transcript'),
+                        '</h3>',
+                        '<ol id="transcript-captions" class="subtitles-menu"></ol>',
+                        '<div id="transcript-end-' + this.state.id + '" tabindex="-1" aria-label="',
+                        'End of transcript"></div>',
+                    '</div>'
+                ].join('');
+
                 this.loaded = false;
-                this.subtitlesEl = $(this.template);
+                this.subtitlesEl = $(template);
                 this.subtitlesMenuEl = this.subtitlesEl.find('.subtitles-menu');
-                this.container = $(this.langTemplate);
+                this.container = $(langTemplate);
                 this.captionControlEl = this.container.find('.toggle-captions');
                 this.captionDisplayEl = this.state.el.find('.closed-captions');
                 this.transcriptControlEl = this.container.find('.toggle-transcript');
@@ -553,11 +562,6 @@
                         self.loaded = true;
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        console.log('[Video info]: ERROR while fetching captions.');
-                        console.log(
-                            '[Video info]: STATUS:', textStatus +
-                            ', MESSAGE:', '' + errorThrown
-                        );
                         // If initial list of languages has more than 1 item, check
                         // for availability other transcripts.
                         // If player mode is html5 and there are no initial languages
@@ -566,7 +570,6 @@
                         if (_.keys(state.config.transcriptLanguages).length > 1) {
                             self.fetchAvailableTranslations();
                         } else if (!fetchWithYoutubeId && state.videoType === 'html5') {
-                            console.log('[Video info]: Html5 mode fetching caption with youtubeId.');
                             self.fetchCaption(true);
                         } else {
                             self.hideCaptions(true, false);
