@@ -33,7 +33,7 @@ class Command(BaseCommand):
     # {<block_type>: [<field_name>]}
     field_names_by_type = {}
 
-    def serialize_item(self, item, blocks_by_type):
+    def serialize_item(self, item, course, blocks_by_type):
 
         fields = dict(
             (field, field_value.read_from(item))
@@ -66,8 +66,6 @@ class Command(BaseCommand):
         blocks_by_type[block_type].append(fields)
 
 
-
-
     def handle(self, *args, **options):
 
         all_courses = modulestore().get_courses()
@@ -79,26 +77,26 @@ class Command(BaseCommand):
         split_modulestore = modulestore()._get_modulestore_by_type('split')
         split_courses = mongo_modulestore.get_courses()
 
-        mongo = [course, mongo_modulestore for course in mongo_courses]
-        split = [course, split_modulestore for course in split_courses]
+        mongo = [(course, mongo_modulestore) for course in mongo_courses]
+        split = [(course, split_modulestore) for course in split_courses]
 
         all_courses = mongo + split
 
-        for index, (course, modulestore) in enumerate(all_courses):
+        for index, (course, ms) in enumerate(all_courses):
             # {<block_type>: [<block>]}
             blocks_by_type = defaultdict(list)
 
             relationships = []
 
             gc.collect()
-            items = modulestore.get_items(course.id)
+            items = ms.get_items(course.id)
             print u"dumping {} (course {}/{}) ({} items)".format(
                 course.id, index + 1, number_of_courses, len(items)
             )
 
 
             for item in items:
-                self.serialize_item(item, blocks_by_type)
+                self.serialize_item(item, course, blocks_by_type)
 
             for item in items:
                 if item.has_children:
