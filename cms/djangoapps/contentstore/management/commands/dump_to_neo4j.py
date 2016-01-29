@@ -73,14 +73,25 @@ class Command(BaseCommand):
         all_courses = modulestore().get_courses()
         number_of_courses = len(all_courses)
 
-        for index, course in enumerate(all_courses):
+        mongo_modulestore = modulestore()._get_modulestore_by_type('mongo')
+        mongo_courses = mongo_modulestore.get_courses()
+
+        split_modulestore = modulestore()._get_modulestore_by_type('split')
+        split_courses = mongo_modulestore.get_courses()
+
+        mongo = [course, mongo_modulestore for course in mongo_courses]
+        split = [course, split_modulestore for course in split_courses]
+
+        all_courses = mongo + split
+
+        for index, (course, modulestore) in enumerate(all_courses):
             # {<block_type>: [<block>]}
             blocks_by_type = defaultdict(list)
 
             relationships = []
 
             gc.collect()
-            items = modulestore().get_items(course.id)
+            items = modulestore.get_items(course.id)
             print u"dumping {} (course {}/{}) ({} items)".format(
                 course.id, index + 1, number_of_courses, len(items)
             )
