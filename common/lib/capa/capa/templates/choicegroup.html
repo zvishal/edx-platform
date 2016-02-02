@@ -1,5 +1,5 @@
 <form class="choicegroup capa_inputtype" id="inputtype_${id}">
-    <fieldset role="${input_type}group" aria-label="${label}">
+    <fieldset class="${input_type}" aria-label="${label}">
         % for choice_id, choice_description in choices:
         <label for="input_${id}_${choice_id}"
             ## If the student has selected this choice...
@@ -47,7 +47,7 @@
                 <span class="sr">
                     %for choice_id, choice_description in choices:
                         % if choice_id in value:
-                            ${choice_description}, 
+                            ${choice_description},
                         %endif
                     %endfor
                     -
