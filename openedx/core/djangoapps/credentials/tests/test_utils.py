@@ -1,6 +1,7 @@
 """Tests covering Credentials utilities."""
 from django.core.cache import cache
 from django.test import TestCase
+from nose.plugins.attrib import attr
 import httpretty
 from oauth2_provider.tests.factories import ClientFactory
 from provider.constants import CONFIDENTIAL
@@ -15,6 +16,7 @@ from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from student.tests.factories import UserFactory
 
 
+@attr('shard_2')
 class TestCredentialsRetrieval(ProgramsApiConfigMixin, CredentialsApiConfigMixin, CredentialsDataMixin,
                                ProgramsDataMixin, TestCase):
     """ Tests covering the retrieval of user credentials from the Credentials

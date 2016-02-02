@@ -1,9 +1,11 @@
 """Tests for models supporting Credentials-related functionality."""
 
 from django.test import TestCase
+from nose.plugins.attrib import attr
 from openedx.core.djangoapps.credentials.tests.mixins import CredentialsApiConfigMixin
 
 
+@attr('shard_2')
 class TestCredentialsApiConfig(CredentialsApiConfigMixin, TestCase):
     """Tests covering the CredentialsApiConfig model."""
     def test_url_construction(self):
