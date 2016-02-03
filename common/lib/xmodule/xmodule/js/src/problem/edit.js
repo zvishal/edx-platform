@@ -608,8 +608,8 @@
           // reset label to prevent gobbling up previous one (if multiple questions)
           curlabel = '';
           didinput = false;
-        } else if (line.match(/<(textline|optioninput|formulaequationinput|choicegroup|checkboxgroup|choicetextresponse)/) && curlabel != '' && curlabel != undefined) {
-          line = line.replace(/<(textline|optioninput|formulaequationinput|choicegroup|checkboxgroup|choicetextresponse)/, '<$1 label="' + curlabel + '"');
+        } else if (line.match(/<(textline|\w+input|\w+group)/) && curlabel != '' && curlabel != undefined) {
+          line = line.replace(/<(textline|\w+input|\w+group)/, '<$1 label="' + curlabel + '"');
           didinput = true;
           prevlabel = curlabel;
         }

@@ -130,7 +130,7 @@ div.problem-progress {
 
 // +Problem - Base
 // ====================
-div.problem {
+.problem {
   @media print {
     display: block;
     padding: 0;
@@ -152,7 +152,7 @@ div.problem {
 
 // +Problem - Choice Group
 // ====================
-div.problem {
+.problem {
   .choicegroup {
     @include clearfix();
     min-width: 100px;
@@ -241,7 +241,7 @@ div.problem {
 // +Problem - Status Indicators
 // ====================
 // Summary status indicators shown after the input area
-div.problem {
+.problem {
 
   .indicator-container {
       @include margin-left($baseline*.75);
@@ -279,7 +279,7 @@ div.problem {
 
 // +Problem - Misc, Unclassified Mess
 // ====================
-div.problem {
+.problem {
   ol.enumerate {
     li {
       &:before {
@@ -840,7 +840,7 @@ div.problem {
 
 // +Problem - CodeMirror
 // ====================
-div.problem {
+.problem {
 
   .CodeMirror {
     border: 1px solid black;
@@ -895,7 +895,7 @@ div.problem {
 
 // +Problem - Actions
 // ====================
-div.problem .action {
+.problem .action {
   margin-top: $baseline;
 
   .save, .check, .show, .reset, .hint-button {
@@ -939,7 +939,7 @@ div.problem .action {
 
 // +Problem - Misc, Unclassified Mess Part 2
 // ====================
-div.problem {
+.problem {
   hr {
     float: none;
     clear: both;
@@ -1243,7 +1243,7 @@ div.problem {
 
 // +Problem - Rubric
 // ====================
-div.problem {
+.problem {
   .rubric {
     tr {
       margin: ($baseline/2) 0;
@@ -1300,7 +1300,7 @@ div.problem {
 
 // +Problem - Annotation
 // ====================
-div.problem {
+.problem {
   .annotation-input {
     margin: 0 0 1em 0;
     border: 1px solid $gray-l3;
@@ -1402,7 +1402,7 @@ div.problem {
 
 // +Problem - Choice Text Group
 // ====================
-div.problem {
+.problem {
   .choicetextgroup {
     @extend .choicegroup;
 
@@ -1447,7 +1447,7 @@ div.problem {
 // ====================
 
 // NOTE: temporary override until image inputs use same base html structure as other common capa input types.
-div.problem .imageinput.capa_inputtype {
+.problem .imageinput.capa_inputtype {
 
   .status {
     display: inline-block;
@@ -1474,7 +1474,7 @@ div.problem .imageinput.capa_inputtype {
 // ====================
 
 // NOTE: temporary override until annotation problem inputs use same base html structure as other common capa input types.
-div.problem .annotation-input {
+.problem .annotation-input {
 
   .tag-status {
     display: inline-block;

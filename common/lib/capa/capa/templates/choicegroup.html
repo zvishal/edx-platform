@@ -1,4 +1,4 @@
-<form class="choicegroup capa_inputtype" id="inputtype_${id}">
+<div class="choicegroup capa_inputtype" id="inputtype_${id}">
     <fieldset class="${input_type}">
         <legend>${label}</legend>
         % for choice_id, choice_description in choices:
@@ -63,4 +63,4 @@
     % if msg:
     <span class="message">${msg|n}</span>
     % endif
-</form>
+</div>
