@@ -13,7 +13,6 @@ from itertools import chain
 from time import time
 import unicodecsv
 import logging
-import urllib
 
 from celery import Task, current_task
 from celery.states import SUCCESS, FAILURE
@@ -58,7 +57,7 @@ from instructor_analytics.basic import (
     list_problem_responses
 )
 from instructor_analytics.csvs import format_dictlist
-from instructor.utils import collect_ora2_data
+from openassessment.data import AggregateOraData
 from instructor_task.models import ReportStore, InstructorTask, PROGRESS
 from lms.djangoapps.lms_xblock.runtime import LmsPartitionService
 from openedx.core.djangoapps.course_groups.cohorts import get_cohort
@@ -1603,64 +1602,44 @@ def invalidate_generated_certificates(course_id, enrolled_students, certificate_
     )
 
 
-def push_ora2_responses_to_s3(
-        _xmodule_instance_args, _entry_id, course_id, _task_input, action_name, config_name='GRADES_DOWNLOAD'
+def upload_ora2_data(
+        _xmodule_instance_args, _entry_id, course_id, _task_input, action_name
 ):
     """
     Collect ora2 responses and upload them to S3 as a CSV
     """
 
-    start_time = datetime.now(UTC)
+    start_date = datetime.now(UTC)
+    start_time = time()
 
     num_attempted = 1
-    num_succeeded = 0
-    num_failed = 0
     num_total = 1
-    curr_step = "Collecting responses"
 
-    def update_task_progress():
-        """Return a dict containing info about current task"""
-        current_time = datetime.now(UTC)
-        progress = {
-            'action_name': action_name,
-            'attempted': num_attempted,
-            'succeeded': num_succeeded,
-            'failed': num_failed,
-            'total': num_total,
-            'duration_ms': int((current_time - start_time).total_seconds() * 1000),
-            'step': curr_step,
-        }
-        _get_current_task().update_state(state=PROGRESS, meta=progress)
+    task_progress = TaskProgress(action_name, num_total, start_time)
+    task_progress.attempted = num_attempted
 
-        return progress
+    curr_step = {'step': "Collecting responses"}
 
-    update_task_progress()
+    task_progress.update_task_state(extra_meta=curr_step)
 
     try:
-        header, datarows = collect_ora2_data(course_id)
+        header, datarows = AggregateOraData.collect_ora2_data(course_id)
         rows = [header] + [row for row in datarows]
     # Update progress to failed regardless of error type
     except Exception:  # pylint: disable=broad-except
-        num_failed = 1
-        update_task_progress()
+        task_progress.failed = 1
+        curr_step = {'step': "Error while collecting data"}
+
+        task_progress.update_task_state(extra_meta=curr_step)
 
         return UPDATE_STATUS_FAILED
 
-    timestamp_str = start_time.strftime('%Y-%m-%d-%H%M')
-    course_id_string = urllib.quote(course_id.to_deprecated_string().replace('/', '_'))
+    task_progress.succeeded = 1
+    curr_step = {'step': "Uploading CSV"}
+    task_progress.update_task_state(extra_meta=curr_step)
 
-    curr_step = "Uploading CSV"
-    update_task_progress()
+    upload_csv_to_report_store(rows, 'ORA_data', course_id, start_date)
 
-    report_store = ReportStore.from_config(config_name)
-    report_store.store_rows(
-        course_id,
-        u'{}_ORA2_responses_{}.csv'.format(course_id_string, timestamp_str),
-        rows
-    )
-
-    num_succeeded = 1
-    curr_step = "Task completed successfully"
-    update_task_progress()
+    task_progress.update_task_state(extra_meta=curr_step)
 
     return UPDATE_STATUS_SUCCEEDED

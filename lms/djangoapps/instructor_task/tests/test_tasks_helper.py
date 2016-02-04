@@ -62,7 +62,7 @@ from instructor_task.tasks_helper import (
     upload_exec_summary_report,
     upload_course_survey_report,
     generate_students_certificates,
-    push_ora2_responses_to_s3,
+    upload_ora2_data,
     UPDATE_STATUS_FAILED,
     UPDATE_STATUS_SUCCEEDED,
 )
@@ -1648,7 +1648,7 @@ class TestCertificateGeneration(InstructorTaskModuleTestCase):
         current_task.update_state = Mock()
         instructor_task = Mock()
         instructor_task.task_input = json.dumps({'students': None})
-        with self.assertNumQueries(213):
+        with self.assertNumQueries(214):
             with patch('instructor_task.tasks_helper._get_current_task') as mock_current_task:
                 mock_current_task.return_value = current_task
                 with patch('capa.xqueue_interface.XQueueInterface.send_to_queue') as mock_queue:
@@ -2051,17 +2051,17 @@ class TestInstructorOra2Report(SharedModuleStoreTestCase):
 
     def tearDown(self):
         super(TestInstructorOra2Report, self).tearDown()
-        if os.path.exists(settings.ORA2_RESPONSES_DOWNLOAD['ROOT_PATH']):
-            shutil.rmtree(settings.ORA2_RESPONSES_DOWNLOAD['ROOT_PATH'])
+        if os.path.exists(settings.GRADES_DOWNLOAD['ROOT_PATH']):
+            shutil.rmtree(settings.GRADES_DOWNLOAD['ROOT_PATH'])
 
     def test_report_fails_if_error(self):
-        with patch('instructor_task.tasks_helper.collect_ora2_data') as mock_collect_data:
+        with patch('instructor_task.tasks_helper.AggregateOraData.collect_ora2_data') as mock_collect_data:
             mock_collect_data.side_effect = KeyError
 
             with patch('instructor_task.tasks_helper._get_current_task') as mock_current_task:
                 mock_current_task.return_value = self.current_task
 
-                response = push_ora2_responses_to_s3(None, None, self.course.id, None, 'generated')
+                response = upload_ora2_data(None, None, self.course.id, None, 'generated')
                 self.assertEqual(response, UPDATE_STATUS_FAILED)
 
     @freeze_time('2001-01-01 00:00:00')
@@ -2072,16 +2072,16 @@ class TestInstructorOra2Report(SharedModuleStoreTestCase):
         with patch('instructor_task.tasks_helper._get_current_task') as mock_current_task:
             mock_current_task.return_value = self.current_task
 
-            with patch('instructor_task.tasks_helper.collect_ora2_data') as mock_collect_data:
+            with patch('instructor_task.tasks_helper.AggregateOraData.collect_ora2_data') as mock_collect_data:
                 mock_collect_data.return_value = (test_header, test_rows)
 
                 with patch('instructor_task.models.LocalFSReportStore.store_rows') as mock_store_rows:
-                    return_val = push_ora2_responses_to_s3(None, None, self.course.id, None, 'generated')
+                    return_val = upload_ora2_data(None, None, self.course.id, None, 'generated')
 
                     # pylint: disable=maybe-no-member
                     timestamp_str = datetime.now(UTC).strftime('%Y-%m-%d-%H%M')
                     course_id_string = urllib.quote(self.course.id.to_deprecated_string().replace('/', '_'))
-                    filename = u'{}_ORA2_responses_{}.csv'.format(course_id_string, timestamp_str)
+                    filename = u'{}_ORA_data_{}.csv'.format(course_id_string, timestamp_str)
 
                     self.assertEqual(return_val, UPDATE_STATUS_SUCCEEDED)
                     mock_store_rows.assert_called_once_with(self.course.id, filename, [test_header] + test_rows)

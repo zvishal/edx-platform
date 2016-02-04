@@ -23,12 +23,12 @@ from instructor_task.api import (
     submit_course_survey_report,
     generate_certificates_for_students,
     regenerate_certificates,
-    submit_ora2_request_task,
+    submit_export_ora2_data,
 )
 
 from instructor_task.api_helper import AlreadyRunningError
 from instructor_task.models import InstructorTask, PROGRESS
-from instructor_task.tasks import get_ora2_responses
+from instructor_task.tasks import export_ora2_data
 from instructor_task.tests.test_base import (
     InstructorTaskTestCase,
     InstructorTaskCourseTestCase,
@@ -265,10 +265,10 @@ class InstructorTaskCourseSubmitTest(TestReportMixin, InstructorTaskCourseTestCa
 
         with patch('instructor_task.api.submit_task') as mock_submit_task:
             mock_submit_task.return_value = MagicMock()
-            submit_ora2_request_task(request, self.course.id)
+            submit_export_ora2_data(request, self.course.id)
 
             mock_submit_task.assert_called_once_with(
-                request, 'ora2_responses', get_ora2_responses, self.course.id, {}, '')
+                request, 'export_ora2_data', export_ora2_data, self.course.id, {}, '')
 
     def test_submit_generate_certs_students(self):
         """
