@@ -207,11 +207,6 @@ for key, value in settings.MKTG_URL_LINK_MAP.items():
         # no file extension was specified in the key
         template = "%s.%s" % (template, settings.STATIC_TEMPLATE_VIEW_DEFAULT_FILE_EXTENSION)
 
-    # To allow theme templates to inherit from default templates,
-    # prepend a standard prefix
-    if settings.FEATURES["USE_CUSTOM_THEME"]:
-        template = "theme-" + template
-
     # Make the assumption that the URL we want is the lowercased
     # version of the map key
     urlpatterns += (url(r'^%s$' % key.lower(),

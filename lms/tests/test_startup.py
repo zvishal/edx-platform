@@ -1,5 +1,5 @@
 """
-Test cms startup
+Test lms startup
 """
 
 from django.conf import settings
@@ -9,14 +9,14 @@ from django.test.utils import override_settings
 
 from path import Path
 from mock import patch
-from cms.startup import run
+from lms.startup import run
 
 RED_THEME_DIR = Path("/edx/app/edxapp/edx-platform/themes/red-theme")
 
 
 class StartupTestCase(TestCase):
     """
-    Test cms startup
+    Test lms startup
     """
 
     def setUp(self):
@@ -25,14 +25,14 @@ class StartupTestCase(TestCase):
     @override_settings(COMPREHENSIVE_THEME_DIR=RED_THEME_DIR)
     def test_run_with_theme(self):
         self.assertEqual(settings.COMPREHENSIVE_THEME_DIR, RED_THEME_DIR)
-        with patch('cms.startup.enable_comprehensive_theme') as mock_enable_comprehensive_theme:
+        with patch('lms.startup.enable_comprehensive_theme') as mock_enable_comprehensive_theme:
             run()
             self.assertTrue(mock_enable_comprehensive_theme.called)
 
     @override_settings(COMPREHENSIVE_THEME_DIR="")
     def test_run_without_theme(self):
         self.assertEqual(settings.COMPREHENSIVE_THEME_DIR, "")
-        with patch('cms.startup.enable_comprehensive_theme') as mock_enable_comprehensive_theme:
+        with patch('lms.startup.enable_comprehensive_theme') as mock_enable_comprehensive_theme:
             run()
             self.assertFalse(mock_enable_comprehensive_theme.called)
 
@@ -49,15 +49,15 @@ class StartupTestCase(TestCase):
             # Run startup script
             run()
             self.assertIn(
-                RED_THEME_DIR / "cms/templates",
+                RED_THEME_DIR / "lms/templates",
                 settings.DEFAULT_TEMPLATE_ENGINE['DIRS'],
             )
             self.assertIn(
-                RED_THEME_DIR / "cms/static",
+                RED_THEME_DIR / "lms/static",
                 settings.STATICFILES_DIRS,
             )
             self.assertIn(
-                RED_THEME_DIR / "cms/conf/locale",
+                RED_THEME_DIR / "lms/conf/locale",
                 settings.LOCALE_PATHS,
             )
 
@@ -66,17 +66,17 @@ class StartupTestCase(TestCase):
 
         with patch('openedx.core.djangoapps.theming.core.Path.isdir') as mock_isdir:
             mock_isdir.return_value = True
-            # Run cms startup script
+            # Run lms startup script
             run()
             self.assertNotIn(
-                RED_THEME_DIR / "cms/templates",
+                RED_THEME_DIR / "lms/templates",
                 settings.DEFAULT_TEMPLATE_ENGINE['DIRS'],
             )
             self.assertNotIn(
-                RED_THEME_DIR / "cms/static",
+                RED_THEME_DIR / "lms/static",
                 settings.STATICFILES_DIRS,
             )
             self.assertNotIn(
-                RED_THEME_DIR / "cms/conf/locale",
+                RED_THEME_DIR / "lms/conf/locale",
                 settings.LOCALE_PATHS,
             )

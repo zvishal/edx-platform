@@ -4,10 +4,13 @@ from django.core.urlresolvers import clear_url_caches, resolve
 from django.test import TestCase
 from django.test.utils import override_settings
 
-from mock import patch
+from path import Path
+
 from nose.plugins.attrib import attr
 
 import sys
+
+RED_THEME_DIR = Path("/edx/app/edxapp/edx-platform/themes/red-theme")
 
 
 @attr('shard_1')
@@ -45,10 +48,9 @@ class FaviconTestCase(TestCase):
             status_code=301, target_status_code=404  # @@@ how to avoid 404?
         )
 
-    @patch.dict("django.conf.settings.FEATURES", {"USE_CUSTOM_THEME": True})
-    @override_settings(THEME_NAME="bar")
+    @override_settings(COMPREHENSIVE_THEME_DIR=RED_THEME_DIR)
     def test_favicon_redirect_with_theme(self):
-        self.assertEqual(settings.FEATURES["USE_CUSTOM_THEME"], True)
+        self.assertEqual(settings.COMPREHENSIVE_THEME_DIR, RED_THEME_DIR)
 
         resp = self.client.get("/favicon.ico")
         self.assertEqual(resp.status_code, 301)

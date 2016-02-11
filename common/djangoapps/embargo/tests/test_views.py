@@ -48,24 +48,6 @@ class CourseAccessMessageViewTest(UrlResetMixin, TestCase):
     def test_invalid_message_key(self, access_point):
         self._load_page(access_point, 'invalid', expected_status=404)
 
-    @patch.dict(settings.FEATURES, {'USE_CUSTOM_THEME': True})
-    @ddt.data('enrollment', 'courseware')
-    def test_custom_theme_override(self, access_point):
-        # Custom override specified for the "embargo" message
-        # for backwards compatibility with previous versions
-        # of the embargo app.
-        # This template isn't available by default, but we can at least
-        # verify that the view will look for it when the USE_CUSTOM_THEME
-        # feature flag is specified.
-        with self.assertRaisesRegexp(TopLevelLookupException, 'static_templates/theme-embargo.html'):
-            self._load_page(access_point, 'embargo')
-
-    @patch.dict(settings.FEATURES, {'USE_CUSTOM_THEME': True})
-    @ddt.data('enrollment', 'courseware')
-    def test_custom_theme_override_not_specified(self, access_point):
-        # No custom override specified for the "default" message
-        self._load_page(access_point, 'default')
-
     def _load_page(self, access_point, message_key, expected_status=200):
         """Load the message page and check the status code. """
         url = reverse('embargo_blocked_message', kwargs={
