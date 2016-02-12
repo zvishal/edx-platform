@@ -49,3 +49,18 @@ class TestTextFields(TestMigrations, InstructorTaskModuleTestCase):
         task_after_migration = InstructorTask.objects.get(id=self.task.id)
         self.assertEqual(task_after_migration.task_input, json.dumps(self.task_input))
         self.assertEqual(task_after_migration.task_output, self.task_output)
+
+    def test_text_fields_migrated_store_large_data(self):
+        """
+        Verify that TextField changed can now store more than 255 characters.
+        """
+        self.task_input = randomword(850)
+        self.task = InstructorTask.create(
+            TEST_COURSE_KEY,
+            "dummy type",
+            "dummy key",
+            self.task_input,
+            self.instructor
+        )
+        self.assertEqual(self.task.task_input, json.dumps(self.task_input))
+
