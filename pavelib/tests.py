@@ -34,6 +34,8 @@ __test__ = False  # do not collect
     make_option("-q", "--quiet", action="store_const", const=0, dest="verbosity"),
     make_option("-v", "--verbosity", action="count", dest="verbosity", default=1),
     make_option("--pdb", action="store_true", help="Drop into debugger on failures or errors"),
+    make_option("--keepdb", action="store_true",
+                help="Keep your sqlite database around to save time during initial setup on subsequent runs"),
 ], share_with=['pavelib.utils.test.utils.clean_reports_dir'])
 def test_system(options):
     """
@@ -50,6 +52,7 @@ def test_system(options):
         'extra_args': getattr(options, 'extra_args', ''),
         'cov_args': getattr(options, 'cov_args', ''),
         'skip_clean': getattr(options, 'skip_clean', False),
+        'keepdb': getattr(options, 'keepdb', False),
         'pdb': getattr(options, 'pdb', False),
     }
 
