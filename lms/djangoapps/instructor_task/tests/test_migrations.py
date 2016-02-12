@@ -11,9 +11,11 @@ from lms.djangoapps.instructor_task.models import InstructorTask
 
 TEST_COURSE_KEY = SlashSeparatedCourseKey('edx', '1.23x', 'test_course')
 
+
 def randomword(length):
     """ Generate random string upon to given length."""
     return ''.join(random.choice(string.lowercase) for i in range(length))
+
 
 class TestTextFields(TestMigrations, InstructorTaskModuleTestCase):
     """
