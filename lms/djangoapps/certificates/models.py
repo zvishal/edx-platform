@@ -65,7 +65,7 @@ from model_utils.models import TimeStampedModel
 from openedx.core.djangoapps.signals.signals import COURSE_CERT_AWARDED
 
 from config_models.models import ConfigurationModel
-from instructor_task.models import InstructorTask
+from lms.djangoapps.instructor_task.models import InstructorTask
 from util.milestones_helpers import fulfill_course_milestone, is_prerequisite_courses_enabled
 from xmodule.modulestore.django import modulestore
 from xmodule_django.models import CourseKeyField, NoneToEmptyManager
