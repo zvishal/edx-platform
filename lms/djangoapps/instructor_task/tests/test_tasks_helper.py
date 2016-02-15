@@ -1633,7 +1633,7 @@ class TestCertificateGeneration(InstructorTaskModuleTestCase):
                 mock_current_task.return_value = current_task
                 with patch('capa.xqueue_interface.XQueueInterface.send_to_queue') as mock_queue:
                     mock_queue.return_value = (0, "Successfully queued")
-                    with patch('instructor_task.models.InstructorTask.objects.get') as instructor_task_object:
+                    with patch('lms.djangoapps.instructor_task.models.InstructorTask.objects.get') as instructor_task_object:
                         instructor_task_object.return_value = instructor_task
                         result = generate_students_certificates(
                             None, None, self.course.id, {}, 'certificates generated'

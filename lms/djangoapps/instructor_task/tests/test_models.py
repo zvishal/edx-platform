@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from unittest import TestCase
 
-from instructor_task.models import LocalFSReportStore, S3ReportStore
+from lms.djangoapps.instructor_task.models import LocalFSReportStore, S3ReportStore
 from instructor_task.tests.test_base import TestReportMixin
 from opaque_keys.edx.locator import CourseLocator
 
