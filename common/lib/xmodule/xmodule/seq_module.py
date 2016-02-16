@@ -216,9 +216,9 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
             is_bookmarked = bookmarks_service.is_bookmarked(usage_key=child.scope_ids.usage_id)
             context["bookmarked"] = is_bookmarked
 
-            progress = child.get_progress()
             rendered_child = child.render(STUDENT_VIEW, context)
             fragment.add_frag_resources(rendered_child)
+            progress = child.get_progress()
 
             # `titles` is a list of titles to inject into the sequential tooltip display.
             # We omit any blank titles to avoid blank lines in the tooltip display.
