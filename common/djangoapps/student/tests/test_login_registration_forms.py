@@ -45,7 +45,6 @@ class LoginFormTest(ThirdPartyAuthTestMixin, UrlResetMixin, SharedModuleStoreTes
         super(LoginFormTest, cls).setUpClass()
         cls.course = CourseFactory.create()
 
-    @patch.dict(settings.FEATURES, {"ENABLE_COMBINED_LOGIN_REGISTRATION": False})
     def setUp(self):
         super(LoginFormTest, self).setUp('lms.urls')
 
@@ -154,6 +153,7 @@ class LoginFormTest(ThirdPartyAuthTestMixin, UrlResetMixin, SharedModuleStoreTes
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
 class RegisterFormTest(ThirdPartyAuthTestMixin, UrlResetMixin, SharedModuleStoreTestCase):
     """Test rendering of the registration form. """
+<<<<<<< c59db6e5fca1b20d4590ad5f38664c9941ff3c4d
 
     @classmethod
     def setUpClass(cls):
@@ -161,6 +161,8 @@ class RegisterFormTest(ThirdPartyAuthTestMixin, UrlResetMixin, SharedModuleStore
         cls.course = CourseFactory.create()
 
     @patch.dict(settings.FEATURES, {"ENABLE_COMBINED_LOGIN_REGISTRATION": False})
+=======
+>>>>>>> Removed old login and registration code, making logistration the default.
     def setUp(self):
         super(RegisterFormTest, self).setUp('lms.urls')
 

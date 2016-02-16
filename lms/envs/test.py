@@ -74,8 +74,6 @@ FEATURES['ALLOW_COURSE_STAFF_GRADE_DOWNLOADS'] = True
 # Toggles embargo on for testing
 FEATURES['EMBARGO'] = True
 
-FEATURES['ENABLE_COMBINED_LOGIN_REGISTRATION'] = True
-
 # Need wiki for courseware views to work. TODO (vshnayder): shouldn't need it.
 WIKI_ENABLED = True
 
@@ -456,7 +454,6 @@ MICROSITE_CONFIGURATION = {
         "email_from_address": "test_microsite@edx.org",
         "payment_support_email": "test_microsite@edx.org",
         "ENABLE_MKTG_SITE": False,
-        "ENABLE_COMBINED_LOGIN_REGISTRATION": True,
         "SITE_NAME": "test_microsite.localhost",
         "course_org_filter": "LogistrationX",
         "course_about_show_social_links": False,
