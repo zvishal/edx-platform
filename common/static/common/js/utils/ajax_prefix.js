@@ -11,8 +11,8 @@
                 return $.get('' + (prefix()) + url, data, callback, type);
             };
 
-            return jQuery.ajaxWithPrefix = function(url, settings) {
-                if (settings != null) {
+            jQuery.ajaxWithPrefix = function(url, settings) {
+                if (settings !== null) {
                     return $.ajax('' + (prefix()) + url, settings);
                 } else {
                     settings = url;
@@ -20,6 +20,8 @@
                     return $.ajax(settings);
                 }
             };
+
+            return jQuery.ajaxWithPrefix;
         }
     };
 
