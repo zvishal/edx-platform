@@ -1068,6 +1068,7 @@ simplefilter('ignore')
 ################################# Middleware ###################################
 
 MIDDLEWARE_CLASSES = (
+    'mobile_api.middleware.AppVersionUpgrade',
     'request_cache.middleware.RequestCache',
     'clean_headers.middleware.CleanHeadersMiddleware',
     'microsite_configuration.middleware.MicrositeMiddleware',
@@ -2758,6 +2759,7 @@ REGISTRATION_EXTENSION_FORM = None
 MOBILE_APP_USER_AGENT_REGEXES = [
     r'edX/org.edx.mobile',
 ]
+MOBILE_APP_VERSION_REGEX = r'[0-9]+.[0-9]+.[0-9]+(.[0-9a-zA-Z]*)?'  # X.X.X.Y where X is a number and Y is alphanumeric
 
 # Deprecated xblock types
 DEPRECATED_ADVANCED_COMPONENT_TYPES = []
