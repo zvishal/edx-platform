@@ -5,11 +5,12 @@ from uuid import uuid4
 
 from common.test.test_migrations.utils import TestMigrations
 from instructor_task.tests.test_base import InstructorTaskModuleTestCase
-from opaque_keys.edx.locations import i4xEncoder, SlashSeparatedCourseKey
+from opaque_keys.edx.locations import i4xEncoder
+from opaque_keys.edx.keys import CourseKey
 from django.contrib.auth.models import User
 from lms.djangoapps.instructor_task.models import InstructorTask
 
-TEST_COURSE_KEY = SlashSeparatedCourseKey('edx', '1.23x', 'test_course')
+TEST_COURSE_KEY = CourseKey.from_string('course-v1:edX+1.23x+test_course')
 
 
 def randomword(length):
@@ -17,7 +18,7 @@ def randomword(length):
     return ''.join(random.choice(string.lowercase) for i in range(length))
 
 
-class TestTextFields(TestMigrations, InstructorTaskModuleTestCase):
+class TestTextFields(TestMigrations):
     """
     Test migration no. 0002_auto_20160208_0810 for InstructorTask model.
     Fields changes from CharField to TextField.

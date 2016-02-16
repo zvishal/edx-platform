@@ -1,4 +1,7 @@
-""" General class for Test migrations. """
+"""
+General class for Test migrations.For more information visit at
+https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
+"""
 from django.apps import apps
 from django.test import TransactionTestCase
 from django.db.migrations.executor import MigrationExecutor
@@ -33,6 +36,6 @@ class TestMigrations(TransactionTestCase):
     def setUpBeforeMigration(self, apps):
         """
         Will run before befor migration using config field migrate_from.
-        Implemented in drived class.
+        Implemented in derived class.
         """
         pass
