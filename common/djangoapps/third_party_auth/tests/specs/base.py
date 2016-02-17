@@ -20,7 +20,7 @@ from social.apps.django_app import views as social_views
 from student import models as student_models
 from student import views as student_views
 from student.tests.factories import UserFactory
-from student_account.views import account_settings_context
+from lms.djangoapps.student_account.views import account_settings_context, login_and_registration_form
 
 from third_party_auth import middleware, pipeline
 from third_party_auth import settings as auth_settings
@@ -258,7 +258,8 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         """
         self.assertEqual(200, response.status_code)
         # Check that the correct provider was selected.
-        self.assertIn('successfully signed in with <strong>%s</strong>' % self.provider.name, response.content)
+        self.assertIn('successfully signed into %(currentProvider)s', response.content)
+        self.assertIn('"currentProvider": "%s"' % self.provider.name, response.content)
         # Expect that each truthy value we've prepopulated the register form
         # with is actually present.
         for prepopulated_form_value in self.provider.get_register_form_data(pipeline_kwargs).values():
@@ -578,7 +579,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         actions.do_complete(request.backend, social_views._do_login)  # pylint: disable=protected-access
 
         mako_middleware_process_request(strategy.request)
-        student_views.signin_user(strategy.request)
+        login_and_registration_form(strategy.request)
         student_views.login_user(strategy.request)
         actions.do_complete(request.backend, social_views._do_login)  # pylint: disable=protected-access
 
@@ -626,7 +627,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         actions.do_complete(request.backend, social_views._do_login)  # pylint: disable=protected-access
 
         mako_middleware_process_request(strategy.request)
-        student_views.signin_user(strategy.request)
+        login_and_registration_form(strategy.request)
         student_views.login_user(strategy.request)
         actions.do_complete(request.backend, social_views._do_login, user=user)  # pylint: disable=protected-access
 
@@ -685,7 +686,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         actions.do_complete(request.backend, social_views._do_login)  # pylint: disable=protected-access
 
         mako_middleware_process_request(strategy.request)
-        student_views.signin_user(strategy.request)
+        login_and_registration_form(strategy.request)
         student_views.login_user(strategy.request)
         actions.do_complete(request.backend, social_views._do_login, user=user)  # pylint: disable=protected-access
 
@@ -728,7 +729,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         mako_middleware_process_request(strategy.request)
         # At this point we know the pipeline has resumed correctly. Next we
         # fire off the view that displays the login form and posts it via JS.
-        self.assert_login_response_in_pipeline_looks_correct(student_views.signin_user(strategy.request))
+        self.assert_login_response_in_pipeline_looks_correct(login_and_registration_form(strategy.request))
 
         # Next, we invoke the view that handles the POST, and expect it
         # redirects to /auth/complete. In the browser ajax handlers will
@@ -808,7 +809,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         # At this point we know the pipeline has resumed correctly. Next we
         # fire off the view that displays the registration form.
         self.assert_register_response_in_pipeline_looks_correct(
-            student_views.register_user(strategy.request), pipeline.get(request)['kwargs'])
+            login_and_registration_form(strategy.request, initial_mode='register'), pipeline.get(request)['kwargs'])
 
         # Next, we invoke the view that handles the POST. Not all providers
         # supply email. Manually add it as the user would have to; this
@@ -876,7 +877,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
 
         mako_middleware_process_request(strategy.request)
         self.assert_register_response_in_pipeline_looks_correct(
-            student_views.register_user(strategy.request), pipeline.get(request)['kwargs'])
+            login_and_registration_form(strategy.request, initial_mode='register'), pipeline.get(request)['kwargs'])
         strategy.request.POST = self.get_registration_post_vars()
         # Create twice: once successfully, and once causing a collision.
         student_views.create_account(strategy.request)
