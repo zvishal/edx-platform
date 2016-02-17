@@ -5,7 +5,6 @@ class @Problem
     @id = @el.data('problem-id')
     @element_id = @el.attr('id')
     @url = @el.data('url')
-    @content = @el.data('content')
 
     # has_timed_out and has_response are used to ensure that are used to
     # ensure that we wait a minimum of ~ 1s before transitioning the check
@@ -13,7 +12,7 @@ class @Problem
     @has_timed_out = false
     @has_response = false
 
-    @render(@content)
+    @preRender(@content)
 
   $: (selector) ->
     $(selector, @el)
@@ -151,15 +150,24 @@ class @Problem
     $.postWithPrefix "#{url}/input_ajax", data, callback
 
 
-  render: (content) ->
-    if content
+  # Like render(), but for use when we already have our content up front and
+  # don't need to load it from across the network. If content is supplied (e.g.
+  # it was in a data- attribute or the caller wants to replace the content),
+  # then we use that. Otherwise, we assume that the proper content has already
+  # been loaded into @el by the server side rendering.
+  preRender: (content) ->
       @el.attr({'aria-busy': 'true', 'aria-live': 'off', 'aria-atomic': 'false'})
-      @el.html(content)
+      if content
+        @el.html(content)
       JavascriptLoader.executeModuleScripts @el, () =>
         @setupInputTypes()
         @bind()
         @queueing()
       @el.attr('aria-busy', 'false')
+
+  render: (content) ->
+    if content
+      @preRender(content)
     else
       $.postWithPrefix "#{@url}/problem_get", (response) =>
         @el.html(response.html)
