@@ -13,11 +13,6 @@ from lms.djangoapps.instructor_task.models import InstructorTask
 TEST_COURSE_KEY = CourseKey.from_string('course-v1:edX+1.23x+test_course')
 
 
-def randomword(length):
-    """ Generate random string upon to given length."""
-    return ''.join(random.choice(string.lowercase) for i in range(length))
-
-
 class TestTextFields(TestMigrations):
     """
     Test migration no. 0002_auto_20160208_0810 for InstructorTask model.
@@ -31,8 +26,8 @@ class TestTextFields(TestMigrations):
         """
         Setup before migration create InstructorTask model entry to verify after migration.
         """
-        self.task_input = randomword(250)
-        self.task_output = randomword(999)
+        self.task_input = 'x' * 250
+        self.task_output = 'x' * 999
         self.instructor = User.objects.create(username="instructor", email="instructor@edx.org")
         self.task = InstructorTask.create(
             TEST_COURSE_KEY,
@@ -57,7 +52,7 @@ class TestTextFields(TestMigrations):
         """
         Verify that TextField changed can now store more than 255 characters.
         """
-        self.task_input = randomword(850)
+        self.task_input = 'x' * 850
         self.task = InstructorTask.create(
             TEST_COURSE_KEY,
             "dummy type",
@@ -66,4 +61,3 @@ class TestTextFields(TestMigrations):
             self.instructor
         )
         self.assertEqual(self.task.task_input, json.dumps(self.task_input))
-
