@@ -367,6 +367,15 @@ FEATURES = {
 
     # Show Language selector.
     'SHOW_LANGUAGE_SELECTOR': False,
+
+    # Write new CSM history to the extended table.
+    # Will eventually become the default and be deleted.
+    'ENABLE_CSMH_EXTENDED': False,
+
+    # Read from both the CSMH and CSMHE history tables.
+    # This is the default, but can be disabled if all history
+    # lives in the Extended table, saving queries.
+    'ENABLE_READING_FROM_MULTIPLE_HISTORY_TABLES': True
 }
 
 # Ignore static asset files on import which match this pattern
