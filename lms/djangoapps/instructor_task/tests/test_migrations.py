@@ -3,7 +3,7 @@ import string
 import random
 from uuid import uuid4
 
-from common.test.test_migrations.utils import TestMigrations
+from common.test.test_migrations.utils import TestMigrationsForward
 from instructor_task.tests.test_base import InstructorTaskModuleTestCase
 from opaque_keys.edx.locations import i4xEncoder
 from opaque_keys.edx.keys import CourseKey
@@ -13,7 +13,7 @@ from lms.djangoapps.instructor_task.models import InstructorTask
 TEST_COURSE_KEY = CourseKey.from_string('course-v1:edX+1.23x+test_course')
 
 
-class TestTextFields(TestMigrations):
+class TestTextFields(TestMigrationsForward):
     """
     Test migration no. 0002_auto_20160208_0810 for InstructorTask model.
     Fields changes from CharField to TextField.
