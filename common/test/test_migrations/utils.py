@@ -26,14 +26,14 @@ class TestMigrationsForward(TransactionTestCase):
         Execute migration from state to another.
         """
         # Reverse to the original migration
-        executor.migrate(previous)
+        self.executor.migrate(previous)
 
-        self.setUpBeforeMigration(old_apps)
+        self.setUpBeforeMigration(self.old_apps)
 
         # Run the migration to test
-        executor.migrate(next)
+        self.executor.migrate(next)
 
-        self.apps = executor.loader.project_state(next).apps
+        self.apps = self.executor.loader.project_state(next).apps
 
     def checkData(self, migration_state):
         """
@@ -44,8 +44,8 @@ class TestMigrationsForward(TransactionTestCase):
         assert self.app, "app must be define in the TestCase"
         self.migrate_from = [(self.app, self.migrate_from)]
         self.migrate_to = [(self.app, self.migrate_to)]
-        executor = MigrationExecutor(connection)
-        old_apps = executor.loader.project_state(migration_state).apps
+        self.executor = MigrationExecutor(connection)
+        self.old_apps = self.executor.loader.project_state([(self.app, migration_state)]).apps
 
     def setUpBeforeMigration(self, apps):  # pylint: disable=invalid-name
         """
