@@ -1,5 +1,5 @@
 """
-Custom fields for use in the courseware django app.
+Custom fields for use in the coursewarehistoryextended django app.
 """
 
 from django.db.models.fields import AutoField

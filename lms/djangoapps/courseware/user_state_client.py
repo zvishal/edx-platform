@@ -15,7 +15,7 @@ except ImportError:
 import dogstats_wrapper as dog_stats_api
 from django.contrib.auth.models import User
 from xblock.fields import Scope, ScopeBase
-from courseware.models import StudentModule, StudentModuleHistory, StudentModuleHistoryExtended
+from courseware.models import StudentModule, BaseStudentModuleHistory
 from edx_user_state_client.interface import XBlockUserStateClient, XBlockUserState
 
 
@@ -312,37 +312,30 @@ class DjangoXBlockUserStateClient(XBlockUserStateClient):
         if len(student_modules) == 0:
             raise self.DoesNotExist()
 
-        history_entries = StudentModuleHistory.objects.prefetch_related('student_module').filter(
-            student_module__in=student_modules
-        ).order_by('-id')
-
-        history_entries_extended = StudentModuleHistoryExtended.objects.filter(
-            student_module__in=student_modules
-        ).order_by('-id')
+        history_entries = BaseStudentModuleHistory.get_history(student_modules)
 
         # If no history records exist, raise an error
-        if not history_entries and not history_entries_extended:
+        if not history_entries:
             raise self.DoesNotExist()
 
-        for entry_list in history_entries_extended, history_entries:
-            for history_entry in entry_list:
-                state = history_entry.state
+        for history_entry in history_entries:
+            state = history_entry.state
 
-                # If the state is serialized json, then load it
-                if state is not None:
-                    state = json.loads(state)
+            # If the state is serialized json, then load it
+            if state is not None:
+                state = json.loads(state)
 
-                # If the state is empty, then for the purposes of `get_history`, it has been
-                # deleted, and so we list that entry as `None`.
-                if state == {}:
-                    state = None
+            # If the state is empty, then for the purposes of `get_history`, it has been
+            # deleted, and so we list that entry as `None`.
+            if state == {}:
+                state = None
 
-                block_key = history_entry.csm.module_state_key
-                block_key = block_key.map_into_course(
-                    history_entry.csm.course_id
-                )
+            block_key = history_entry.csm.module_state_key
+            block_key = block_key.map_into_course(
+                history_entry.csm.course_id
+            )
 
-                yield XBlockUserState(username, block_key, state, history_entry.created, scope)
+            yield XBlockUserState(username, block_key, state, history_entry.created, scope)
 
     def iter_all_for_block(self, block_key, scope=Scope.user_state, batch_size=None):
         """

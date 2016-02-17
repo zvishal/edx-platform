@@ -19,7 +19,7 @@ from capa.tests.response_xml_factory import (
     CodeResponseXMLFactory,
 )
 from courseware import grades
-from courseware.models import StudentModule, StudentModuleHistoryExtended
+from courseware.models import StudentModule, BaseStudentModuleHistory
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from lms.djangoapps.lms_xblock.runtime import quote_slashes
 from student.tests.factories import UserFactory
@@ -454,26 +454,20 @@ class TestCourseGrader(TestSubmittingProblems):
         self.submit_question_answer('p1', {'2_1': u'Correct'})
 
         # Now fetch the state entry for that problem.
-        student_module = StudentModule.objects.get(
+        student_module = StudentModule.objects.filter(
             course_id=self.course.id,
             student=self.student_user
         )
         # count how many state history entries there are
-        baseline = StudentModuleHistoryExtended.objects.filter(
-            student_module=student_module
-        )
-        baseline_count = baseline.count()
-        self.assertEqual(baseline_count, 3)
+        baseline = BaseStudentModuleHistory.get_history(student_module)
+        self.assertEqual(len(baseline), 3)
 
         # now click "show answer"
         self.show_question_answer('p1')
 
         # check that we don't have more state history entries
-        csmh = StudentModuleHistoryExtended.objects.filter(
-            student_module=student_module
-        )
-        current_count = csmh.count()
-        self.assertEqual(current_count, 3)
+        csmh = BaseStudentModuleHistory.get_history(student_module)
+        self.assertEqual(len(csmh), 3)
 
     def test_grade_with_max_score_cache(self):
         """

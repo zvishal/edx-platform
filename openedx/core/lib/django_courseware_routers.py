@@ -1,5 +1,5 @@
 """
-Database Routers for use with the courseware django app.
+Database Routers for use with the coursewarehistoryextended django app.
 """
 
 
@@ -15,7 +15,7 @@ class StudentModuleHistoryExtendedRouter(object):
         Return True if ``model`` is courseware.StudentModuleHistoryExtended.
         """
         return (
-            model._meta.app_label == 'courseware' and  # pylint: disable=protected-access
+            model._meta.app_label == 'coursewarehistoryextended' and  # pylint: disable=protected-access
             model.__name__ == 'StudentModuleHistoryExtended'
         )
 

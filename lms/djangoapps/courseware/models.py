@@ -18,15 +18,15 @@ import itertools
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver, Signal
 
 from model_utils.models import TimeStampedModel
 from student.models import user_by_anonymous_id
 from submissions.models import score_set, score_reset
+import coursewarehistoryextended
 
 from xmodule_django.models import CourseKeyField, LocationKeyField, BlockTypeKeyField
-from courseware.fields import UnsignedBigIntAutoField
 
 log = logging.getLogger("edx.courseware")
 
@@ -149,18 +149,15 @@ class StudentModule(models.Model):
         return unicode(repr(self))
 
 
-class StudentModuleHistory(models.Model):
-    """Keeps a complete history of state changes for a given XModule for a given
-    Student. Right now, we restrict this to problems so that the table doesn't
-    explode in size."""
+class BaseStudentModuleHistory(models.Model):
+    """Abstract class containing most fields used by any class
+    storing Student Module History"""
     objects = ChunkingManager()
     HISTORY_SAVING_TYPES = {'problem'}
 
     class Meta(object):
-        app_label = "courseware"
-        get_latest_by = "created"
+        abstract = True
 
-    student_module = models.ForeignKey(StudentModule, db_index=True)
     version = models.CharField(max_length=255, null=True, blank=True, db_index=True)
 
     # This should be populated from the modified field in StudentModule
@@ -168,9 +165,6 @@ class StudentModuleHistory(models.Model):
     state = models.TextField(null=True, blank=True)
     grade = models.FloatField(null=True, blank=True)
     max_grade = models.FloatField(null=True, blank=True)
-
-    def __unicode__(self):
-        return unicode(repr(self))
 
     @property
     def csm(self):
@@ -181,67 +175,61 @@ class StudentModuleHistory(models.Model):
         """
         return StudentModule.objects.get(pk=self.student_module_id)
 
+    @staticmethod
+    def get_history(student_modules):
+        """
+        Find history objects across multiple backend stores for a given StudentModule
+        """
 
-class StudentModuleHistoryExtended(models.Model):
+        history_entries = []
+        # If we turn off reading from multiple history tables, then we don't want to read from
+        # StudentModuleHistory anymore, we believe that all history is in the Extended table.
+        if not settings.FEATURES.get('ENABLE_READING_FROM_MULTIPLE_HISTORY_TABLES'):
+            # we want to save later SQL queries on the model which allows us to prefetch
+            history_entries += StudentModuleHistory.objects.prefetch_related('student_module').filter(
+                student_module__in=student_modules
+            ).order_by('-id')
+
+        if settings.FEATURES.get('ENABLE_CSMH_EXTENDED'):
+            history_entries += coursewarehistoryextended.models.StudentModuleHistoryExtended.objects.filter(
+                # Django will sometimes try to join to courseware_studentmodule
+                # so just do an in query
+                student_module__in=[module.id for module in student_modules]
+            ).order_by('-id')
+
+        return history_entries
+
+
+class StudentModuleHistory(BaseStudentModuleHistory):
     """Keeps a complete history of state changes for a given XModule for a given
     Student. Right now, we restrict this to problems so that the table doesn't
-    explode in size.
-
-    This new extended CSMH has a larger primary key that won't run out of space
-    so quickly."""
-    objects = ChunkingManager()
-    HISTORY_SAVING_TYPES = {'problem'}
+    explode in size."""
 
     class Meta(object):
         app_label = "courseware"
         get_latest_by = "created"
 
-    id = UnsignedBigIntAutoField(primary_key=True)  # pylint: disable=invalid-name
-
-    student_module = models.ForeignKey(StudentModule, db_index=True, db_constraint=False, on_delete=models.DO_NOTHING)
-    version = models.CharField(max_length=255, null=True, blank=True, db_index=True)
-
-    # This should be populated from the modified field in StudentModule
-    created = models.DateTimeField(db_index=True)
-    state = models.TextField(null=True, blank=True)
-    grade = models.FloatField(null=True, blank=True)
-    max_grade = models.FloatField(null=True, blank=True)
-
-    @receiver(post_save, sender=StudentModule)
-    def save_history(sender, instance, **kwargs):  # pylint: disable=no-self-argument, unused-argument
-        """
-        Checks the instance's module_type, and creates & saves a
-        StudentModuleHistoryExtended entry if the module_type is one that
-        we save.
-        """
-        if instance.module_type in StudentModuleHistoryExtended.HISTORY_SAVING_TYPES:
-            history_entry = StudentModuleHistoryExtended(student_module=instance,
-                                                         version=None,
-                                                         created=instance.modified,
-                                                         state=instance.state,
-                                                         grade=instance.grade,
-                                                         max_grade=instance.max_grade)
-            history_entry.save()
-
-    @receiver(post_delete, sender=StudentModule)
-    def delete_history(sender, instance, **kwargs):  # pylint: disable=no-self-argument, unused-argument
-        """
-        Django can't cascade delete across databases, so we tell it at the model level to
-        on_delete=DO_NOTHING and then listen for post_delete so we can clean up the CSMHE rows.
-        """
-        StudentModuleHistoryExtended.objects.filter(student_module=instance).all().delete()
+    student_module = models.ForeignKey(StudentModule, db_index=True)
 
     def __unicode__(self):
         return unicode(repr(self))
 
-    @property
-    def csm(self):
-        """
-        Finds the StudentModule object for this history record, even if our data is split
-        across multiple data stores.  Django does not handle this correctly with the built-in
-        student_module property.
-        """
-        return StudentModule.objects.filter(pk=self.student_module_id).first()
+    if not settings.FEATURES.get('ENABLE_CSMH_EXTENDED'):
+        @receiver(post_save, sender=StudentModule)
+        def save_history(sender, instance, **kwargs):  # pylint: disable=no-self-argument, unused-argument
+            """
+            Checks the instance's module_type, and creates & saves a
+            StudentModuleHistoryExtended entry if the module_type is one that
+            we save.
+            """
+            if instance.module_type in StudentModuleHistory.HISTORY_SAVING_TYPES:
+                history_entry = StudentModuleHistory(student_module=instance,
+                                                     version=None,
+                                                     created=instance.modified,
+                                                     state=instance.state,
+                                                     grade=instance.grade,
+                                                     max_grade=instance.max_grade)
+                history_entry.save()
 
 
 class XBlockFieldBase(models.Model):

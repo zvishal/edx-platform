@@ -59,7 +59,7 @@ from courseware.courses import (
 )
 from courseware.masquerade import setup_masquerade
 from courseware.model_data import FieldDataCache, ScoresClient
-from courseware.models import StudentModule, StudentModuleHistory, StudentModuleHistoryExtended
+from courseware.models import StudentModule, BaseStudentModuleHistory
 from courseware.url_helpers import get_redirect_url
 from courseware.user_state_client import DjangoXBlockUserStateClient
 from edxmako.shortcuts import render_to_response, render_to_string, marketing_link
@@ -1176,11 +1176,9 @@ def submission_history(request, course_id, student_username, location):
     csm = StudentModule.objects.filter(
         module_state_key=usage_key,
         student__username=student_username,
-        course_id=course_key).first().id
+        course_id=course_key)
 
-    scores = (list(StudentModuleHistory.objects.filter(student_module=csm).order_by('-id'))
-              +
-              list(StudentModuleHistoryExtended.objects.filter(student_module=csm).order_by('-id')))
+    scores = BaseStudentModuleHistory.get_history(csm)
 
     if len(scores) != len(history_entries):
         log.warning(
