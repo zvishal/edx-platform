@@ -62,3 +62,4 @@ class TestMigrationsBackward(TestMigrationsForward):
         super(TestMigrationsBackward, self).setUp(execute_forward=False)
         self.checkData(self.migrate_to)
         self.execute_migration(self.migrate_to, self.migrate_from)
+
