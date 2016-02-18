@@ -206,9 +206,6 @@ requirejs.config({
         },
         "coffee/src/ajax_prefix": {
             deps: ["jquery"]
-        },
-        "draggabilly": {
-            exports: "Draggabilly"
         }
     }
 });
