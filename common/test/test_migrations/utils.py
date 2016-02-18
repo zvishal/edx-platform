@@ -1,5 +1,5 @@
 """
-General class for Test migrations.For more information visit at
+General class for Test migrations.Based off an implementation provided at
 https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 """
 # pylint: disable=redefined-outer-name
@@ -9,17 +9,15 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db import connection
 
 
-class TestMigrationsForward(TransactionTestCase):
-    """ Base class for testing forward migrations. """
+class TestMigrations(TransactionTestCase):
+    """ Base class for testing migrations. """
     migrate_from = None
     migrate_to = None
     app = None
 
-    def setUp(self, execute_forward=True):
-        super(TestMigrationsForward, self).setUp()
-        if execute_forward:
-            self.checkData(self.migrate_from)
-            self.execute_migration(self.migrate_from, self.migrate_to)
+    def setUp(self):
+        super(TestMigrations, self).setUp()
+        self.check_data()
 
     def execute_migration(self, previous, next):
         """
@@ -28,14 +26,12 @@ class TestMigrationsForward(TransactionTestCase):
         # Reverse to the original migration
         self.executor.migrate(previous)
 
-        self.setUpBeforeMigration(self.old_apps)
+        self.setUpBeforeMigration()
 
         # Run the migration to test
         self.executor.migrate(next)
 
-        self.apps = self.executor.loader.project_state(next).apps
-
-    def checkData(self, migration_state):
+    def check_data(self):
         """
         Migrate_from, migrate_to and app variables must be define first.
         """
@@ -45,21 +41,19 @@ class TestMigrationsForward(TransactionTestCase):
         self.migrate_from = [(self.app, self.migrate_from)]
         self.migrate_to = [(self.app, self.migrate_to)]
         self.executor = MigrationExecutor(connection)
-        self.old_apps = self.executor.loader.project_state([(self.app, migration_state)]).apps
 
-    def setUpBeforeMigration(self, apps):  # pylint: disable=invalid-name
+    def setUpBeforeMigration(self):  # pylint: disable=invalid-name
         """
         Will run before befor migration using config field migrate_from.
         Implemented in derived class.
         """
         pass
 
+    def migrate_forwards(self):
+        """ Execute migration to forward state. """
+        self.execute_migration(self.migrate_from, self.migrate_to)
 
-class TestMigrationsBackward(TestMigrationsForward):
-    """ Base class for testing backward migrations. """
-
-    def setUp(self):
-        super(TestMigrationsBackward, self).setUp(execute_forward=False)
-        self.checkData(self.migrate_to)
+    def migrate_backwards(self):
+        """ Execute migration to backward state. """
         self.execute_migration(self.migrate_to, self.migrate_from)
 

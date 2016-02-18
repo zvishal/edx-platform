@@ -3,7 +3,7 @@ import string
 import random
 from uuid import uuid4
 
-from common.test.test_migrations.utils import TestMigrationsForward
+from common.test.test_migrations.utils import TestMigrations
 from instructor_task.tests.test_base import InstructorTaskModuleTestCase
 from opaque_keys.edx.locations import i4xEncoder
 from opaque_keys.edx.keys import CourseKey
@@ -13,7 +13,7 @@ from lms.djangoapps.instructor_task.models import InstructorTask
 TEST_COURSE_KEY = CourseKey.from_string('course-v1:edX+1.23x+test_course')
 
 
-class TestTextFields(TestMigrationsForward):
+class TestTextFields(TestMigrations):
     """
     Test migration no. 0002_auto_20160208_0810 for InstructorTask model.
     Fields changes from CharField to TextField.
@@ -22,7 +22,7 @@ class TestTextFields(TestMigrationsForward):
     migrate_to = '0002_auto_20160208_0810'
     app = 'instructor_task'
 
-    def setUpBeforeMigration(self, apps):
+    def setUpBeforeMigration(self):
         """
         Setup before migration create InstructorTask model entry to verify after migration.
         """
@@ -44,6 +44,7 @@ class TestTextFields(TestMigrationsForward):
         Verify that data does not loss after migration when model field changes
         from CharField to TextField.
         """
+        self.migrate_forwards()
         task_after_migration = InstructorTask.objects.get(id=self.task.id)
         self.assertEqual(task_after_migration.task_input, json.dumps(self.task_input))
         self.assertEqual(task_after_migration.task_output, self.task_output)
@@ -52,6 +53,7 @@ class TestTextFields(TestMigrationsForward):
         """
         Verify that TextField changed can now store more than 255 characters.
         """
+        self.migrate_forwards()
         self.task_input = 'x' * 850
         self.task = InstructorTask.create(
             TEST_COURSE_KEY,
