@@ -5,9 +5,12 @@ Acceptance tests for Video.
 """
 import os
 
+from lettuce import world, step
 from mock import patch
 from nose.plugins.attrib import attr
 from unittest import skipIf, skip
+from selenium.webdriver.common.action_chains import ActionChains
+from bok_choy.page_object import PageObject
 from ..helpers import UniqueCourseTest, is_youtube_available, YouTubeStubConfig
 from ...pages.lms.video.video import VideoPage
 from ...pages.lms.tab_nav import TabNavPage
@@ -1182,6 +1185,39 @@ class YouTubeQualityTest(VideoBaseTest):
         self.video.click_player_button('quality')
 
         self.video.wait_for(lambda: self.video.is_quality_button_active, 'waiting for quality button activation')
+
+
+@attr('shard_4')
+class DragAndDropTest(VideoBaseTest):
+    """
+    Tests draggability of closed captions within videos.
+    """
+    def setUp(self):
+        super(DragAndDropTest, self).setUp()
+            
+    def test_if_captions_are_draggable(self):
+        """
+        Loads transcripts so that closed-captioning is available.
+        Ensures they are draggable.
+        """
+        self.assets.append('subs_3_yD_cEKoCk.srt.sjson')
+        data = {'sub': '3_yD_cEKoCk'}
+        
+        self.metadata = self.metadata_for_mode('html5', additional_data=data)
+        
+        self.navigate_to_video()
+        
+        self.video.show_closed_captions()
+        
+        self.video.wait_for_closed_captions()
+        
+        self.assertTrue(self.video.is_closed_captions_visible)
+        
+        captionsContainer = '.closed-captions'
+        captions = self.video.q(css=captionsContainer).results[0]
+        
+        action = ActionChains(self.browser)
+        action.drag_and_drop_by_offset(captions, 15, 185).perform()
 
 
 @attr('a11y')
