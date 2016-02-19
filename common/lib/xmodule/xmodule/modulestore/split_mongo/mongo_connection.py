@@ -322,6 +322,7 @@ class MongoConnection(object):
 
             structure = cache.get(key, course_context)
             tagger_get_structure.tag(from_cache=str(bool(structure)).lower())
+            structure = None
             if not structure:
                 # Always log cache misses, because they are unexpected
                 tagger_get_structure.sample_rate = 1
@@ -329,6 +330,15 @@ class MongoConnection(object):
                 with TIMER.timer("get_structure.find_one", course_context) as tagger_find_one:
                     doc = self.structures.find_one({'_id': key})
                     tagger_find_one.measure("blocks", len(doc['blocks']))
+                    for block in doc["blocks"]:
+                        if block['block_type'] == 'lti':
+                            # If I uncomment the next line, it will change the block_type but
+                            # when we try to see the new course then it is returning the error
+                            # ItemNotFound BlockKey(type=u'lti', id=u'c55461a8016845b9957ef3fa8ff92b1f')
+
+                            # block['block_type'] = "lti_consumer"
+                            block["fields"]["launch_target"] = "new_window" \
+                                if block["fields"].pop("open_in_a_new_page", True) else "inline"
                     structure = structure_from_mongo(doc, course_context)
                     tagger_find_one.sample_rate = 1
 

@@ -1909,11 +1909,11 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
             draft_structure = self._lookup_course(draft_version).structure
             draft_structure = self.version_structure(locator, draft_structure, user_id)
 
-            BlockUsageLocator(course_key=locator.id,block_type="lti",block_id='c55461a8016845b9957ef3fa8ff92b1f')
-
-            bkl = BlockUsageLocator(course_key=locator, block_type="lti", block_id='c55461a8016845b9957ef3fa8ff92b1f')
-            bk = BlockKey.from_usage_key(bkl)
-            lti_block = draft_structure['blocks'][bk]
+            # BlockUsageLocator(course_key=locator.id,block_type="lti",block_id='c55461a8016845b9957ef3fa8ff92b1f')
+            #
+            # bkl = BlockUsageLocator(course_key=locator, block_type="lti", block_id='c55461a8016845b9957ef3fa8ff92b1f')
+            # bk = BlockKey.from_usage_key(bkl)
+            # lti_block = draft_structure['blocks'][bk]
 
             new_id = draft_structure['_id']
             root_block = draft_structure['blocks'][draft_structure['root']]
