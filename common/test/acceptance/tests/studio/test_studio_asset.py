@@ -5,8 +5,10 @@ from ...pages.studio.asset_index import AssetIndexPage
 
 from .base_studio_test import StudioCourseTest
 from ...fixtures.base import StudioApiLoginError
+from flaky import flaky
 
 
+@flaky  # TODO Need to fix this for chrome browser
 class AssetIndexTest(StudioCourseTest):
 
     """
