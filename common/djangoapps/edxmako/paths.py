@@ -9,11 +9,13 @@ import pkg_resources
 
 from django.conf import settings
 from mako.lookup import TemplateLookup
+from mako.exceptions import TopLevelLookupException
 
 from . import LOOKUP
 from openedx.core.djangoapps.theming.helpers import (
     get_template as themed_template,
-    get_template_path_in_theme,
+    get_template_path_with_theme,
+    strip_site_theme_templates_path,
 )
 
 
@@ -56,11 +58,13 @@ class DynamicTemplateLookup(TemplateLookup):
         """
         template = themed_template(uri)
 
-        return (
-            template
-            if template
-            else super(DynamicTemplateLookup, self).get_template(get_template_path_in_theme(uri))
-        )
+        if not template:
+            try:
+                template = super(DynamicTemplateLookup, self).get_template(get_template_path_with_theme(uri))
+            except TopLevelLookupException:
+                template = super(DynamicTemplateLookup, self).get_template(strip_site_theme_templates_path(uri))
+
+        return template
 
 
 def clear_lookups(namespace):

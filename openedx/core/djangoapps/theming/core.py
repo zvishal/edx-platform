@@ -2,7 +2,7 @@
 Core logic for Comprehensive Theming.
 """
 import os.path
-
+from path import Path as path
 from django.conf import settings
 
 from .helpers import (
@@ -15,6 +15,8 @@ def enable_comprehensive_theme(themes_dir):
     Add directories to relevant paths for comprehensive theming.
     :param themes_dir: path to base theme directory
     """
+    if isinstance(themes_dir, basestring):
+        themes_dir = path(themes_dir)
 
     if themes_dir.isdir():
         settings.DEFAULT_TEMPLATE_ENGINE['DIRS'].insert(0, themes_dir)

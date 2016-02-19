@@ -548,6 +548,8 @@ PROFILE_IMAGE_SECRET_KEY = 'secret'
 PROFILE_IMAGE_MAX_BYTES = 1024 * 1024
 PROFILE_IMAGE_MIN_BYTES = 100
 
+COMPREHENSIVE_THEME_DIR = "/".join([REPO_ROOT, "themes"])
+
 # Enable the LTI provider feature for testing
 FEATURES['ENABLE_LTI_PROVIDER'] = True
 INSTALLED_APPS += ('lti_provider',)

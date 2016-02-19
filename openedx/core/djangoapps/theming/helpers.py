@@ -1,6 +1,7 @@
 """
     Helpers for accessing comprehensive theming related variables.
 """
+import re
 import os.path
 from path import Path
 
@@ -30,7 +31,10 @@ def get_template_path(relative_path, **kwargs):
     """
     This is a proxy function to hide microsite_configuration behind comprehensive theming.
     """
-    return microsite.get_template_path(relative_path, **kwargs)
+    template_path = microsite.get_template_path(relative_path, **kwargs)
+    if not template_path:
+        template_path = get_template_path_with_theme(relative_path)
+    return template_path
 
 
 def is_request_in_themed_site():
@@ -68,7 +72,7 @@ def get_themed_template_path(relative_path, default_path, **kwargs):
     return microsite.get_template_path(default_path, **kwargs)
 
 
-def get_template_path_in_theme(relative_path):
+def get_template_path_with_theme(relative_path):
     """
     Returns template path in current site's theme if it finds one there otherwise returns same path.
     :param relative_path:
@@ -78,8 +82,8 @@ def get_template_path_in_theme(relative_path):
     if not site_theme_dir:
         return relative_path
 
-    root_name = get_project_root_name()
     base_theme_dir = get_base_theme_dir()
+    root_name = get_project_root_name()
     template_path = "/".join([
         base_theme_dir,
         site_theme_dir,
@@ -88,7 +92,7 @@ def get_template_path_in_theme(relative_path):
     ])
 
     # strip `/` if present at the start of relative_path
-    template_name = relative_path[1:] if relative_path.startswith('/') else relative_path
+    template_name = re.sub(r'^\/+', '', relative_path)
     search_path = os.path.join(template_path, template_name)
     if os.path.isfile(search_path):
         path = '/{site_theme_dir}/{root_name}/templates/{template_name}'.format(
@@ -99,6 +103,25 @@ def get_template_path_in_theme(relative_path):
         return path
     else:
         return relative_path
+
+
+def strip_site_theme_templates_path(uri):
+    """
+    :return: removes site templates theme path in uri
+    """
+    site_theme_dir = get_current_site_theme_dir()
+    if not site_theme_dir:
+        return uri
+
+    root_name = get_project_root_name()
+    templates_path = "/".join([
+        site_theme_dir,
+        root_name,
+        "templates"
+    ])
+
+    uri = re.sub(r'^\/*' + templates_path + '\/*', '', uri)
+    return uri
 
 
 def get_current_site_theme_dir():
