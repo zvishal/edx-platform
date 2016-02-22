@@ -311,7 +311,7 @@ class MongoConnection(object):
         else:
             raise HeartbeatFailure("Can't connect to {}".format(self.database.name), 'mongo')
 
-    def get_structure(self, key, course_context=None):
+    def get_structure(self, key, course_context=None, deprecated_block_exits=False):
         """
         Get the structure from the persistence mechanism whose id is the given key.
 
@@ -319,10 +319,12 @@ class MongoConnection(object):
         """
         with TIMER.timer("get_structure", course_context) as tagger_get_structure:
             cache = CourseStructureCache()
-
             structure = cache.get(key, course_context)
+
+            if deprecated_block_exits:
+                structure = None
+
             tagger_get_structure.tag(from_cache=str(bool(structure)).lower())
-            structure = None
             if not structure:
                 # Always log cache misses, because they are unexpected
                 tagger_get_structure.sample_rate = 1
@@ -330,15 +332,16 @@ class MongoConnection(object):
                 with TIMER.timer("get_structure.find_one", course_context) as tagger_find_one:
                     doc = self.structures.find_one({'_id': key})
                     tagger_find_one.measure("blocks", len(doc['blocks']))
-                    for block in doc["blocks"]:
-                        if block['block_type'] == 'lti':
-                            # If I uncomment the next line, it will change the block_type but
-                            # when we try to see the new course then it is returning the error
-                            # ItemNotFound BlockKey(type=u'lti', id=u'c55461a8016845b9957ef3fa8ff92b1f')
+                    if deprecated_block_exits:
+                        for block in doc["blocks"]:
+                            if block['block_type'] == 'lti':
+                                # If I uncomment the next line, it will change the block_type but
+                                # when we try to see the new course then it is returning the error
+                                # ItemNotFound BlockKey(type=u'lti', id=u'c55461a8016845b9957ef3fa8ff92b1f')
 
-                            # block['block_type'] = "lti_consumer"
-                            block["fields"]["launch_target"] = "new_window" \
-                                if block["fields"].pop("open_in_a_new_page", True) else "inline"
+                                block['block_type'] = "lti_consumer"
+                                block["fields"]["launch_target"] = "new_window" \
+                                    if block["fields"].pop("open_in_a_new_page", True) else "inline"
                     structure = structure_from_mongo(doc, course_context)
                     tagger_find_one.sample_rate = 1
 
@@ -451,7 +454,8 @@ class MongoConnection(object):
                     key_attr: getattr(key, key_attr)
                     for key_attr in ('org', 'course', 'run')
                 }
-            return self.course_index.find_one(query)
+            index = self.course_index.find_one(query)
+            return index
 
     def find_matching_course_indexes(self, branch=None, search_targets=None, org_target=None, course_context=None):
         """
