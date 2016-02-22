@@ -6,11 +6,11 @@ from functools import wraps
 import os
 import os.path
 import contextlib
+import re
 
 from mock import patch
 
 from django.conf import settings
-from django.template import Engine
 from django.contrib.sites.models import Site
 
 import edxmako
@@ -27,22 +27,13 @@ def with_comprehensive_theme(theme_dir_name):
     def _decorator(func):                       # pylint: disable=missing-docstring
         @wraps(func)
         def _decorated(*args, **kwargs):        # pylint: disable=missing-docstring
-            # themes_dir = settings.COMPREHENSIVE_THEME_DIR
-            # if not themes_dir:
-            #     themes_dir = "/".join([settings.REPO_ROOT, "themes"])
-            #
-            domain = "example.com"
+            # make a domain name out of directory name
+            domain = "{theme_dir_name}.org".format(theme_dir_name=re.sub(r"[\s.org_]", "", theme_dir_name))
             site, __ = Site.objects.get_or_create(domain=domain, name=domain)
             SiteTheme.objects.get_or_create(site=site, theme_dir_name=theme_dir_name)
 
-            # default_engine = Engine.get_default()
-            # dirs = default_engine.dirs[:]
-            # with edxmako.save_lookups():
-            #     edxmako.paths.add_lookup('main', themes_dir, prepend=True)
-            #     dirs.insert(0, themes_dir)
-            #     with patch.object(default_engine, 'dirs', dirs):
             with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
-                    return func(*args, **kwargs)
+                return func(*args, **kwargs)
         return _decorated
     return _decorator
 

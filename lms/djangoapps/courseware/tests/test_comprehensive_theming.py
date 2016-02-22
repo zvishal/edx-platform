@@ -1,5 +1,7 @@
 """Tests of comprehensive theming."""
 
+import os
+
 from django.conf import settings
 from django.test import TestCase
 
@@ -34,12 +36,15 @@ class TestComprehensiveTheming(TestCase):
         # of test.
 
         # Make a temp directory as a theme.
-        themes_dir = path(settings.COMPREHENSIVE_THEME_DIR)
+        themes_dir = path(mkdtemp_clean())
         tmp_theme = "temp_theme"
         template_dir = themes_dir / tmp_theme / "lms/templates"
         template_dir.makedirs()
         with open(template_dir / "footer.html", "w") as footer:
             footer.write("<footer>TEMPORARY THEME</footer>")
+
+        dest_path = path(settings.COMPREHENSIVE_THEME_DIR) / tmp_theme
+        os.symlink(themes_dir / tmp_theme, dest_path)
 
         @with_comprehensive_theme(tmp_theme)
         def do_the_test(self):
@@ -49,6 +54,7 @@ class TestComprehensiveTheming(TestCase):
             self.assertContains(resp, "TEMPORARY THEME")
 
         do_the_test(self)
+        os.remove(dest_path)
 
     def test_theme_adjusts_staticfiles_search_path(self):
         # Test that a theme adds itself to the staticfiles search path.

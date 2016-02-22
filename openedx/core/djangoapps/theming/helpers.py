@@ -7,6 +7,7 @@ from path import Path
 
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.sites.models import Site
 from django.core.cache import cache
 
 from microsite_configuration import microsite
@@ -132,8 +133,10 @@ def get_current_site_theme_dir():
     request = getattr(REQUEST_CONTEXT, 'request', None)
     if not request:
         return None
-
-    site = get_current_site(request)
+    try:
+        site = get_current_site(request)
+    except Site.DoesNotExist:
+        return None
     site_theme_dir = cache.get(get_site_theme_cache_key(site))
 
     # if site theme dir is not in cache and comprehensive theming is enabled then pull it from db.
