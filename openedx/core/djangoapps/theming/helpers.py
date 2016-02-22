@@ -121,7 +121,7 @@ def strip_site_theme_templates_path(uri):
         "templates"
     ])
 
-    uri = re.sub(r'^\/*' + templates_path + '\/*', '', uri)
+    uri = re.sub(r'^/*' + templates_path + '/*', '', uri)
     return uri
 
 
@@ -133,6 +133,11 @@ def get_current_site_theme_dir():
     request = getattr(REQUEST_CONTEXT, 'request', None)
     if not request:
         return None
+
+    # if hostname is not valid
+    if not all((isinstance(request.get_host(), basestring), is_valid_hostname(request.get_host()))):
+        return None
+
     try:
         site = get_current_site(request)
     except Site.DoesNotExist:
@@ -141,7 +146,7 @@ def get_current_site_theme_dir():
 
     # if site theme dir is not in cache and comprehensive theming is enabled then pull it from db.
     if not site_theme_dir and is_comprehensive_theming_enabled():
-        site_theme = site.themes.first()
+        site_theme = site.themes.first()  # pylint: disable=no-member
         if site_theme:
             site_theme_dir = site_theme.theme_dir_name
             cache_site_theme_dir(site, site_theme_dir)
@@ -182,6 +187,20 @@ def get_site_theme_cache_key(site):
         domain=site.domain
     )
     return cache_key
+
+
+def is_valid_hostname(hostname):
+    """
+    Returns boolean indicating if given hostname is valid or not
+    :param hostname:
+    :return:
+    """
+    if len(hostname) > 255 or "." not in hostname:
+        return False
+    if hostname[-1] == ".":
+        hostname = hostname[:-1]  # strip exactly one dot from the right, if present
+    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    return all(allowed.match(x) for x in hostname.split("."))
 
 
 def cache_site_theme_dir(site, theme_dir):
