@@ -5,12 +5,10 @@ Acceptance tests for Video.
 """
 import os
 
-from lettuce import world, step
 from mock import patch
 from nose.plugins.attrib import attr
 from unittest import skipIf, skip
 from selenium.webdriver.common.action_chains import ActionChains
-from bok_choy.page_object import PageObject
 from ..helpers import UniqueCourseTest, is_youtube_available, YouTubeStubConfig
 from ...pages.lms.video.video import VideoPage
 from ...pages.lms.tab_nav import TabNavPage
@@ -1213,8 +1211,8 @@ class DragAndDropTest(VideoBaseTest):
 
         self.assertTrue(self.video.is_closed_captions_visible)
 
-        captionsContainer = '.closed-captions'
-        captions = self.video.q(css=captionsContainer).results[0]
+        captions_container = '.closed-captions'
+        captions = self.video.q(css=captions_container).results[0]
 
         action = ActionChains(self.browser)
         action.drag_and_drop_by_offset(captions, 15, 185).perform()
