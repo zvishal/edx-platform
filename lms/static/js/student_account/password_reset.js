@@ -2,7 +2,7 @@
  * Password reset template JS.
  */
 $(function() {
-
+    'use strict';
     // adding js class for styling with accessibility in mind
     $("body").addClass("js");
 
