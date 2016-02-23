@@ -265,6 +265,7 @@ class SharedModuleStoreTestCase(TestCase):
     for Django ORM models that will get cleaned up properly.
     """
     MODULESTORE = mixed_store_config(mkdtemp_clean(), {}, include_xml=False)
+    # Tell Django to clean out all databases, not just default
     multi_db = True
 
     @classmethod
@@ -393,6 +394,7 @@ class ModuleStoreTestCase(TestCase):
     """
 
     MODULESTORE = mixed_store_config(mkdtemp_clean(), {}, include_xml=False)
+    # Tell Django to clean out all databases, not just default
     multi_db = True
 
     def setUp(self, **kwargs):
