@@ -115,9 +115,9 @@ urlpatterns = (
 # Backwards compatibility with old URL structure, but serve the new views
 urlpatterns += (
     url(r'^login$', 'student_account.views.login_and_registration_form',
-        {'initial_mode': 'login'}, name="signin_user"),
+        {'initial_mode': 'login'}, name='signin_user'),
     url(r'^register$', 'student_account.views.login_and_registration_form',
-        {'initial_mode': 'register'}, name="register_user"),
+        {'initial_mode': 'register'}, name='register_user'),
 )
 
 if settings.FEATURES["ENABLE_MOBILE_REST_API"]:
