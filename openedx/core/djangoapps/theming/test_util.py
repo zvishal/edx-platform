@@ -73,9 +73,10 @@ def with_edx_domain_context(is_edx_domain):
         domain = 'edx.org'
         site, __ = Site.objects.get_or_create(domain=domain, name=domain)
         SiteTheme.objects.get_or_create(site=site, theme_dir_name=domain)
-
-        with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
-            yield
+        with patch('openedx.core.djangoapps.theming.helpers.get_current_site_theme_dir',
+                   return_value=domain):
+            with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
+                yield
     else:
         yield
 

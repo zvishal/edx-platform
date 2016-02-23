@@ -29,4 +29,4 @@ def enable_comprehensive_theme(themes_dir):
 
         locale_dir = os.path.join(themes_dir, theme_dir, get_project_root_name(), "conf", "locale")
         if locale_dir.isdir():
-            settings.LOCALE_PATHS = settings.LOCALE_PATHS + [locale_dir]
+            settings.LOCALE_PATHS = (locale_dir, ) + settings.LOCALE_PATHS

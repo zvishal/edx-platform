@@ -120,6 +120,7 @@ class DatabaseMicrositeBackendTests(DatabaseMicrositeTestCase):
         with patch.dict('django.conf.settings.FEATURES', {'USE_MICROSITES': True}):
             microsite.enable_microsites_pre_startup(log)
             self.assertIn(settings.MICROSITE_ROOT_DIR, settings.DEFAULT_TEMPLATE_ENGINE['DIRS'])
+            self.assertIn(settings.MICROSITE_ROOT_DIR, settings.MAKO_TEMPLATES['main'])
 
     @patch('edxmako.paths.add_lookup')
     def test_enable_microsites(self, add_lookup):
@@ -138,7 +139,6 @@ class DatabaseMicrositeBackendTests(DatabaseMicrositeTestCase):
         with patch.dict('django.conf.settings.FEATURES', {'USE_MICROSITES': True}):
             microsite.enable_microsites(log)
             self.assertIn(settings.MICROSITE_ROOT_DIR, settings.STATICFILES_DIRS)
-            add_lookup.assert_called_once_with('main', settings.MICROSITE_ROOT_DIR)
 
     def test_get_all_configs(self):
         """

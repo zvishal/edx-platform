@@ -10,7 +10,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 
-from edxmako.middleware import REQUEST_CONTEXT
 from microsite_configuration import microsite
 from microsite_configuration import page_title_breadcrumbs
 
@@ -131,6 +130,7 @@ def get_current_site_theme_dir():
     """
     :return: theme directory for current site
     """
+    from edxmako.middleware import REQUEST_CONTEXT
     request = getattr(REQUEST_CONTEXT, 'request', None)
     if not request:
         return None
