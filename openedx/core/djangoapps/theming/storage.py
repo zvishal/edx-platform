@@ -33,16 +33,6 @@ class ComprehensiveThemingAwareMixin(object):
 
         self.themes_location = themes_dir
 
-    @property
-    def prefix(self):
-        """
-        This is used by the ComprehensiveThemeFinder in the collection step.
-        """
-        if not self.themes_location:
-            return None
-
-        return "themes/"
-
     def themed(self, name, theme_dir):
         """
         Given a name, return a boolean indicating whether that name exists
@@ -83,7 +73,7 @@ class ComprehensiveThemingAwareMixin(object):
         Add the theme prefix to the asset URL
         """
         if self.themed(name, theme_dir):
-            name = self.prefix + theme_dir + name
+            name = theme_dir + name
         return super(ComprehensiveThemingAwareMixin, self).url(name)
 
 

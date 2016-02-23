@@ -32,8 +32,10 @@ def with_comprehensive_theme(theme_dir_name):
             site, __ = Site.objects.get_or_create(domain=domain, name=domain)
             SiteTheme.objects.get_or_create(site=site, theme_dir_name=theme_dir_name)
 
-            with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
-                return func(*args, **kwargs)
+            with patch('openedx.core.djangoapps.theming.helpers.get_current_site_theme_dir',
+                       return_value=theme_dir_name):
+                with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
+                    return func(*args, **kwargs)
         return _decorated
     return _decorator
 

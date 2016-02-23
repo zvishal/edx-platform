@@ -116,7 +116,6 @@ def microsite_footer_context_processor(request):
 
 def render_to_string(template_name, dictionary, context=None, namespace='main'):
 
-    # see if there is an override template defined in the microsite
     template_name = get_template_path(template_name)
 
     context_instance = Context(dictionary)

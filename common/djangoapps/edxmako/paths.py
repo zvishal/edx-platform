@@ -54,7 +54,12 @@ class DynamicTemplateLookup(TemplateLookup):
 
     def get_template(self, uri):
         """
-        Overridden method which will hand-off the template lookup to the theming subsystem
+        Overridden method do template lookup database or in white labe site theme.
+        If not found template lookup will be done in comprehensive theme for current site
+        by prefixing path to theme.
+        e.g if uri is `main.html` then new uri would be something like this `/red-theme/lms/static/main.html`
+        If still unable to find template it fallback to default template dirs after striping off the
+        prefix path to theme.
         """
         template = themed_template(uri)
 
@@ -62,6 +67,7 @@ class DynamicTemplateLookup(TemplateLookup):
             try:
                 template = super(DynamicTemplateLookup, self).get_template(get_template_path_with_theme(uri))
             except TopLevelLookupException:
+                # strip off the prefix path to theme and look in default template dirs
                 template = super(DynamicTemplateLookup, self).get_template(strip_site_theme_templates_path(uri))
 
         return template

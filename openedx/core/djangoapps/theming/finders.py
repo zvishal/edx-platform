@@ -36,6 +36,10 @@ class ComprehensiveThemeFinder(BaseFinder):
     this finder will never find any files.
     """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize finder with comprehensive theming storage if we have
+        a valid COMPREHENSIVE_THEME_DIR setting.
+        """
         super(ComprehensiveThemeFinder, self).__init__(*args, **kwargs)
 
         themes_dir = get_base_theme_dir()
@@ -54,10 +58,6 @@ class ComprehensiveThemeFinder(BaseFinder):
         """
         if not self.storage:
             return []
-
-        if path.startswith(self.storage.prefix):
-            # strip the prefix
-            path = path[len(self.storage.prefix):]
 
         if self.storage.exists(path):
             match = self.storage.path(path)

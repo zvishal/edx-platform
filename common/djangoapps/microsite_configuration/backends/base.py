@@ -271,9 +271,7 @@ class BaseMicrositeBackend(AbstractBaseMicrositeBackend):
         Configure the paths for the microsites feature
         """
         microsites_root = settings.MICROSITE_ROOT_DIR
-        from edxmako.paths import add_lookup
         if os.path.isdir(microsites_root):
-            add_lookup('main', microsites_root)
             settings.STATICFILES_DIRS.insert(0, microsites_root)
 
             log.info('Loading microsite path at %s', microsites_root)
@@ -292,6 +290,7 @@ class BaseMicrositeBackend(AbstractBaseMicrositeBackend):
         microsite_config_dict = settings.MICROSITE_CONFIGURATION
 
         if microsite_config_dict:
+            settings.MAKO_TEMPLATES['main'].insert(0, microsites_root)
             settings.DEFAULT_TEMPLATE_ENGINE['DIRS'].append(microsites_root)
 
 

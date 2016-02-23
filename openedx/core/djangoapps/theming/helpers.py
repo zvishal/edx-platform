@@ -10,6 +10,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 
+from edxmako.middleware import REQUEST_CONTEXT
 from microsite_configuration import microsite
 from microsite_configuration import page_title_breadcrumbs
 
@@ -32,9 +33,10 @@ def get_template_path(relative_path, **kwargs):
     """
     This is a proxy function to hide microsite_configuration behind comprehensive theming.
     """
-    template_path = microsite.get_template_path(relative_path, **kwargs)
-    if not template_path:
-        template_path = get_template_path_with_theme(relative_path)
+    template_path = get_template_path_with_theme(relative_path)
+    if template_path == relative_path:  # we don't have a theme now look into microsites
+        template_path = microsite.get_template_path(relative_path, **kwargs)
+
     return template_path
 
 
@@ -93,7 +95,7 @@ def get_template_path_with_theme(relative_path):
     ])
 
     # strip `/` if present at the start of relative_path
-    template_name = re.sub(r'^\/+', '', relative_path)
+    template_name = re.sub(r'^/+', '', relative_path)
     search_path = os.path.join(template_path, template_name)
     if os.path.isfile(search_path):
         path = '/{site_theme_dir}/{root_name}/templates/{template_name}'.format(
@@ -129,7 +131,6 @@ def get_current_site_theme_dir():
     """
     :return: theme directory for current site
     """
-    from edxmako.middleware import REQUEST_CONTEXT
     request = getattr(REQUEST_CONTEXT, 'request', None)
     if not request:
         return None
@@ -199,7 +200,10 @@ def is_valid_hostname(hostname):
         return False
     if hostname[-1] == ".":
         hostname = hostname[:-1]  # strip exactly one dot from the right, if present
-    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    if ":" in hostname:
+        hostname = hostname.split(":")[0]  # strip port number if present
+
+    allowed = re.compile(r"(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
     return all(allowed.match(x) for x in hostname.split("."))
 
 

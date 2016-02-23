@@ -1,7 +1,5 @@
 """Tests of comprehensive theming."""
 
-import os
-
 from django.conf import settings
 from django.test import TestCase
 
@@ -9,7 +7,7 @@ from path import path           # pylint: disable=no-name-in-module
 from django.contrib import staticfiles
 
 from openedx.core.djangoapps.theming.test_util import with_comprehensive_theme
-from openedx.core.lib.tempdir import mkdtemp_clean
+from openedx.core.lib.tempdir import mkdtemp_clean, mksym_link
 
 
 class TestComprehensiveTheming(TestCase):
@@ -23,6 +21,11 @@ class TestComprehensiveTheming(TestCase):
 
     @with_comprehensive_theme('red-theme')
     def test_red_footer(self):
+        """
+        Tests templates from theme are rendered if available.
+        `red-theme` has header.html and footer.html so this test
+        asserts presence of the content from header.html and footer.html
+        """
         resp = self.client.get('/')
         self.assertEqual(resp.status_code, 200)
         # This string comes from footer.html
@@ -44,7 +47,7 @@ class TestComprehensiveTheming(TestCase):
             footer.write("<footer>TEMPORARY THEME</footer>")
 
         dest_path = path(settings.COMPREHENSIVE_THEME_DIR) / tmp_theme
-        os.symlink(themes_dir / tmp_theme, dest_path)
+        mksym_link(themes_dir / tmp_theme, dest_path)
 
         @with_comprehensive_theme(tmp_theme)
         def do_the_test(self):
@@ -54,10 +57,11 @@ class TestComprehensiveTheming(TestCase):
             self.assertContains(resp, "TEMPORARY THEME")
 
         do_the_test(self)
-        os.remove(dest_path)
 
     def test_theme_adjusts_staticfiles_search_path(self):
-        # Test that a theme adds itself to the staticfiles search path.
+        """
+        Tests theme directories are added to  staticfiles search path.
+        """
         before_finders = list(settings.STATICFILES_FINDERS)
         before_dirs = list(settings.STATICFILES_DIRS)
 
@@ -76,7 +80,7 @@ class TestComprehensiveTheming(TestCase):
 
     @with_comprehensive_theme('red-theme')
     def test_overridden_logo_image(self):
-        result = staticfiles.finders.find('themes/red-theme/static/images/logo.png')
+        result = staticfiles.finders.find('red-theme/static/images/logo.png')
         self.assertEqual(result, settings.REPO_ROOT / 'themes/red-theme/lms/static/images/logo.png')
 
     def test_default_favicon(self):
@@ -91,5 +95,5 @@ class TestComprehensiveTheming(TestCase):
         """
         Test comprehensive theme override on favicon image.
         """
-        result = staticfiles.finders.find('themes/red-theme/static/images/favicon.ico')
+        result = staticfiles.finders.find('red-theme/static/images/favicon.ico')
         self.assertEqual(result, settings.REPO_ROOT / 'themes/red-theme/lms/static/images/favicon.ico')
