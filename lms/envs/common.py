@@ -1068,8 +1068,8 @@ simplefilter('ignore')
 ################################# Middleware ###################################
 
 MIDDLEWARE_CLASSES = (
-    'mobile_api.middleware.AppVersionUpgrade',
     'request_cache.middleware.RequestCache',
+    'mobile_api.middleware.AppVersionUpgrade',
     'clean_headers.middleware.CleanHeadersMiddleware',
     'microsite_configuration.middleware.MicrositeMiddleware',
     'django_comment_client.middleware.AjaxExceptionMiddleware',

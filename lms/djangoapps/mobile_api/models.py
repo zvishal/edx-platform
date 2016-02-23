@@ -1,8 +1,9 @@
 """
 ConfigurationModel for the mobile_api djangoapp.
 """
+from datetime import datetime
 
-from django.db.models.fields import TextField, DateTimeField
+from django.db.models.fields import TextField, DateTimeField, CharField
 
 from config_models.models import ConfigurationModel
 
@@ -31,61 +32,57 @@ class MobileAppVersionConfig(ConfigurationModel):  # pylint: disable=model-missi
     """
     Configuration for mobile app versions available.
     """
-    latest_version_android = TextField(
-        blank=False,
-        help_text="Latest available version for android app in X.X.X format"
-    )
-    latest_version_ios = TextField(
-        blank=False,
-        help_text="Latest available version for IOS app in X.X.X format"
-    )
-    min_supported_version_android = TextField(
-        blank=False,
-        help_text="Min supported version for android app in X.X.X format"
-    )
-    min_supported_version_ios = TextField(
-        blank=False,
-        help_text="Min supported version for IOS app in X.X.X format"
-    )
-    next_supported_version_android = TextField(
-        blank=False,
-        help_text="Next supported version for android app in X.X.X format that a user must upgrade to before deadline"
-    )
-    next_supported_version_ios = TextField(
-        blank=False,
-        help_text="Next supported version for IOS app in X.X.X format that a user must upgrade to before deadline"
-    )
-    next_update_required_android = DateTimeField(
-        verbose_name="Upgrade Deadline"
-    )
-    next_update_required_ios = DateTimeField(
-        verbose_name="Upgrade Deadline"
-    )
+    IOS = "ios"
+    ANDROID = "android"
+    MOBILE_PLATFORM = (
+        (IOS, "IOS"),
+        (ANDROID, "ANDROID"),
 
-    def get_next_supported_version(self, platform):
-        """ get next supported version that has a deadline to upgrade """
-        return {
-            'android': self.next_supported_version_android,
-            'ios': self.next_supported_version_ios,
-        }.get(platform, None)
+    )
+    KEY_FIELDS = ('platform', )  # mobile platform is unique
+    platform = CharField(
+        max_length=50,
+        choices=MOBILE_PLATFORM,
+        blank=False,
+        help_text="mobile device platform")
+    latest_version = TextField(blank=False, help_text="Latest available version for app in X.X.X format")
+    min_supported_version = TextField(blank=False, help_text="Min supported version for app in X.X.X format")
+    next_min_supported_version = TextField(
+        blank=False,
+        help_text="Next supported version for app in X.X.X format that a user must upgrade to before deadline"
+    )
+    update_required_date = DateTimeField(verbose_name="Upgrade Deadline")
 
-    def get_next_update_required(self, platform):
-        """ get next update required date corresponding to next supported version """
-        return {
-            'android': self.next_update_required_android,
-            'ios': self.next_update_required_ios,
-        }.get(platform, None)
+    def parsed_version(self, version):
+        """ Converts string X.X.X.Y to tuple (X, X, X, Y) and return (X, X, X) """
+        return tuple(version.split("."))[:3]
 
-    def get_min_supported_version(self, platform):
-        """ get minimum supported app version """
-        return {
-            'android': self.min_supported_version_android,
-            'ios': self.min_supported_version_ios,
-        }.get(platform, None)
+    def is_outdated_version(self, user_app_version):
+        """
+        This is the case if user app version is no longer supported. Return True if
+        1. user app version is less than minimum supported version
+        2. user app version >= minimum supported version and user app version < next minimum supported version and
+        request timestamp > upgrade deadline
+        """
+        user_app_version = self.parsed_version(user_app_version)
+        if (user_app_version < self.parsed_version(self.min_supported_version) or (
+                user_app_version < self.parsed_version(self.next_min_supported_version) and
+                datetime.now() > self.update_required_date.replace(tzinfo=None)
+        )):
+            return True
+        else:
+            return False
 
-    def get_latest_version(self, platform):
-        """ get latest version available """
-        return {
-            'android': self.latest_version_android,
-            'ios': self.latest_version_ios,
-        }.get(platform, None)
+    def is_new_version_available(self, user_app_version):
+        """ True if user is using older version of app """
+        return True if self.parsed_version(user_app_version) < self.parsed_version(self.latest_version) else False
+
+    def is_deprecated_version(self, user_app_version):
+        """
+        This is the case when there exists a higher version (than user app user) that would contain critical/major
+        application changes and would be bound with a deadline to upgrade.
+        """
+        if self.parsed_version(user_app_version) <= self.parsed_version(self.next_min_supported_version):
+            return True
+        else:
+            return False
