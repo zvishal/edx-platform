@@ -1615,8 +1615,7 @@ REQUIRE_ENVIRONMENT = "node"
 # then you need to add the js urls in this list.
 REQUIRE_JS_PATH_OVERRIDES = [
     'js/bookmarks/views/bookmark_button.js',
-    'js/views/message_banner.js',
-    'js/vendor/draggabilly.pkgd.js'
+    'js/views/message_banner.js'
 ]
 ################################# CELERY ######################################
 

@@ -150,10 +150,7 @@
             },
             "sinon": {
                 exports: "sinon"
-            },
-            'draggabilly': {
-                exports: 'Draggabilly'
-            },
+            }
         }
     });
 
