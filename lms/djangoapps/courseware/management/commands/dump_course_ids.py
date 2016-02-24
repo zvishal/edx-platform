@@ -6,6 +6,7 @@ from textwrap import dedent
 from django.core.management.base import BaseCommand, CommandError
 
 from xmodule.modulestore.django import modulestore
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 
 class Command(BaseCommand):
@@ -35,6 +36,7 @@ class Command(BaseCommand):
 
         if store is None:
             raise CommandError("Unknown modulestore {}".format(name))
-        output = u'\n'.join(unicode(course.id) for course in store.get_courses()) + '\n'
+        output = u'\n'.join(unicode(course_overview.id) for course_overview in CourseOverview.get_all_courses()) + '\n'
+        #output = u'\n'.join(unicode(course.id) for course in store.get_courses()) + '\n'
 
         return output
