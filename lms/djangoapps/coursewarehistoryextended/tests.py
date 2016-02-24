@@ -10,12 +10,10 @@ from mock import patch
 from django.test import TestCase
 from django.conf import settings
 from unittest import skipUnless
-from django.db.models import signals
 
 from courseware.models import BaseStudentModuleHistory, StudentModuleHistory, StudentModule
 
 from courseware.tests.factories import StudentModuleFactory, location, course_id
-from student.tests.factories import UserFactory
 
 
 @skipUnless(settings.FEATURES["ENABLE_CSMH_EXTENDED"], "CSMH Extended needs to be enabled")
@@ -25,11 +23,11 @@ class TestStudentModuleHistoryBackends(TestCase):
     multi_db = True
 
     def setUp(self):
-
+        super(TestStudentModuleHistoryBackends, self).setUp()
         # This will store into CSMHE via the post_save signal
-        csm = StudentModuleFactory(module_state_key=location('usage_id'),
-                                   course_id=course_id,
-                                   state=json.dumps({'type': 'csmhe'}))
+        csm = StudentModuleFactory.create(module_state_key=location('usage_id'),
+                                          course_id=course_id,
+                                          state=json.dumps({'type': 'csmhe'}))
         # This manually gets us a CSMH record to compare
         csmh = StudentModuleHistory(student_module=csm,
                                     version=None,
