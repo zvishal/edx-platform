@@ -489,7 +489,6 @@ MAKO_TEMPLATES['main'].extend([
     COMMON_ROOT / 'test' / 'templates',
     COMMON_ROOT / 'test' / 'test_microsites',
     REPO_ROOT / 'openedx' / 'core' / 'djangolib' / 'tests' / 'templates',
-    COMPREHENSIVE_THEME_DIR,
 ])
 
 

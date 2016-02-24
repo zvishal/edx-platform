@@ -31,7 +31,7 @@ def with_comprehensive_theme(theme_dir_name):
             domain = "{theme_dir_name}.org".format(theme_dir_name=re.sub(r"[\s.org_]", "", theme_dir_name))
             site, __ = Site.objects.get_or_create(domain=domain, name=domain)
             SiteTheme.objects.get_or_create(site=site, theme_dir_name=theme_dir_name)
-
+            edxmako.paths.add_lookup('main', settings.COMPREHENSIVE_THEME_DIR, prepend=True)
             with patch('openedx.core.djangoapps.theming.helpers.get_current_site_theme_dir',
                        return_value=theme_dir_name):
                 with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
@@ -73,6 +73,7 @@ def with_edx_domain_context(is_edx_domain):
         domain = 'edx.org'
         site, __ = Site.objects.get_or_create(domain=domain, name=domain)
         SiteTheme.objects.get_or_create(site=site, theme_dir_name=domain)
+        edxmako.paths.add_lookup('main', settings.COMPREHENSIVE_THEME_DIR, prepend=True)
         with patch('openedx.core.djangoapps.theming.helpers.get_current_site_theme_dir',
                    return_value=domain):
             with patch('openedx.core.djangoapps.theming.helpers.get_current_site', return_value=site):
