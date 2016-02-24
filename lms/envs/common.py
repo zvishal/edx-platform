@@ -369,12 +369,15 @@ FEATURES = {
     'SHOW_LANGUAGE_SELECTOR': False,
 
     # Write new CSM history to the extended table.
-    # Will eventually become the default and be deleted.
+    # This will eventually default to True and may be
+    # removed since all installs should have the separate
+    # extended history table.
     'ENABLE_CSMH_EXTENDED': False,
 
     # Read from both the CSMH and CSMHE history tables.
     # This is the default, but can be disabled if all history
-    # lives in the Extended table, saving queries.
+    # lives in the Extended table, saving the frontend from
+    # making multiple queries.
     'ENABLE_READING_FROM_MULTIPLE_HISTORY_TABLES': True
 }
 
@@ -2771,7 +2774,10 @@ MOBILE_APP_USER_AGENT_REGEXES = [
 ]
 
 # Offset for courseware.StudentModuleHistoryExtended which is used to
-# calculate the starting primary key for the underlying table.
+# calculate the starting primary key for the underlying table.  This gap
+# should be large enough that you do not generate more than N courseware.StudentModuleHistory
+# records before you have deployed the app to write to coursewarehistoryextended.StudentModuleHistoryExtended
+# if you want to avoid an overlap in ids while searching for history across the two tables.
 STUDENTMODULEHISTORYEXTENDED_OFFSET = 10000
 
 # Deprecated xblock types
