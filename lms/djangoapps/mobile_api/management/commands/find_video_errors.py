@@ -2,6 +2,7 @@
 Command to find video pipeline/migration/etc errors.
 """
 from collections import defaultdict
+import json
 import logging
 
 from django.core.management.base import BaseCommand, CommandError
@@ -240,7 +241,7 @@ class _CourseStats(object):
             self.videos_without_bound_course = []
 
     def __repr__(self):
-        return repr(vars(self))
+        return json.dumps(vars(self), sort_keys=True, indent=4)
 
     def on_video_found(self):
         """
@@ -285,7 +286,15 @@ class _VideoStats(object):
         self.stats_by_course = PrettyDefaultDict(_CourseStats)
 
     def __repr__(self):
-        return repr(vars(self))
+        self_vars = vars(self).copy()
+
+        if not LOG_COURSES_WITH_VIDEOS_WITHOUT_EDX_VIDEO_ID:
+            self_vars.pop('courses_without_edx_video_id', None)
+
+        if not LOG_COURSES_WITH_VIDEOS_WITHOUT_BOUND_COURSE:
+            self_vars.pop('courses_without_bound_course', None)
+
+        return json.dumps(self_vars, sort_keys=True, indent=4)
 
     def on_video_found(self, course_key):
         """
@@ -293,6 +302,7 @@ class _VideoStats(object):
         """
         if LOG_TOTAL_NUMBER_OF_VIDEOS:
             self.total_num_of_videos += 1
+
         if LOG_NUMBER_OF_VIDEOS_PER_COURSE:
             self.stats_by_course[unicode(course_key)].on_video_found()
 
