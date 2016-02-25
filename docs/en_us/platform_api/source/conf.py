@@ -153,8 +153,21 @@ MOCK_MODULES = [
     'piexif',
 ]
 
-for mod_name in MOCK_MODULES:
+for mod_name in ():#MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
+
+
+real_import = __import__
+def no_fail_import(name, globals=None, locals=None, fromlist=None, level=-1):
+    try:
+        the_module = real_import(name, globals, locals, fromlist or [], level)
+    except ImportError:
+        print("module-mocking: {} {} {}".format(name, fromlist, level))
+        the_module = mock.MagicMock()
+    return the_module
+
+import __builtin__
+__builtin__.__import__ = no_fail_import
 
 if "DJANGO_SETTINGS_MODULE" not in os.environ:
     docs_path = os.getcwd()
