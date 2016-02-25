@@ -642,8 +642,10 @@ class TestLibraryImportExport(CourseTestCase):
         self.addCleanup(shutil.rmtree, self.export_dir, ignore_errors=True)
 
     def test_content_library_export_import(self):
-        library = LibraryFactory.create(modulestore=self.store)
-        source_library_key = library.location.library_key
+        library1 = LibraryFactory.create(modulestore=self.store)
+        source_library1_key = library1.location.library_key
+        library2 = LibraryFactory.create(modulestore=self.store)
+        source_library2_key = library2.location.library_key
 
         import_library_from_xml(
             self.store,
@@ -651,7 +653,7 @@ class TestLibraryImportExport(CourseTestCase):
             TEST_DATA_DIR,
             ['library_empty_problem'],
             static_content_store=contentstore(),
-            target_id=source_library_key,
+            target_id=source_library1_key,
             load_error_modules=False,
             raise_on_failure=True,
             create_if_not_present=True,
@@ -660,10 +662,26 @@ class TestLibraryImportExport(CourseTestCase):
         export_library_to_xml(
             self.store,
             contentstore(),
-            source_library_key,
+            source_library1_key,
             self.export_dir,
             'exported_source_library',
         )
 
-        source_library = self.store.get_library(source_library_key)
+        source_library = self.store.get_library(source_library1_key)
         self.assertEqual(source_library.url_name, 'library')
+
+        # Import the exported library into a different content library.
+        import_library_from_xml(
+            self.store,
+            'test_user',
+            self.export_dir,
+            ['exported_source_library'],
+            static_content_store=contentstore(),
+            target_id=source_library2_key,
+            load_error_modules=False,
+            raise_on_failure=True,
+            create_if_not_present=True,
+        )
+
+        # Compare the two content libraries for equality.
+        self.assertCoursesEqual(source_library1_key, source_library2_key)
