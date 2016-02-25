@@ -63,6 +63,7 @@
             "xblock": "coffee/src/xblock",
             "utility": "js/src/utility",
             "accessibility": "js/src/accessibility_tools",
+            "draggabilly": "js/vendor/draggabilly.pkgd",
             "URI": "js/vendor/URI.min",
             "ieshim": "js/src/ie_shim",
             "tooltip_manager": "js/src/tooltip_manager",
@@ -299,6 +300,9 @@
                        "rangeslider", "share-annotator", "richText-annotator", "reply-annotator",
                        "tags-annotator", "flagging-annotator", "grouping-annotator", "diacritic-annotator",
                        "openseadragon", "jquery-Watch", "catch", "handlebars", "URI"]
+            },
+            "draggabilly": {
+                exports: "Draggabilly"
             }
             // end of annotation tool files
         }
