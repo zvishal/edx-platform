@@ -132,7 +132,7 @@ class Command(BaseCommand):
 
             log.critical('Reporting on video errors for %d courses.', len(course_keys))
 
-            video_stats = _VideoStats()
+            video_stats = _CourseVideoStats()
             for course_key in course_keys:
                 try:
                     self._report_video_stats_in_course(course_key, video_stats)
@@ -241,7 +241,7 @@ class _CourseStats(object):
             self.videos_without_bound_course = []
 
     def __repr__(self):
-        return json.dumps(vars(self), sort_keys=True, indent=4)
+        return json.dumps(self.__dict__, sort_keys=True, indent=4)
 
     def on_video_found(self):
         """
@@ -266,7 +266,7 @@ class _CourseStats(object):
             self.videos_without_bound_course.append(unicode(block_key))
 
 
-class _VideoStats(object):
+class _CourseVideoStats(object):
     """
     Class for aggregated Video Error data.
     """
