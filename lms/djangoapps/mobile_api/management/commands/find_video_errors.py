@@ -44,7 +44,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--start',
             help='Starting index of course.',
-            default=0,
+            default=-0,
             type=int,
         )
         parser.add_argument(
@@ -58,9 +58,8 @@ class Command(BaseCommand):
 
         if options.get('all'):
             course_keys = [course.id for course in modulestore().get_course_summaries()]
-            if options.get('start'):
-                end = options.get('end') or len(course_keys)
-                course_keys = course_keys[options['start']:end]
+            end = options.get('end') or len(course_keys)
+            course_keys = course_keys[options['start']:end]
         else:
             if len(args) < 1:
                 raise CommandError('At least one course or --all must be specified.')
@@ -119,7 +118,7 @@ class Command(BaseCommand):
             block_key,
             StudentViewTransformer,
             StudentViewTransformer.STUDENT_VIEW_DATA,
-        )
+        )['edx_video_id']
 
     def _get_edx_video_ids_bound_to_course(self, course_key):
         """
@@ -142,8 +141,8 @@ class _CourseErrorStats(object):
     def __init__(self):
         self.num_of_videos_without_edx_video_id = 0
         self.num_of_videos_without_bound_course = 0
-        self.videos_without_edx_video_id = []
-        self.videos_without_bound_course = []
+        # self.videos_without_edx_video_id = []
+        # self.videos_without_bound_course = []
 
     def __repr__(self):
         return repr(vars(self))
