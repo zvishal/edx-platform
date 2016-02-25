@@ -404,7 +404,17 @@ if 'DJFS' in AUTH_TOKENS and AUTH_TOKENS['DJFS'] is not None:
     DJFS = AUTH_TOKENS['DJFS']
 
 ############### Module Store Items ##########
-HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS', {})
+HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get(
+    'HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS',
+    HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS
+)
+PREVIEW_DOMAIN = ENV_TOKENS.get('PREVIEW_DOMAIN', PREVIEW_DOMAIN)
+
+# PREVIEW DOMAIN must be present in HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS for the preview to show draft changes
+if PREVIEW_DOMAIN + "\." not in HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS:
+    err = "preview domain ('{preview_domain}') not found in HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS.".format(
+        preview_domain=PREVIEW_DOMAIN)
+    raise Exception(err)
 
 ############### Mixed Related(Secure/Not-Secure) Items ##########
 LMS_SEGMENT_KEY = AUTH_TOKENS.get('SEGMENT_KEY')
