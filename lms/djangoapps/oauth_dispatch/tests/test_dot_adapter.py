@@ -73,10 +73,10 @@ class TestAccessTokenView(TestCase):
     def test_refresh_token_in_token_response_keys(self):
         self.assertIn('refresh_token', self.adapter.get_token_response_keys())
 
-    @skip("Scopes not yet supported for django-oauth-toolkit")
+    @skip("Scopes not yet supported for django-oauth-toolkit (MA-2123)")
     def test_normalize_scopes(self):
         self.fail()
 
-    @skip("Scopes not yet supported for django-oauth-toolkit")
+    @skip("Scopes not yet supported for django-oauth-toolkit (MA-2123)")
     def test_get_token_scope_names(self):
         self.fail()

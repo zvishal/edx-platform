@@ -86,7 +86,7 @@ class TestAuthorizationView(TestCase):
     def test_authorization_view(self):
         self.client.login(username=self.user.username, password='test')
         response = self.client.post('/oauth2/authorize/', {
-            'client_id': self.dop_client.client_id,  # DOT is not yet supported
+            'client_id': self.dop_client.client_id,  # DOT is not yet supported (MA-2124)
             'response_type': 'code',
             'state': 'random_state_string',
             'redirect_uri': 'http://example.edx/redirect',
@@ -98,7 +98,7 @@ class TestAuthorizationView(TestCase):
         context = response.context  # pylint: disable=no-member
         self.assertIn('form', context)
 
-    @skip("AuthorizationView dispatch is currently not hooked up to URL routing")
+    @skip("AuthorizationView dispatch is currently not hooked up to URL routing (MA-2124)")
     def test_dot_authorization_view(self):
         self.client.login(username=self.user.username, password='test')
         response = self.client.post('/oauth2/authorize/', {
@@ -140,4 +140,3 @@ class TestAuthorizationView(TestCase):
         oauth_data = context['oauth_data']
         self.assertEqual(oauth_data['redirect_uri'], 'http://example.edx/redirect')
         self.assertEqual(oauth_data['state'], 'random_state_string')
-        #self.assertEqual(oauth_data['client_id'], self.dot_app.client_id)

@@ -20,13 +20,13 @@ class DOTAdapterMixin(object):
     access_token = 'dot_test_access_token'
     oauth2_adapter = adapters.DOTAdapter()
 
-    @skip("Not supported yet")
+    @skip("Not supported yet (See MA-2122)")
     def test_single_access_token(self):
-        pass
+        super(DOTAdapterMixin, self).test_single_access_token()
 
-    @skip("Not supported yet")
+    @skip("Not supported yet (See MA-2123)")
     def test_scopes(self):
-        pass
+        super(DOTAdapterMixin, self).test_scopes()
 
 
 class DOPAdapterMixin(object):
