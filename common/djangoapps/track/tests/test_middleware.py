@@ -31,15 +31,22 @@ class TrackMiddlewareTestCase(TestCase):
 
     def test_request_with_latin1_characters(self):
         """
-        When HTTP_USER_AGENT in request.META contains latin1 characters.
+        When HTTP headers contains latin1 characters.
         """
         request = self.request_factory.get('/somewhere')
+        # pylint: disable=no-member
         request.META['HTTP_USER_AGENT'] = 'test latin1 \xd3 \xe9 \xf1'  # pylint: disable=no-member
+        request.META['PATH_INFO'] = 'test latin1 \xd3 \xe9 \xf1'
+        request.META['HTTP_REFERER'] = 'test latin1 \xd3 \xe9 \xf1'
+        request.META['HTTP_ACCEPT_LANGUAGE'] = 'test latin1 \xd3 \xe9 \xf1'
 
         context = self.get_context_for_request(request)
         # The bytes in the string on the right are utf8 encoded in the source file, so we decode them to construct
         # a valid unicode string.
         self.assertEqual(context['agent'], 'test latin1 Ó é ñ'.decode('utf8'))
+        self.assertEqual(context['path'], 'test latin1 Ó é ñ'.decode('utf8'))
+        self.assertEqual(context['referer'], 'test latin1 Ó é ñ'.decode('utf8'))
+        self.assertEqual(context['accept_language'], 'test latin1 Ó é ñ'.decode('utf8'))
 
     def test_default_filters_do_not_render_view(self):
         for url in ['/event', '/event/1', '/login', '/heartbeat']:
