@@ -16,6 +16,16 @@ from xmodule.modulestore.django import modulestore
 log = logging.getLogger(__name__)
 
 
+LOG_TOTAL_NUMBER_OF_VIDEOS = False
+LOG_NUMBER_OF_VIDEOS_PER_COURSE = False
+
+LOG_COURSES_WITH_VIDEOS_WITHOUT_EDX_VIDEO_ID = False
+LOG_COURSES_WITH_VIDEOS_WITHOUT_BOUND_COURSE = False
+
+LOG_VIDEO_BLOCKS_WITHOUT_EDX_VIDEO_ID = False
+LOG_VIDEO_BLOCKS_WITHOUT_BOUND_COURSE = False
+
+
 class Command(BaseCommand):
     """
     Example usage:
@@ -53,8 +63,47 @@ class Command(BaseCommand):
             default=0,
             type=int,
         )
+        parser.add_argument(
+            '--total_num_videos',
+            help='Count total number of videos.',
+            action='store_true',
+            default=False,
+        )
+        parser.add_argument(
+            '--num_videos_per_course',
+            help='Count number of videos in each course.',
+            action='store_true',
+            default=False,
+        )
+        parser.add_argument(
+            '--log_videos_without_id',
+            help='Log block keys of videos without edx video ids.',
+            action='store_true',
+            default=False,
+        )
+        parser.add_argument(
+            '--log_videos_without_course',
+            help='Log block keys of videos that are not bound to a course.',
+            action='store_true',
+            default=False,
+        )
+        parser.add_argument(
+            '--log_courses_with_videos_without_id',
+            help='Log course keys of courses with videos without edx video ids.',
+            action='store_true',
+            default=False,
+        )
+        parser.add_argument(
+            '--log_courses_with_videos_without_course',
+            help='Log course keys of courses with videos that are not bound to a course.',
+            action='store_true',
+            default=False,
+        )
+
 
     def handle(self, *args, **options):
+
+        self._handle_logging_options(options)
 
         if options.get('all'):
             course_keys = [course.id for course in modulestore().get_course_summaries()]
@@ -68,21 +117,12 @@ class Command(BaseCommand):
             except InvalidKeyError:
                 raise CommandError('Invalid key specified.')
 
-        log.info('Reporting on video errors for %d courses.', len(course_keys))
-
-        if options.get('verbose'):
-            log.setLevel(logging.DEBUG)
-        else:
-            log.setLevel(logging.CRITICAL)
+        log.critical('Reporting on video errors for %d courses.', len(course_keys))
 
         video_stats = _VideoStats()
         for course_key in course_keys:
             try:
-                self._report_video_stats_in_course(
-                    course_key, 
-                    video_stats,
-                    options.get('verbose'),
-                )
+                self._report_video_stats_in_course(course_key, video_stats)
 
             except Exception as ex:  # pylint: disable=broad-except
                 log.exception(
@@ -91,10 +131,40 @@ class Command(BaseCommand):
                     ex.message,
                 )
 
-        log.info('Finished reporting on video errors.')
+        log.critical('Finished reporting on video errors.')
         log.critical('Video Error data: %s', unicode(video_stats))
 
-    def _report_video_stats_in_course(self, course_key, video_stats, verbose=False):
+    def _handle_logging_options(self, options):
+        """
+        Update settings for all options related to logging.
+        """
+        if options.get('verbose'):
+            log.setLevel(logging.DEBUG)
+        else:
+            log.setLevel(logging.CRITICAL)
+
+        global LOG_TOTAL_NUMBER_OF_VIDEOS, LOG_NUMBER_OF_VIDEOS_PER_COURSE
+        if options.get('total_num_videos'):
+            LOG_TOTAL_NUMBER_OF_VIDEOS = True
+
+        if options.get('num_videos_per_course'):
+            LOG_NUMBER_OF_VIDEOS_PER_COURSE = True
+
+        global LOG_VIDEO_BLOCKS_WITHOUT_EDX_VIDEO_ID, LOG_VIDEO_BLOCKS_WITHOUT_BOUND_COURSE
+        if options.get('log_videos_without_id'):
+            LOG_VIDEO_BLOCKS_WITHOUT_EDX_VIDEO_ID = True
+
+        if options.get('log_videos_without_course'):
+            LOG_VIDEO_BLOCKS_WITHOUT_BOUND_COURSE = True
+
+        global LOG_COURSES_WITH_VIDEOS_WITHOUT_EDX_VIDEO_ID, LOG_COURSES_WITH_VIDEOS_WITHOUT_BOUND_COURSE
+        if options.get('log_courses_with_videos_without_id'):
+            LOG_COURSES_WITH_VIDEOS_WITHOUT_EDX_VIDEO_ID = True
+
+        if options.get('log_courses_with_videos_without_course'):
+            LOG_COURSES_WITH_VIDEOS_WITHOUT_BOUND_COURSE = True
+
+    def _report_video_stats_in_course(self, course_key, video_stats):
         """
         Reports on video errors in the given course.
         """
@@ -106,8 +176,7 @@ class Command(BaseCommand):
         for block_key in block_structure.get_block_keys():
             if block_key.category != 'video':
                 continue
-            if verbose:
-                video_stats.on_video_found(course_key, block_key)
+            video_stats.on_video_found(course_key)
             edx_video_id = self._get_edx_video_id(block_structure, block_key)
             if not edx_video_id:
                 video_stats.on_no_edx_video_id(course_key, block_key)
@@ -148,13 +217,17 @@ class _CourseStats(object):
         self.num_of_total_videos = 0
         self.num_of_videos_without_edx_video_id = 0
         self.num_of_videos_without_bound_course = 0
-        # self.videos_without_edx_video_id = []
-        # self.videos_without_bound_course = []
+
+        if LOG_VIDEO_BLOCKS_WITHOUT_EDX_VIDEO_ID:
+            self.videos_without_edx_video_id = []
+
+        if LOG_VIDEO_BLOCKS_WITHOUT_BOUND_COURSE:
+            self.videos_without_bound_course = []
 
     def __repr__(self):
         return repr(vars(self))
 
-    def on_video_found(self, block_key):
+    def on_video_found(self):
         """
         Updates data for when a video block is found.
         """
@@ -165,22 +238,32 @@ class _CourseStats(object):
         Updates error data for the given block.
         """
         self.num_of_videos_without_edx_video_id += 1
-        # self.videos_without_edx_video_id.append(unicode(block_key))
+        if LOG_VIDEO_BLOCKS_WITHOUT_EDX_VIDEO_ID:
+            self.videos_without_edx_video_id.append(unicode(block_key))
 
     def on_course_not_bound_to_video(self, block_key):
         """
         Updates error data for the given block.
         """
         self.num_of_videos_without_bound_course += 1
-        # self.videos_without_bound_course.append(unicode(block_key))
+        if LOG_VIDEO_BLOCKS_WITHOUT_BOUND_COURSE:
+            self.videos_without_bound_course.append(unicode(block_key))
 
 
 class _VideoStats(object):
     """
     Class for aggregated Video Error data.
     """
-    def __init__(self):
+    def __init__(self)
         self.total_num_of_courses_with_errors = 0
+        self.total_num_of_courses_without_edx_video_id = 0
+        self.total_num_of_courses_without_bound_course = 0
+
+        self.courses_without_edx_video_id = set()
+        self.courses_without_bound_course = set()
+
+        if LOG_TOTAL_NUMBER_OF_VIDEOS:
+            self.total_num_of_videos = 0
         self.total_num_of_videos_without_edx_video_id = 0
         self.total_num_of_videos_without_bound_course = 0
 
@@ -193,15 +276,23 @@ class _VideoStats(object):
         """
         Updates data for when a video block is found.
         """
-        self.stats_by_course[unicode(course_key)].on_video_found(block_key)
+        if LOG_TOTAL_NUMBER_OF_VIDEOS:
+            self.total_num_of_videos += 1
+        if LOG_NUMBER_OF_VIDEOS_PER_COURSE:
+            self.stats_by_course[unicode(course_key)].on_video_found(block_key)
 
     def on_no_edx_video_id(self, course_key, block_key):
         """
         Updates error data for the given block.
         """
         self.total_num_of_videos_without_edx_video_id += 1
-        if unicode(course_key) not in self.stats_by_course:
-            self.total_num_of_courses_with_errors += 1
+
+        self._update_total_num_courses_with_errors(course_key)
+
+        if unicode(course_key) not in self.courses_without_edx_video_id:
+            self.courses_without_edx_video_id.add(unicode(course_key))
+            self.total_num_of_courses_without_edx_video_id += 1
+
         self.stats_by_course[unicode(course_key)].on_no_edx_video_id(block_key)
 
     def on_course_not_bound_to_video(self, course_key, block_key):
@@ -209,6 +300,22 @@ class _VideoStats(object):
         Updates error data for the given block.
         """
         self.total_num_of_videos_without_bound_course += 1
-        if unicode(course_key) not in self.stats_by_course:
-            self.total_num_of_courses_with_errors += 1
+
+        self._update_total_num_courses_with_errors(course_key)
+
+        if unicode(course_key) not in self.courses_without_bound_course:
+            self.courses_without_bound_course.add(unicode(course_key))
+            self.total_num_of_courses_without_bound_course += 1
+
         self.stats_by_course[unicode(course_key)].on_course_not_bound_to_video(block_key)
+
+    def _update_total_num_courses_with_errors(self, course_key):
+        """
+        Updates count of courses with errors.
+        """
+        course_key_string = unicode(course_key)
+        if (
+            course_key_string not in self.courses_without_edx_video_id and
+            course_key_string not in self.courses_without_bound_course
+        ):
+            self.total_num_of_courses_with_errors += 1
