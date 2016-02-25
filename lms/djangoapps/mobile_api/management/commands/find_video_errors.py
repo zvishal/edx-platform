@@ -75,7 +75,7 @@ class Command(BaseCommand):
         else:
             log.setLevel(logging.CRITICAL)
 
-        video_error_stats = _VideoErrorStats()
+        video_error_stats = _VideoStats()
         for course_key in course_keys:
             try:
                 self._report_video_errors_in_course(course_key, video_error_stats)
@@ -102,6 +102,7 @@ class Command(BaseCommand):
         for block_key in block_structure.get_block_keys():
             if block_key.category != 'video':
                 continue
+            video_error_stats.on_video_found(course_key, block_key)
             edx_video_id = self._get_edx_video_id(block_structure, block_key)
             if not edx_video_id:
                 video_error_stats.on_no_edx_video_id(course_key, block_key)
@@ -134,11 +135,12 @@ class PrettyDefaultDict(defaultdict):
     __repr__ = dict.__repr__
 
 
-class _CourseErrorStats(object):
+class _CourseStats(object):
     """
     Class for aggregated DAG data for a specific course run.
     """
     def __init__(self):
+        self.num_of_total_videos = 0
         self.num_of_videos_without_edx_video_id = 0
         self.num_of_videos_without_bound_course = 0
         # self.videos_without_edx_video_id = []
@@ -146,6 +148,12 @@ class _CourseErrorStats(object):
 
     def __repr__(self):
         return repr(vars(self))
+
+    def on_video_found(self, course_key, block_key):
+        """
+        Updates data for when a video block is found.
+        """
+        self.num_of_total_videos += 1
 
     def on_no_edx_video_id(self, block_key):
         """
@@ -162,7 +170,7 @@ class _CourseErrorStats(object):
         # self.videos_without_bound_course.append(unicode(block_key))
 
 
-class _VideoErrorStats(object):
+class _VideoStats(object):
     """
     Class for aggregated Video Error data.
     """
@@ -171,17 +179,23 @@ class _VideoErrorStats(object):
         self.total_num_of_videos_without_edx_video_id = 0
         self.total_num_of_videos_without_bound_course = 0
 
-        self.stats_by_course = PrettyDefaultDict(_CourseErrorStats)
+        self.stats_by_course = PrettyDefaultDict(_CourseStats)
 
     def __repr__(self):
         return repr(vars(self))
+
+    def on_video_found(self, course_key, block_key):
+        """
+        Updates data for when a video block is found.
+        """
+        self.stats_by_course[unicode(course_key)].on_video_found(block_key)
 
     def on_no_edx_video_id(self, course_key, block_key):
         """
         Updates error data for the given block.
         """
         self.total_num_of_videos_without_edx_video_id += 1
-        if course_key not in self.stats_by_course:
+        if unicode(course_key) not in self.stats_by_course:
             self.total_num_of_courses_with_errors += 1
         self.stats_by_course[unicode(course_key)].on_no_edx_video_id(block_key)
 
@@ -190,6 +204,6 @@ class _VideoErrorStats(object):
         Updates error data for the given block.
         """
         self.total_num_of_videos_without_bound_course += 1
-        if course_key not in self.stats_by_course:
+        if unicode(course_key) not in self.stats_by_course:
             self.total_num_of_courses_with_errors += 1
         self.stats_by_course[unicode(course_key)].on_course_not_bound_to_video(block_key)
