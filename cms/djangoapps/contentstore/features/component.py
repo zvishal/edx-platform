@@ -64,7 +64,7 @@ def see_a_multi_step_component(step, category):
             assert_in(html_matcher[step_hash['Component']].strip(), actual_html.strip())
         else:
             actual_text = world.css_text(selector, index=idx)
-            assert_in(step_hash['Component'].upper(), actual_text.upper())
+            assert_in(step_hash['Component'], actual_text)
 
 
 @step(u'I see a "([^"]*)" Problem component$')
@@ -76,7 +76,7 @@ def see_a_problem_component(step, category):
     problem_css = '.studio-xblock-wrapper .xblock-student_view'
     # This view presents the given problem component in uppercase. Assert that the text matches
     # the component selected
-    assert_true(world.css_contains_text(problem_css, category.upper()))
+    assert_true(world.css_contains_text(problem_css, category))
 
 
 @step(u'I add a "([^"]*)" "([^"]*)" component$')
@@ -150,7 +150,7 @@ def see_component_in_position(step, display_name, index):
     component_css = '.xmodule_CapaModule'
 
     def find_problem(_driver):
-        return world.css_text(component_css, int(index)).startswith(display_name.upper())
+        return world.css_text(component_css, int(index)).startswith(display_name)
 
     world.wait_for(find_problem, timeout_msg='Did not find the duplicated problem')
 
