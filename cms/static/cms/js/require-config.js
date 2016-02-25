@@ -63,7 +63,6 @@
             "xblock": "coffee/src/xblock",
             "utility": "js/src/utility",
             "accessibility": "js/src/accessibility_tools",
-            "draggabilly": "js/vendor/draggabilly.pkgd",
             "URI": "js/vendor/URI.min",
             "ieshim": "js/src/ie_shim",
             "tooltip_manager": "js/src/tooltip_manager",
