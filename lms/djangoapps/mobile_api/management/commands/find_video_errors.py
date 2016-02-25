@@ -75,10 +75,14 @@ class Command(BaseCommand):
         else:
             log.setLevel(logging.CRITICAL)
 
-        video_error_stats = _VideoStats()
+        video_stats = _VideoStats()
         for course_key in course_keys:
             try:
-                self._report_video_errors_in_course(course_key, video_error_stats)
+                self._report_video_stats_in_course(
+                    course_key, 
+                    video_stats,
+                    options.get('verbose'),
+                )
 
             except Exception as ex:  # pylint: disable=broad-except
                 log.exception(
@@ -88,9 +92,9 @@ class Command(BaseCommand):
                 )
 
         log.info('Finished reporting on video errors.')
-        log.critical('Video Error data: %s', unicode(video_error_stats))
+        log.critical('Video Error data: %s', unicode(video_stats))
 
-    def _report_video_errors_in_course(self, course_key, video_error_stats):
+    def _report_video_stats_in_course(self, course_key, video_stats, verbose=False):
         """
         Reports on video errors in the given course.
         """
@@ -102,12 +106,13 @@ class Command(BaseCommand):
         for block_key in block_structure.get_block_keys():
             if block_key.category != 'video':
                 continue
-            video_error_stats.on_video_found(course_key, block_key)
+            if verbose:
+                video_stats.on_video_found(course_key, block_key)
             edx_video_id = self._get_edx_video_id(block_structure, block_key)
             if not edx_video_id:
-                video_error_stats.on_no_edx_video_id(course_key, block_key)
+                video_stats.on_no_edx_video_id(course_key, block_key)
             if edx_video_id not in edx_video_ids_in_val:
-                video_error_stats.on_course_not_bound_to_video(course_key, block_key)
+                video_stats.on_course_not_bound_to_video(course_key, block_key)
 
         log.info('Video error check complete for course %s.', unicode(course_key))
 
@@ -149,7 +154,7 @@ class _CourseStats(object):
     def __repr__(self):
         return repr(vars(self))
 
-    def on_video_found(self, course_key, block_key):
+    def on_video_found(self, block_key):
         """
         Updates data for when a video block is found.
         """
