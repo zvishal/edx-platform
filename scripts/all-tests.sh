@@ -14,6 +14,9 @@ set -e
 export PYLINT_THRESHOLD=4500
 export JSHINT_THRESHOLD=9080
 
+# Enable migrations during Python unit tests.
+export ENABLE_MIGRATIONS=1
+
 doCheckVars() {
     if [ -n "$CIRCLECI" ] ; then
         SCRIPT_TO_RUN=scripts/circle-ci-tests.sh
