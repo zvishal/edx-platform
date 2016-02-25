@@ -10,7 +10,8 @@ from lms.djangoapps.course_api.blocks.transformers.student_view import StudentVi
 from lms.djangoapps.course_blocks.api import get_course_in_cache
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
-from xmodule.modulestore.django import modulestore
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+# from xmodule.modulestore.django import modulestore
 
 
 log = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ class Command(BaseCommand):
         """
         parser.add_argument(
             '--all',
-            help='Find video-related errors for all courses.',
+            help='Find video-related stats for all courses.',
             action='store_true',
             default=False,
         )
@@ -99,6 +100,12 @@ class Command(BaseCommand):
             action='store_true',
             default=False,
         )
+        parser.add_argument(
+            '--mobile_only',
+            help='Filter for courses that are designated as mobile available.',
+            action='store_true',
+            default=True,
+        )
 
 
     def handle(self, *args, **options):
@@ -107,7 +114,11 @@ class Command(BaseCommand):
             self._handle_logging_options(options)
 
             if options.get('all'):
-                course_keys = [course.id for course in modulestore().get_course_summaries()]
+                # course_keys = [course.id for course in modulestore().get_course_summaries()]
+                filter_ = None
+                if options.get('mobile_only'):
+                    filter_={'mobile_available': True}
+                course_keys = [course.id for course in CourseOverview.get_all_courses(filter_=filter_)]
                 end = options.get('end') or len(course_keys)
                 course_keys = course_keys[options['start']:end]
             else:
@@ -276,14 +287,14 @@ class _VideoStats(object):
     def __repr__(self):
         return repr(vars(self))
 
-    def on_video_found(self, course_key, block_key):
+    def on_video_found(self, course_key):
         """
         Updates data for when a video block is found.
         """
         if LOG_TOTAL_NUMBER_OF_VIDEOS:
             self.total_num_of_videos += 1
         if LOG_NUMBER_OF_VIDEOS_PER_COURSE:
-            self.stats_by_course[unicode(course_key)].on_video_found(block_key)
+            self.stats_by_course[unicode(course_key)].on_video_found()
 
     def on_no_edx_video_id(self, course_key, block_key):
         """
