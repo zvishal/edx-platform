@@ -103,36 +103,40 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        self._handle_logging_options(options)
+        try:
+            self._handle_logging_options(options)
 
-        if options.get('all'):
-            course_keys = [course.id for course in modulestore().get_course_summaries()]
-            end = options.get('end') or len(course_keys)
-            course_keys = course_keys[options['start']:end]
-        else:
-            if len(args) < 1:
-                raise CommandError('At least one course or --all must be specified.')
-            try:
-                course_keys = [CourseKey.from_string(arg) for arg in args]
-            except InvalidKeyError:
-                raise CommandError('Invalid key specified.')
+            if options.get('all'):
+                course_keys = [course.id for course in modulestore().get_course_summaries()]
+                end = options.get('end') or len(course_keys)
+                course_keys = course_keys[options['start']:end]
+            else:
+                if len(args) < 1:
+                    raise CommandError('At least one course or --all must be specified.')
+                try:
+                    course_keys = [CourseKey.from_string(arg) for arg in args]
+                except InvalidKeyError:
+                    raise CommandError('Invalid key specified.')
 
-        log.critical('Reporting on video errors for %d courses.', len(course_keys))
+            log.critical('Reporting on video errors for %d courses.', len(course_keys))
 
-        video_stats = _VideoStats()
-        for course_key in course_keys:
-            try:
-                self._report_video_stats_in_course(course_key, video_stats)
+            video_stats = _VideoStats()
+            for course_key in course_keys:
+                try:
+                    self._report_video_stats_in_course(course_key, video_stats)
 
-            except Exception as ex:  # pylint: disable=broad-except
-                log.exception(
-                    'An error occurred while reporting video-related errors in course %s: %s',
-                    unicode(course_key),
-                    ex.message,
-                )
+                except Exception as ex:  # pylint: disable=broad-except
+                    log.exception(
+                        'An error occurred while reporting video-related errors in course %s: %s',
+                        unicode(course_key),
+                        ex.message,
+                    )
 
-        log.critical('Finished reporting on video errors.')
-        log.critical('Video Error data: %s', unicode(video_stats))
+            log.critical('Finished reporting on video errors.')
+            log.critical('Video Error data: %s', unicode(video_stats))
+
+        except Exception as error:
+            raise CommandError(error.message)
 
     def _handle_logging_options(self, options):
         """
@@ -254,7 +258,7 @@ class _VideoStats(object):
     """
     Class for aggregated Video Error data.
     """
-    def __init__(self)
+    def __init__(self):
         self.total_num_of_courses_with_errors = 0
         self.total_num_of_courses_without_edx_video_id = 0
         self.total_num_of_courses_without_bound_course = 0
