@@ -549,7 +549,10 @@ def _index_bulk_op(request, course_key, chapter, section, position):
 
             # Save where we are in the chapter.
             save_child_position(chapter_module, section)
-            section_render_context = {'activate_block_id': request.GET.get('activate_block_id')}
+            section_render_context = {
+                'activate_block_id': request.GET.get('activate_block_id'),
+                'get_redirect_url': get_redirect_url,
+            }
             context['fragment'] = section_module.render(STUDENT_VIEW, section_render_context)
             context['section_title'] = section_descriptor.display_name_with_default_escaped
         else:

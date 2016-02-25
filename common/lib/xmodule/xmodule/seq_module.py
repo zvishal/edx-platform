@@ -238,6 +238,8 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
                 childinfo['title'] = child.display_name_with_default_escaped
             contents.append(childinfo)
 
+        next_url = self._compute_next_url(self.location, parent_module, context)
+
         params = {
             'items': contents,
             'element_id': self.location.html_id(),
@@ -245,6 +247,7 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
             'position': self.position,
             'tag': self.location.category,
             'ajax_url': self.system.ajax_url,
+            'next_url': next_url,
         }
 
         fragment.add_content(self.system.render_template("seq_module.html", params))
@@ -254,6 +257,22 @@ class SequenceModule(SequenceFields, ProctoringFields, XModule):
 
         # Get all descendant XBlock types and counts
         return fragment
+
+    def _compute_next_url(self, child_location, parent_module, context):
+        """
+        Returns the url for the next module after this sequence.
+        """
+        index_in_parent = parent_module.children.index(child_location)
+        if index_in_parent+1 < len(parent_module.children):
+            next_module_location = parent_module.children[index_in_parent+1]
+            if next_module_location and context.get('get_redirect_url'):
+                return context['get_redirect_url'](self.location.course_key, next_module_location)
+        else:
+            grandparent = parent_module.get_parent()
+            if grandparent:
+                return self._compute_next_url(parent_module.location, grandparent, context)
+
+        return None
 
     def _locations_in_subtree(self, node):
         """
